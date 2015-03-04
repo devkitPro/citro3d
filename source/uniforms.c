@@ -34,7 +34,7 @@ void C3D_UpdateUniforms(void)
 		*/
 
 		// Upload the uniforms
-		GPU_SetUniform(i, (u32*)&C3D_FVUnif[i], j-i);
+		GPU_SetFloatUniform(GPU_VERTEX_SHADER, i, (u32*)&C3D_FVUnif[i], j-i);
 
 		// Clear the dirty flag
 		int k;
