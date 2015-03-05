@@ -134,7 +134,8 @@ void C3Di_UpdateContext(void)
 		ctx->flags &= ~C3DiF_TexEnvAll;
 	}
 
-	C3D_UpdateUniforms();
+	C3D_UpdateUniforms(GPU_VERTEX_SHADER);
+	C3D_UpdateUniforms(GPU_GEOMETRY_SHADER);
 }
 
 void C3D_FlushAsync(void)

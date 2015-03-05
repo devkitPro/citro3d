@@ -9,8 +9,9 @@ void MtxStack_Init(C3D_MtxStack* stk)
 	Mtx_Identity(&stk->m[0]);
 }
 
-void MtxStack_Bind(C3D_MtxStack* stk, int unifPos, int unifLen)
+void MtxStack_Bind(C3D_MtxStack* stk, GPU_SHADER_TYPE unifType, int unifPos, int unifLen)
 {
+	stk->unifType = unifType;
 	stk->unifPos = unifPos;
 	stk->unifLen = unifLen;
 	stk->isDirty = true;
@@ -36,7 +37,7 @@ void MtxStack_Update(C3D_MtxStack* stk)
 
 	if (stk->unifPos != 0xFF)
 	{
-		C3D_FVec* out = C3D_FVUnifWritePtr(stk->unifPos, stk->unifLen);
+		C3D_FVec* out = C3D_FVUnifWritePtr(stk->unifType, stk->unifPos, stk->unifLen);
 		memcpy(out, &stk->m[stk->pos], (u32)stk->unifLen * sizeof(C3D_FVec));
 	}
 
