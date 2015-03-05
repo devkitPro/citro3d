@@ -57,9 +57,8 @@ void C3D_SetAttrInfo(C3D_AttrInfo* info)
 
 void C3Di_AttrInfoBind(C3D_AttrInfo* info)
 {
-	GPUCMD_Add(0x800F0201, (u32*)&info->cfg, sizeof(C3D_AttrCfg)/sizeof(u32));
-	GPUCMD_AddSingleParam(0x000B02B9, 0xA0000000 | (info->attrCount - 1));
-	GPUCMD_AddSingleParam(0x000F0242, info->attrCount - 1);
-	GPUCMD_AddSingleParam(0x000F02BB, info->permutation & 0xFFFFFFFF);
-	GPUCMD_AddSingleParam(0x000F02BC, info->permutation >> 32);
+	GPUCMD_AddIncrementalWrites(GPUREG_ATTRIBBUFFERS_FORMAT_LOW, (u32*)&info->cfg, sizeof(C3D_AttrCfg)/sizeof(u32));
+	GPUCMD_AddMaskedWrite(GPUREG_VSH_INPUTBUFFER_CONFIG, 0xB, 0xA0000000 | (info->attrCount - 1));
+	GPUCMD_AddWrite(GPUREG_0242, info->attrCount - 1);
+	GPUCMD_AddIncrementalWrites(GPUREG_VSH_ATTRIBUTES_PERMUTATION_LOW, (u32*)&info->permutation, 2);
 }

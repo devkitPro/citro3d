@@ -50,14 +50,14 @@ void C3D_UpdateUniforms(void)
 	{
 		if (!C3D_IVUnifDirty[i]) continue;
 
-		GPUCMD_AddSingleParam(0x000F02B1+i, C3D_IVUnif[i]);
+		GPUCMD_AddWrite(GPUREG_VSH_INTUNIFORM_I0+i, C3D_IVUnif[i]);
 		C3D_IVUnifDirty[i] = false;
 	}
 
 	// Update bool uniforms
 	if (C3D_BoolUnifsDirty)
 	{
-		GPUCMD_AddSingleParam(0x000F02B0, 0x7FFF0000 | (u32)C3D_BoolUnifs);
+		GPUCMD_AddWrite(GPUREG_VSH_BOOLUNIFORM, 0x7FFF0000 | (u32)C3D_BoolUnifs);
 		C3D_BoolUnifsDirty = false;
 	}
 }

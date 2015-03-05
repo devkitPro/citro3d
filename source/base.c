@@ -25,22 +25,22 @@ static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 	switch (unit)
 	{
 		case GPU_TEXUNIT0:
-			GPUCMD_AddSingleParam(0x000F008E, reg[0]);
-			GPUCMD_AddSingleParam(0x000F0085, reg[1]);
-			GPUCMD_AddSingleParam(0x000F0082, reg[2]);
-			GPUCMD_AddSingleParam(0x000F0083, reg[3]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT0_TYPE, reg[0]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT0_LOC, reg[1]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT0_DIM, reg[2]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT0_PARAM, reg[3]);
 			break;
 		case GPU_TEXUNIT1:
-			GPUCMD_AddSingleParam(0x000F0096, reg[0]);
-			GPUCMD_AddSingleParam(0x000F0095, reg[1]);
-			GPUCMD_AddSingleParam(0x000F0092, reg[2]);
-			GPUCMD_AddSingleParam(0x000F0093, reg[3]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT1_TYPE, reg[0]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT1_LOC, reg[1]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT1_DIM, reg[2]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT1_PARAM, reg[3]);
 			break;
 		case GPU_TEXUNIT2:
-			GPUCMD_AddSingleParam(0x000F009E, reg[0]);
-			GPUCMD_AddSingleParam(0x000F009D, reg[1]);
-			GPUCMD_AddSingleParam(0x000F009A, reg[2]);
-			GPUCMD_AddSingleParam(0x000F009B, reg[3]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT2_TYPE, reg[0]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT2_LOC, reg[1]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT2_DIM, reg[2]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT2_PARAM, reg[3]);
 			break;
 	}
 }

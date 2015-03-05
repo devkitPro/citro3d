@@ -58,15 +58,15 @@ void C3D_AlphaBlend(GPU_BLENDEQUATION colorEq, GPU_BLENDEQUATION alphaEq, GPU_BL
 
 void C3Di_EffectBind(C3D_Effect* e)
 {
-	GPUCMD_AddSingleParam(0x000F006D, 0x00000001);
-	GPUCMD_AddSingleParam(0x000F0040, e->cullMode & 0x3);
-	GPUCMD_Add(0x800F004D, (u32*)&e->drNear, 2);
-	GPUCMD_Add(0x800F0104, (u32*)&e->alphaTest, 4);
-	GPUCMD_AddSingleParam(0x000F0103, e->blendClr);
-	GPUCMD_AddSingleParam(0x000F0101, e->alphaBlend);
-	GPUCMD_AddSingleParam(0x00020100, 0x00000100);
+	GPUCMD_AddWrite(GPUREG_006D, 0x00000001);
+	GPUCMD_AddWrite(GPUREG_FACECULLING_CONFIG, e->cullMode & 0x3);
+	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHRANGE_NEAR, (u32*)&e->drNear, 2);
+	GPUCMD_AddIncrementalWrites(GPUREG_ALPHATEST_CONFIG, (u32*)&e->alphaTest, 4);
+	GPUCMD_AddWrite(GPUREG_BLEND_COLOR, e->blendClr);
+	GPUCMD_AddWrite(GPUREG_BLEND_CONFIG, e->alphaBlend);
+	GPUCMD_AddMaskedWrite(GPUREG_COLOROUTPUT_CONFIG, 2, 0x00000100);
 
 	// Wat
-	GPUCMD_AddSingleParam(0x00010062, 0);
-	GPUCMD_AddSingleParam(0x000F0118, 0);
+	GPUCMD_AddMaskedWrite(GPUREG_0062, 1, 0);
+	GPUCMD_AddWrite(GPUREG_0118, 0);
 }
