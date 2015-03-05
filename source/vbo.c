@@ -38,7 +38,7 @@ void C3D_VBOBind(C3D_VBO* vbo)
 		return;
 
 	ctx->vboPos = osConvertVirtToPhys((u32)vbo->data);
-	GPUCMD_AddSingleParam(0x000F0200, ctx->vboPos >> 3);
+	GPUCMD_AddWrite(GPUREG_ATTRIBBUFFERS_LOC, ctx->vboPos >> 3);
 }
 
 void C3D_VBODelete(C3D_VBO* vbo)

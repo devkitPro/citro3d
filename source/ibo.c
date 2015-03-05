@@ -36,7 +36,7 @@ void C3Di_IBOBind(C3D_IBO* ibo)
 
 	u32 pa = osConvertVirtToPhys((u32)ibo->data);
 	u32 offset = (pa - ctx->vboPos) &~ BIT(31);
-	GPUCMD_AddSingleParam(0x000F0227, offset | (ibo->format << 31));
+	GPUCMD_AddWrite(GPUREG_INDEXBUFFER_CONFIG, offset | (ibo->format << 31));
 }
 
 void C3D_IBODelete(C3D_IBO* ibo)
