@@ -9,7 +9,7 @@
 
 typedef struct
 {
-	u32 drNear, drFar;
+	u32 zScale, zOffset;
 	GPU_CULLMODE cullMode;
 
 	u32 alphaTest;

@@ -7,11 +7,11 @@ static inline C3D_Effect* getEffect()
 	return &ctx->effect;
 }
 
-void C3D_DepthRange(float near, float far)
+void C3D_DepthMap(float zScale, float zOffset)
 {
 	C3D_Effect* e = getEffect();
-	e->drNear = C3Di_Float24(near);
-	e->drFar = C3Di_Float24(far);
+	e->zScale = C3Di_Float24(zScale);
+	e->zOffset = C3Di_Float24(zOffset);
 }
 
 void C3D_CullFace(GPU_CULLMODE mode)
@@ -60,7 +60,7 @@ void C3Di_EffectBind(C3D_Effect* e)
 {
 	GPUCMD_AddWrite(GPUREG_006D, 0x00000001);
 	GPUCMD_AddWrite(GPUREG_FACECULLING_CONFIG, e->cullMode & 0x3);
-	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHRANGE_NEAR, (u32*)&e->drNear, 2);
+	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHMAP_SCALE, (u32*)&e->zScale, 2);
 	GPUCMD_AddIncrementalWrites(GPUREG_ALPHATEST_CONFIG, (u32*)&e->alphaTest, 4);
 	GPUCMD_AddWrite(GPUREG_BLEND_COLOR, e->blendClr);
 	GPUCMD_AddWrite(GPUREG_BLEND_CONFIG, e->alphaBlend);

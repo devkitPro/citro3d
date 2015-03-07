@@ -63,7 +63,7 @@ bool C3D_Init(size_t cmdBufSize)
 	ctx->flags = C3DiF_Active | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexAll;
 
 	// TODO: replace with direct struct access
-	C3D_DepthRange(-1.0f, 0.0f);
+	C3D_DepthMap(-1.0f, 0.0f);
 	C3D_CullFace(GPU_CULL_BACK_CCW);
 	C3D_StencilTest(false, GPU_ALWAYS, 0x00, 0xFF, 0x00);
 	C3D_StencilOp(GPU_KEEP, GPU_KEEP, GPU_KEEP);

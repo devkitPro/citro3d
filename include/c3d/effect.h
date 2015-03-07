@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 
-void C3D_DepthRange(float near, float far);
+void C3D_DepthMap(float zScale, float zOffset);
 void C3D_CullFace(GPU_CULLMODE mode);
 void C3D_StencilTest(bool enable, GPU_TESTFUNC function, int ref, int mask, int replace);
 void C3D_StencilOp(GPU_STENCILOP sfail, GPU_STENCILOP dfail, GPU_STENCILOP pass);
