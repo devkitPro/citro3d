@@ -14,6 +14,13 @@ u32 C3Di_Float24(float f)
 	return (exp >= 0) ? (man | (exp << 16) | (s << 23)) : (s << 23);
 }
 
+u32 C3Di_FloatInv24(u32 val)
+{
+	// Too lazy to copy & paste & cleanup the libctru function
+	extern u32 computeInvValue(u32 val);
+	return computeInvValue(val);
+}
+
 static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 {
 	u32 reg[4];
@@ -81,6 +88,28 @@ bool C3D_Init(size_t cmdBufSize)
 	return true;
 }
 
+void C3D_SetViewport(u32 x, u32 y, u32 w, u32 h)
+{
+	C3D_Context* ctx = C3Di_GetContext();
+	ctx->flags |= C3DiF_Viewport | C3DiF_Scissor;
+	ctx->viewport[0] = C3Di_Float24((float)w/2);
+	ctx->viewport[1] = C3Di_FloatInv24(w);
+	ctx->viewport[2] = C3Di_Float24((float)h/2);
+	ctx->viewport[3] = C3Di_FloatInv24(h);
+	ctx->viewport[4] = (y << 16) | (x & 0xFFFF);
+	ctx->scissor[0] = GPU_SCISSOR_DISABLE;
+}
+
+void C3D_SetScissor(GPU_SCISSORMODE mode, u32 x, u32 y, u32 w, u32 h)
+{
+	C3D_Context* ctx = C3Di_GetContext();
+	ctx->flags |= C3DiF_Scissor;
+	ctx->scissor[0] = mode;
+	if (mode == GPU_SCISSOR_DISABLE) return;
+	ctx->scissor[1] = (y << 16) | (x & 0xFFFF);
+	ctx->scissor[2] = ((h-1) << 16) | ((w-1) & 0xFFFF);
+}
+
 void C3Di_UpdateContext(void)
 {
 	int i;
@@ -90,6 +119,25 @@ void C3Di_UpdateContext(void)
 	{
 		ctx->flags &= ~C3DiF_NeedFinishDrawing;
 		//GPU_FinishDrawing();
+	}
+
+	if (ctx->flags & C3DiF_RenderBuf)
+	{
+		ctx->flags &= ~C3DiF_RenderBuf;
+		C3Di_RenderBufBind(ctx->rb);
+	}
+
+	if (ctx->flags & C3DiF_Viewport)
+	{
+		ctx->flags &= ~C3DiF_Viewport;
+		GPUCMD_AddIncrementalWrites(GPUREG_0041, ctx->viewport, 4);
+		GPUCMD_AddWrite(GPUREG_0068, ctx->viewport[4]);
+	}
+
+	if (ctx->flags & C3DiF_Scissor)
+	{
+		ctx->flags &= ~C3DiF_Scissor;
+		GPUCMD_AddIncrementalWrites(GPUREG_SCISSORTEST_MODE, ctx->scissor, 3);
 	}
 
 	if (ctx->flags & C3DiF_AttrBuf)

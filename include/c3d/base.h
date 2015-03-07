@@ -7,6 +7,9 @@ bool C3D_Init(size_t cmdBufSize);
 void C3D_FlushAsync(void);
 void C3D_Fini(void);
 
+void C3D_SetViewport(u32 x, u32 y, u32 w, u32 h);
+void C3D_SetScissor(GPU_SCISSORMODE mode, u32 x, u32 y, u32 w, u32 h);
+
 void C3D_DrawArray(C3D_VBO* vbo, GPU_Primitive_t primitive);
 void C3D_DrawElements(C3D_IBO* ibo, GPU_Primitive_t primitive);
 

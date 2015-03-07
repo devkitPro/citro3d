@@ -6,6 +6,7 @@
 #include <c3d/texenv.h>
 #include <c3d/effect.h>
 #include <c3d/texture.h>
+#include <c3d/renderbuffer.h>
 
 typedef struct
 {
@@ -34,6 +35,10 @@ typedef struct
 	C3D_Tex* tex[3];
 	C3D_TexEnv texEnv[6];
 
+	C3D_RenderBuf* rb;
+	u32 viewport[5];
+	u32 scissor[3];
+
 } C3D_Context;
 
 enum
@@ -42,6 +47,9 @@ enum
 	C3DiF_NeedFinishDrawing = BIT(1),
 	C3DiF_AttrBuf = BIT(2),
 	C3DiF_Effect = BIT(3),
+	C3DiF_RenderBuf = BIT(4),
+	C3DiF_Viewport = BIT(5),
+	C3DiF_Scissor = BIT(6),
 
 #define C3DiF_Tex(n) BIT(23+(n))
 	C3DiF_TexAll = 7 << 23,
@@ -56,8 +64,10 @@ static inline C3D_Context* C3Di_GetContext(void)
 }
 
 u32 C3Di_Float24(float f);
+u32 C3Di_FloatInv24(u32 val);
 void C3Di_UpdateContext(void);
 void C3Di_IBOBind(C3D_IBO* ibo);
 void C3Di_AttrInfoBind(C3D_AttrInfo* info);
 void C3Di_TexEnvBind(int id, C3D_TexEnv* env);
 void C3Di_EffectBind(C3D_Effect* effect);
+void C3Di_RenderBufBind(C3D_RenderBuf* rb);

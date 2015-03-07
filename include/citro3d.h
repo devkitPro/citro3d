@@ -21,6 +21,8 @@ extern "C" {
 #include "c3d/effect.h"
 #include "c3d/texture.h"
 
+#include "c3d/renderbuffer.h"
+
 #ifdef __cplusplus
 }
 #endif
