@@ -7,6 +7,8 @@ bool C3D_Init(size_t cmdBufSize);
 void C3D_FlushAsync(void);
 void C3D_Fini(void);
 
+void C3D_BindProgram(shaderProgram_s* program);
+
 void C3D_SetViewport(u32 x, u32 y, u32 w, u32 h);
 void C3D_SetScissor(GPU_SCISSORMODE mode, u32 x, u32 y, u32 w, u32 h);
 

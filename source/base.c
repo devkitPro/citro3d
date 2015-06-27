@@ -26,7 +26,7 @@ static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 	u32 reg[4];
 	reg[0] = tex->fmt;
 	reg[1] = osConvertVirtToPhys((u32)tex->data) >> 3;
-	reg[2] = (u32)tex->width | ((u32)tex->height << 16);
+	reg[2] = (u32)tex->height | ((u32)tex->width << 16);
 	reg[3] = tex->param;
 
 	switch (unit)
@@ -49,6 +49,28 @@ static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 			GPUCMD_AddWrite(GPUREG_TEXUNIT2_DIM, reg[2]);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT2_PARAM, reg[3]);
 			break;
+	}
+}
+
+static aptHookCookie hookCookie;
+
+static void C3Di_AptEventHook(int hookType, void* param)
+{
+	C3D_Context* ctx = C3Di_GetContext();
+
+	switch (hookType)
+	{
+		case APTHOOK_ONSUSPEND:
+		{
+			break;
+		}
+		case APTHOOK_ONRESTORE:
+		{
+			ctx->flags |= C3DiF_AttrBuf | C3DiF_Effect | C3DiF_RenderBuf
+				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program
+				| C3DiF_TexAll | C3DiF_TexEnvAll;
+			break;
+		}
 	}
 }
 
@@ -85,6 +107,8 @@ bool C3D_Init(size_t cmdBufSize)
 	for (i = 0; i < 6; i ++)
 		TexEnv_Init(&ctx->texEnv[i]);
 
+	aptHook(&hookCookie, C3Di_AptEventHook, NULL);
+
 	return true;
 }
 
@@ -119,6 +143,12 @@ void C3Di_UpdateContext(void)
 	{
 		ctx->flags &= ~C3DiF_NeedFinishDrawing;
 		//GPU_FinishDrawing();
+	}
+
+	if (ctx->flags & C3DiF_Program)
+	{
+		ctx->flags &= ~C3DiF_Program;
+		shaderProgramUse(ctx->program);
 	}
 
 	if (ctx->flags & C3DiF_RenderBuf)
@@ -211,6 +241,18 @@ void C3D_Fini(void)
 	if (!(ctx->flags & C3DiF_Active))
 		return;
 
+	aptUnhook(&hookCookie);
 	linearFree(ctx->cmdBuf);
 	ctx->flags = 0;
+}
+
+void C3D_BindProgram(shaderProgram_s* program)
+{
+	C3D_Context* ctx = C3Di_GetContext();
+
+	if (!(ctx->flags & C3DiF_Active))
+		return;
+
+	ctx->program = program;
+	ctx->flags |= C3DiF_Program;
 }

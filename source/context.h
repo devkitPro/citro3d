@@ -27,6 +27,7 @@ typedef struct
 	size_t cmdBufSize;
 
 	u32 flags;
+	shaderProgram_s* program;
 
 	u32 vboPos;
 	C3D_AttrInfo attrInfo;
@@ -50,6 +51,7 @@ enum
 	C3DiF_RenderBuf = BIT(4),
 	C3DiF_Viewport = BIT(5),
 	C3DiF_Scissor = BIT(6),
+	C3DiF_Program = BIT(7),
 
 #define C3DiF_Tex(n) BIT(23+(n))
 	C3DiF_TexAll = 7 << 23,
