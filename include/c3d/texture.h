@@ -4,11 +4,12 @@
 typedef struct
 {
 	void* data;
-	size_t size;
+
+	GPU_TEXCOLOR fmt : 4;
+	size_t size : 28;
 
 	u16 width, height;
 	u32 param;
-	GPU_TEXCOLOR fmt;
 } C3D_Tex;
 
 bool C3D_TexInit(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR format);

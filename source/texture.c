@@ -22,17 +22,18 @@ bool C3D_TexInit(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR format)
 {
 	if (tex->data) return false;
 
-	tex->size = fmtSize(format);
-	if (!tex->size) return false;
-	tex->size *= width * height;
+	u32 size = fmtSize(format);
+	if (!size) return false;
+	size *= width * height;
 
-	tex->data = linearMemAlign(tex->size, 0x80);
+	tex->data = linearMemAlign(size, 0x80);
 	if (!tex->data) return false;
 
 	tex->width = width;
 	tex->height = height;
 	tex->param = GPU_TEXTURE_MAG_FILTER(GPU_NEAREST) | GPU_TEXTURE_MIN_FILTER(GPU_NEAREST);
 	tex->fmt = format;
+	tex->size = size;
 	return true;
 }
 
