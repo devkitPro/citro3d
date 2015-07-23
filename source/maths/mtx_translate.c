@@ -9,6 +9,6 @@ void Mtx_Translate(C3D_Mtx* mtx, float x, float y, float z)
 	tm.r[1].w = y;
 	tm.r[2].w = z;
 
-	Mtx_Multiply(&om, &tm, mtx);
+	Mtx_Multiply(&om, mtx, &tm);
 	Mtx_Copy(mtx, &om);
 }
