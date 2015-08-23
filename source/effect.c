@@ -20,10 +20,10 @@ void C3D_CullFace(GPU_CULLMODE mode)
 	e->cullMode = mode;
 }
 
-void C3D_StencilTest(bool enable, GPU_TESTFUNC function, int ref, int mask, int replace)
+void C3D_StencilTest(bool enable, GPU_TESTFUNC function, int ref, int inputMask, int writeMask)
 {
 	C3D_Effect* e = getEffect();
-	e->stencilMode = (!!enable) | ((function & 7) << 4) | (replace << 8) | (ref << 16) | (mask << 24);
+	e->stencilMode = (!!enable) | ((function & 7) << 4) | (writeMask << 8) | (ref << 16) | (inputMask << 24);
 }
 
 void C3D_StencilOp(GPU_STENCILOP sfail, GPU_STENCILOP dfail, GPU_STENCILOP pass)

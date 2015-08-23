@@ -3,7 +3,7 @@
 
 void C3D_DepthMap(float zScale, float zOffset);
 void C3D_CullFace(GPU_CULLMODE mode);
-void C3D_StencilTest(bool enable, GPU_TESTFUNC function, int ref, int mask, int replace);
+void C3D_StencilTest(bool enable, GPU_TESTFUNC function, int ref, int inputMask, int writeMask);
 void C3D_StencilOp(GPU_STENCILOP sfail, GPU_STENCILOP dfail, GPU_STENCILOP pass);
 void C3D_BlendingColor(u32 color);
 void C3D_DepthTest(bool enable, GPU_TESTFUNC function, GPU_WRITEMASK writemask);

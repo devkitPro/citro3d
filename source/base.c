@@ -95,7 +95,7 @@ bool C3D_Init(size_t cmdBufSize)
 	C3D_DepthMap(-1.0f, 0.0f);
 	C3D_CullFace(GPU_CULL_BACK_CCW);
 	C3D_StencilTest(false, GPU_ALWAYS, 0x00, 0xFF, 0x00);
-	C3D_StencilOp(GPU_KEEP, GPU_KEEP, GPU_KEEP);
+	C3D_StencilOp(GPU_STENCIL_KEEP, GPU_STENCIL_KEEP, GPU_STENCIL_KEEP);
 	C3D_BlendingColor(0);
 	C3D_DepthTest(true, GPU_GREATER, GPU_WRITE_ALL);
 	C3D_AlphaTest(false, GPU_ALWAYS, 0x00);
