@@ -65,8 +65,6 @@ static inline C3D_Context* C3Di_GetContext(void)
 	return &__C3D_Context;
 }
 
-u32 C3Di_Float24(float f);
-u32 C3Di_FloatInv24(u32 val);
 void C3Di_UpdateContext(void);
 void C3Di_IBOBind(C3D_IBO* ibo);
 void C3Di_AttrInfoBind(C3D_AttrInfo* info);

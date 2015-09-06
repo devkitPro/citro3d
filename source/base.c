@@ -2,25 +2,6 @@
 
 C3D_Context __C3D_Context;
 
-u32 C3Di_Float24(float f)
-{
-	if (!f) return 0;
-	union { float t; u32 v; } u;
-	u.t = f;
-	u32 s = u.v >> 31;
-	u32 exp = ((u.v >> 23) & 0xFF) - 0x40;
-	u32 man = (u.v >> 7) & 0xFFFF;
-
-	return (exp >= 0) ? (man | (exp << 16) | (s << 23)) : (s << 23);
-}
-
-u32 C3Di_FloatInv24(u32 val)
-{
-	// Too lazy to copy & paste & cleanup the libctru function
-	extern u32 computeInvValue(u32 val);
-	return computeInvValue(val);
-}
-
 static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 {
 	u32 reg[4];
@@ -86,7 +67,6 @@ bool C3D_Init(size_t cmdBufSize)
 	ctx->cmdBuf = linearAlloc(cmdBufSize);
 	if (!ctx->cmdBuf) return false;
 
-	GPU_Reset(NULL, ctx->cmdBuf, ctx->cmdBufSize);
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 
 	ctx->flags = C3DiF_Active | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexAll;
@@ -116,10 +96,10 @@ void C3D_SetViewport(u32 x, u32 y, u32 w, u32 h)
 {
 	C3D_Context* ctx = C3Di_GetContext();
 	ctx->flags |= C3DiF_Viewport | C3DiF_Scissor;
-	ctx->viewport[0] = C3Di_Float24((float)w/2);
-	ctx->viewport[1] = C3Di_FloatInv24(w);
-	ctx->viewport[2] = C3Di_Float24((float)h/2);
-	ctx->viewport[3] = C3Di_FloatInv24(h);
+	ctx->viewport[0] = f32tof24(w / 2.0f);
+	ctx->viewport[1] = f32tof31(2.0f / w) << 1;
+	ctx->viewport[2] = f32tof24(h / 2.0f);
+	ctx->viewport[3] = f32tof31(2.0f / h) << 1;
 	ctx->viewport[4] = (y << 16) | (x & 0xFFFF);
 	ctx->scissor[0] = GPU_SCISSOR_DISABLE;
 }
@@ -199,7 +179,8 @@ void C3Di_UpdateContext(void)
 		}
 
 		ctx->flags &= ~C3DiF_TexAll;
-		GPU_SetTextureEnable(units);
+		GPUCMD_AddMaskedWrite(GPUREG_006F, 0x2, units<<8);         // enables texcoord outputs
+		GPUCMD_AddWrite(GPUREG_TEXUNITS_CONFIG, 0x00011000|units); // enables texture units
 	}
 
 	if (ctx->flags & C3DiF_TexEnvAll)
@@ -226,11 +207,13 @@ void C3D_FlushAsync(void)
 	if (ctx->flags & C3DiF_NeedFinishDrawing)
 	{
 		ctx->flags &= ~C3DiF_NeedFinishDrawing;
-		GPU_FinishDrawing();
+		GPUCMD_AddWrite(GPUREG_0111, 0x00000001);
+		GPUCMD_AddWrite(GPUREG_0110, 0x00000001);
+		GPUCMD_AddWrite(GPUREG_0063, 0x00000001);
 	}
 
 	GPUCMD_Finalize();
-	GPUCMD_FlushAndRun(NULL);
+	GPUCMD_FlushAndRun();
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 }
 

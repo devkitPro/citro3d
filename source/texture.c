@@ -69,7 +69,7 @@ void C3D_TexBind(int unitId, C3D_Tex* tex)
 void C3D_TexFlush(C3D_Tex* tex)
 {
 	if (tex->data)
-		GSPGPU_FlushDataCache(NULL, tex->data, tex->size);
+		GSPGPU_FlushDataCache(tex->data, tex->size);
 }
 
 void C3D_TexDelete(C3D_Tex* tex)

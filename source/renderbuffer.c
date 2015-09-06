@@ -41,15 +41,15 @@ void C3D_RenderBufClearAsync(C3D_RenderBuf* rb)
 {
 	u32 colorBufSize = calcColorBufSize(rb->width, rb->height, rb->colorFmt);
 	u32 depthBufSize = calcDepthBufSize(rb->width, rb->height, rb->depthFmt);
-	GX_SetMemoryFill(NULL,
+	GX_SetMemoryFill(
 		(u32*)rb->colorBuf, rb->clearColor, (u32*)((u8*)rb->colorBuf+colorBufSize), BIT(0) | ((u32)colorFmtSizes[rb->colorFmt] << 8),
-		(u32*)rb->depthBuf, rb->clearDepth, (u32*)((u8*)rb->depthBuf+depthBufSize), BIT(0) | ((u32)colorFmtSizes[rb->depthFmt] << 8));
+		(u32*)rb->depthBuf, rb->clearDepth, (u32*)((u8*)rb->depthBuf+depthBufSize), BIT(0) | ((u32)depthFmtSizes[rb->depthFmt] << 8));
 }
 
 void C3D_RenderBufTransferAsync(C3D_RenderBuf* rb, u32* frameBuf, u32 flags)
 {
 	u32 dim = GX_BUFFER_DIM((u32)rb->width, (u32)rb->height);
-	GX_SetDisplayTransfer(NULL, (u32*)rb->colorBuf, dim, frameBuf, dim, flags);
+	GX_SetDisplayTransfer((u32*)rb->colorBuf, dim, frameBuf, dim, flags);
 }
 
 void C3D_RenderBufBind(C3D_RenderBuf* rb)

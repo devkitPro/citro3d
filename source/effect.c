@@ -10,8 +10,8 @@ static inline C3D_Effect* getEffect()
 void C3D_DepthMap(float zScale, float zOffset)
 {
 	C3D_Effect* e = getEffect();
-	e->zScale = C3Di_Float24(zScale);
-	e->zOffset = C3Di_Float24(zOffset);
+	e->zScale  = f32tof24(zScale);
+	e->zOffset = f32tof24(zOffset);
 }
 
 void C3D_CullFace(GPU_CULLMODE mode)

@@ -27,7 +27,7 @@ bool C3D_VBOAddData(C3D_VBO* vbo, const void* data, size_t size, int vertexCount
 void C3D_VBOFlush(C3D_VBO* vbo)
 {
 	if (vbo->data)
-		GSPGPU_FlushDataCache(NULL, vbo->data, vbo->size);
+		GSPGPU_FlushDataCache(vbo->data, vbo->size);
 }
 
 void C3D_VBOBind(C3D_VBO* vbo)

@@ -27,7 +27,7 @@ bool C3D_IBOAddData(C3D_IBO* ibo, const void* data, int indexCount)
 void C3D_IBOFlush(C3D_IBO* ibo)
 {
 	int stride = ibo->format+1;
-	GSPGPU_FlushDataCache(NULL, ibo->data, ibo->indexCount*stride);
+	GSPGPU_FlushDataCache(ibo->data, ibo->indexCount*stride);
 }
 
 void C3Di_IBOBind(C3D_IBO* ibo)
