@@ -30,15 +30,6 @@ void C3D_IBOFlush(C3D_IBO* ibo)
 	GSPGPU_FlushDataCache(ibo->data, ibo->indexCount*stride);
 }
 
-void C3Di_IBOBind(C3D_IBO* ibo)
-{
-	C3D_Context* ctx = C3Di_GetContext();
-
-	u32 pa = osConvertVirtToPhys((u32)ibo->data);
-	u32 offset = (pa - ctx->vboPos) &~ BIT(31);
-	GPUCMD_AddWrite(GPUREG_INDEXBUFFER_CONFIG, offset | (ibo->format << 31));
-}
-
 void C3D_IBODelete(C3D_IBO* ibo)
 {
 	if (!ibo->data) return;

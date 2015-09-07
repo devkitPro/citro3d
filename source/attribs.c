@@ -5,32 +5,33 @@
 void AttrInfo_Init(C3D_AttrInfo* info)
 {
 	memset(info, 0, sizeof(*info));
-	info->cfg.flags[1] = 0xFFF << 16;
+	info->flags[1] = 0xFFF << 16;
 }
 
-bool AttrInfo_AddParam(C3D_AttrInfo* info, GPU_FORMATS format, int count)
+int AttrInfo_AddLoader(C3D_AttrInfo* info, int regId, GPU_FORMATS format, int count)
 {
-	if (info->attrCount == 12) return false;
+	if (info->attrCount == 12) return -1;
 	int id = info->attrCount++;
+	if (regId < 0) regId = id;
 	if (id < 8)
-		info->cfg.flags[0] |= GPU_ATTRIBFMT(id, count, format);
+		info->flags[0] |= GPU_ATTRIBFMT(id, count, format);
 	else
-		info->cfg.flags[1] |= GPU_ATTRIBFMT(id-8, count, format);
-	info->cfg.flags[1] &= ~BIT(id+16);
-	info->cfg.flags[1] = (info->cfg.flags[1] &~ 0xF0000000) | (id << 28);
-	info->permutation |= id << (id*4);
-	return true;
+		info->flags[1] |= GPU_ATTRIBFMT(id-8, count, format);
+
+	info->flags[1] = (info->flags[1] &~ (0xF0000000 | BIT(id+16))) | (id << 28);
+	info->permutation |= regId << (id*4);
+	return id;
 }
 
-bool AttrInfo_AddBuffer(C3D_AttrInfo* info, ptrdiff_t offset, ptrdiff_t stride, int attribCount, u64 permutation)
+int AttrInfo_AddFixed(C3D_AttrInfo* info, int regId)
 {
-	if (info->bufCount == 12) return false;
-	int id = info->bufCount++;
-	C3D_AttrBufCfg* buf = &info->cfg.buffers[id];
-	buf->offset = offset;
-	buf->flags[0] = permutation & 0xFFFFFFFF;
-	buf->flags[1] = (permutation >> 32) | (stride << 16) | (attribCount << 28);
-	return true;
+	if (info->attrCount == 12) return -1;
+	int id = info->attrCount++;
+	if (regId < 0) regId = id;
+
+	info->flags[1] = (info->flags[1] &~ 0xF0000000) | (id << 28);
+	info->permutation |= regId << (id*4);
+	return id;
 }
 
 C3D_AttrInfo* C3D_GetAttrInfo(void)
@@ -40,7 +41,7 @@ C3D_AttrInfo* C3D_GetAttrInfo(void)
 	if (!(ctx->flags & C3DiF_Active))
 		return NULL;
 
-	ctx->flags |= C3DiF_AttrBuf;
+	ctx->flags |= C3DiF_AttrInfo;
 	return &ctx->attrInfo;
 }
 
@@ -51,13 +52,14 @@ void C3D_SetAttrInfo(C3D_AttrInfo* info)
 	if (!(ctx->flags & C3DiF_Active))
 		return;
 
-	memcpy(&ctx->attrInfo, info, sizeof(*info));
-	ctx->flags |= C3DiF_AttrBuf;
+	if (info != &ctx->attrInfo)
+		memcpy(&ctx->attrInfo, info, sizeof(*info));
+	ctx->flags |= C3DiF_AttrInfo;
 }
 
 void C3Di_AttrInfoBind(C3D_AttrInfo* info)
 {
-	GPUCMD_AddIncrementalWrites(GPUREG_ATTRIBBUFFERS_FORMAT_LOW, (u32*)&info->cfg, sizeof(C3D_AttrCfg)/sizeof(u32));
+	GPUCMD_AddIncrementalWrites(GPUREG_ATTRIBBUFFERS_FORMAT_LOW, (u32*)info->flags, sizeof(info->flags)/sizeof(u32));
 	GPUCMD_AddMaskedWrite(GPUREG_VSH_INPUTBUFFER_CONFIG, 0xB, 0xA0000000 | (info->attrCount - 1));
 	GPUCMD_AddWrite(GPUREG_0242, info->attrCount - 1);
 	GPUCMD_AddIncrementalWrites(GPUREG_VSH_ATTRIBUTES_PERMUTATION_LOW, (u32*)&info->permutation, 2);

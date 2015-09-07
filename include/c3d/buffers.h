@@ -3,6 +3,25 @@
 
 typedef struct
 {
+	u32 offset;
+	u32 flags[2];
+} C3D_BufCfg;
+
+typedef struct
+{
+	u32 base_paddr;
+	int bufCount;
+	C3D_BufCfg buffers[12];
+} C3D_BufInfo;
+
+void BufInfo_Init(C3D_BufInfo* info);
+int  BufInfo_Add(C3D_BufInfo* info, const void* data, ptrdiff_t stride, int attribCount, u64 permutation);
+
+C3D_BufInfo* C3D_GetBufInfo(void);
+void C3D_SetBufInfo(C3D_BufInfo* info);
+
+typedef struct
+{
 	void* data;
 	size_t capacity;
 	size_t size;
@@ -12,7 +31,6 @@ typedef struct
 bool C3D_VBOInit(C3D_VBO* vbo, size_t capacity);
 bool C3D_VBOAddData(C3D_VBO* vbo, const void* data, size_t size, int vertexCount);
 void C3D_VBOFlush(C3D_VBO* vbo);
-void C3D_VBOBind(C3D_VBO* vbo);
 void C3D_VBODelete(C3D_VBO* vbo);
 
 typedef struct

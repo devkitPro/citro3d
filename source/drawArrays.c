@@ -1,8 +1,7 @@
 #include "context.h"
 
-void C3D_DrawArray(C3D_VBO* vbo, GPU_Primitive_t primitive)
+void C3D_DrawArrays(GPU_Primitive_t primitive, int first, int size)
 {
-	C3D_VBOBind(vbo);
 	C3Di_UpdateContext();
 
 	// Set primitive type
@@ -11,7 +10,9 @@ void C3D_DrawArray(C3D_VBO* vbo, GPU_Primitive_t primitive)
 	// The index buffer is not used, but 0x000F0227 is still required
 	GPUCMD_AddWrite(GPUREG_INDEXBUFFER_CONFIG, 0x80000000);
 	// Number of vertices
-	GPUCMD_AddWrite(GPUREG_NUMVERTICES, vbo->vertexCount);
+	GPUCMD_AddWrite(GPUREG_NUMVERTICES, size);
+	// First vertex
+	GPUCMD_AddWrite(GPUREG_DRAW_VERTEX_OFFSET, first);
 
 	// Unknown commands
 	GPUCMD_AddMaskedWrite(GPUREG_0253, 1, 0x00000001);

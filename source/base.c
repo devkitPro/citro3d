@@ -47,7 +47,7 @@ static void C3Di_AptEventHook(int hookType, void* param)
 		}
 		case APTHOOK_ONRESTORE:
 		{
-			ctx->flags |= C3DiF_AttrBuf | C3DiF_Effect | C3DiF_RenderBuf
+			ctx->flags |= C3DiF_AttrInfo | C3DiF_BufInfo | C3DiF_Effect | C3DiF_RenderBuf
 				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program
 				| C3DiF_TexAll | C3DiF_TexEnvAll;
 			break;
@@ -150,10 +150,16 @@ void C3Di_UpdateContext(void)
 		GPUCMD_AddIncrementalWrites(GPUREG_SCISSORTEST_MODE, ctx->scissor, 3);
 	}
 
-	if (ctx->flags & C3DiF_AttrBuf)
+	if (ctx->flags & C3DiF_AttrInfo)
 	{
-		ctx->flags &= ~C3DiF_AttrBuf;
+		ctx->flags &= ~C3DiF_AttrInfo;
 		C3Di_AttrInfoBind(&ctx->attrInfo);
+	}
+
+	if (ctx->flags & C3DiF_BufInfo)
+	{
+		ctx->flags &= ~C3DiF_BufInfo;
+		C3Di_BufInfoBind(&ctx->bufInfo);
 	}
 
 	if (ctx->flags & C3DiF_Effect)

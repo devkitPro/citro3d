@@ -1,16 +1,21 @@
 #include "context.h"
 
-void C3D_DrawElements(C3D_IBO* ibo, GPU_Primitive_t primitive)
+void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void* indices)
 {
+	C3D_Context* ctx = C3Di_GetContext();
+	u32 pa = osConvertVirtToPhys((u32)indices);
+	u32 base = ctx->bufInfo.base_paddr;
+	if (pa < base) return;
+
 	C3Di_UpdateContext();
 
 	// Set primitive type
 	GPUCMD_AddMaskedWrite(GPUREG_PRIMITIVE_CONFIG, 2, primitive);
 	GPUCMD_AddMaskedWrite(GPUREG_025F, 2, 0x00000001);
-	// Bind the IBO
-	C3Di_IBOBind(ibo);
+	// Configure the index buffer
+	GPUCMD_AddWrite(GPUREG_INDEXBUFFER_CONFIG, (pa - base) | (type << 31));
 	// Number of vertices
-	GPUCMD_AddWrite(GPUREG_NUMVERTICES, ibo->indexCount);
+	GPUCMD_AddWrite(GPUREG_NUMVERTICES, count);
 
 	// Unknown commands
 	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG, 2, 0x00000100);
