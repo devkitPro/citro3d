@@ -64,7 +64,7 @@ void C3Di_EffectBind(C3D_Effect* e)
 	GPUCMD_AddIncrementalWrites(GPUREG_ALPHATEST_CONFIG, (u32*)&e->alphaTest, 4);
 	GPUCMD_AddWrite(GPUREG_BLEND_COLOR, e->blendClr);
 	GPUCMD_AddWrite(GPUREG_BLEND_CONFIG, e->alphaBlend);
-	GPUCMD_AddMaskedWrite(GPUREG_COLOROUTPUT_CONFIG, 2, 0x00000100);
+	GPUCMD_AddMaskedWrite(GPUREG_BLEND_ENABLE, 2, 0x00000100);
 
 	// Wat
 	GPUCMD_AddMaskedWrite(GPUREG_0062, 1, 0);

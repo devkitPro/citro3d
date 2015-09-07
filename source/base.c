@@ -140,8 +140,8 @@ void C3Di_UpdateContext(void)
 	if (ctx->flags & C3DiF_Viewport)
 	{
 		ctx->flags &= ~C3DiF_Viewport;
-		GPUCMD_AddIncrementalWrites(GPUREG_0041, ctx->viewport, 4);
-		GPUCMD_AddWrite(GPUREG_0068, ctx->viewport[4]);
+		GPUCMD_AddIncrementalWrites(GPUREG_VIEWPORT_WIDTH, ctx->viewport, 4);
+		GPUCMD_AddWrite(GPUREG_VIEWPORT_XY, ctx->viewport[4]);
 	}
 
 	if (ctx->flags & C3DiF_Scissor)
@@ -185,8 +185,8 @@ void C3Di_UpdateContext(void)
 		}
 
 		ctx->flags &= ~C3DiF_TexAll;
-		GPUCMD_AddMaskedWrite(GPUREG_006F, 0x2, units<<8);         // enables texcoord outputs
-		GPUCMD_AddWrite(GPUREG_TEXUNITS_CONFIG, 0x00011000|units); // enables texture units
+		GPUCMD_AddMaskedWrite(GPUREG_006F, 0x2, units<<8);        // enables texcoord outputs
+		GPUCMD_AddWrite(GPUREG_TEXUNIT_ENABLE, 0x00011000|units); // enables texture units
 	}
 
 	if (ctx->flags & C3DiF_TexEnvAll)
@@ -213,8 +213,8 @@ void C3D_FlushAsync(void)
 	if (ctx->flags & C3DiF_NeedFinishDrawing)
 	{
 		ctx->flags &= ~C3DiF_NeedFinishDrawing;
-		GPUCMD_AddWrite(GPUREG_0111, 0x00000001);
-		GPUCMD_AddWrite(GPUREG_0110, 0x00000001);
+		GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 0x00000001);
+		GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 0x00000001);
 		GPUCMD_AddWrite(GPUREG_0063, 0x00000001);
 	}
 

@@ -64,23 +64,22 @@ void C3Di_RenderBufBind(C3D_RenderBuf* rb)
 {
 	u32 param[4];
 
-	param[0] = param[1] = 1;
-	GPUCMD_AddIncrementalWrites(GPUREG_0110, param, 2);
+	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 1);
 
 	param[0] = osConvertVirtToPhys((u32)rb->depthBuf) >> 3;
 	param[1] = osConvertVirtToPhys((u32)rb->colorBuf) >> 3;
 	param[2] = 0x01000000 | (((u32)(rb->height-1) & 0xFFF) << 12) | (rb->width & 0xFFF);
 	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHBUFFER_LOC, param, 3);
 
-	GPUCMD_AddWrite(GPUREG_006E, param[2]); //?
+	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_DIM2, param[2]); //?
 	GPUCMD_AddWrite(GPUREG_DEPTHBUFFER_FORMAT, rb->depthFmt);
 	GPUCMD_AddWrite(GPUREG_COLORBUFFER_FORMAT, ((u32)rb->colorFmt << 16) | colorFmtSizes[rb->colorFmt]);
-	GPUCMD_AddWrite(GPUREG_011B, 0x00000000); //?
+	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_BLOCK32, 0x00000000); //?
 
 	// "Enable depth buffer" (?)
 	param[0] = param[1] = 0xF;
 	param[2] = param[3] = 0x2;
-	GPUCMD_AddIncrementalWrites(GPUREG_0112, param, 4);
+	GPUCMD_AddIncrementalWrites(GPUREG_COLORBUFFER_READ, param, 4);
 }
 
 void C3D_RenderBufDelete(C3D_RenderBuf* rb)
