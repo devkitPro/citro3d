@@ -3,23 +3,17 @@
 
 typedef u32 C3D_IVec;
 
-typedef struct
+typedef union
 {
-	union
-	{
-		struct { float w, z, y, x; };
-		float c[4];
-	};
+	struct { float w, z, y, x; };
+	float c[4];
 } C3D_FVec;
 
 // Row-major 4x4 matrix
-typedef struct
+typedef union
 {
-	union
-	{
-		C3D_FVec r[4]; // Rows are vectors
-		float m[4*4];
-	};
+	C3D_FVec r[4]; // Rows are vectors
+	float m[4*4];
 } C3D_Mtx;
 
 static inline C3D_IVec IVec_Pack(u8 x, u8 y, u8 z, u8 w)
