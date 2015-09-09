@@ -25,6 +25,14 @@ static inline C3D_IVec* C3D_IVUnifWritePtr(GPU_SHADER_TYPE type, int id)
 	return &C3D_IVUnif[type][id];
 }
 
+static inline void C3D_FVUnifMtx(GPU_SHADER_TYPE type, int id, C3D_Mtx* mtx)
+{
+	int i;
+	C3D_FVec* ptr = C3D_FVUnifWritePtr(type, id, 4);
+	for (i = 0; i < 4; i ++)
+		ptr[i] = mtx->r[i];
+}
+
 static inline void C3D_FVUnifSet(GPU_SHADER_TYPE type, int id, float x, float y, float z, float w)
 {
 	C3D_FVec* ptr = C3D_FVUnifWritePtr(type, id, 1);
