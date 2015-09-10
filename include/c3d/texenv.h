@@ -7,7 +7,7 @@ typedef struct
 	u16 opRgb, opAlpha;
 	u16 funcRgb, funcAlpha;
 	u32 color;
-	u32 unknown;
+	u16 scaleRgb, scaleAlpha;
 } C3D_TexEnv;
 
 enum
@@ -21,6 +21,9 @@ void TexEnv_Init(C3D_TexEnv* env);
 
 C3D_TexEnv* C3D_GetTexEnv(int id);
 void C3D_SetTexEnv(int id, C3D_TexEnv* env);
+
+void C3D_TexEnvBufUpdate(int mode, int mask);
+void C3D_TexEnvBufColor(u32 color);
 
 static inline void C3D_TexEnvSrc(C3D_TexEnv* env, int mode, int s1, int s2, int s3)
 {
@@ -51,4 +54,12 @@ static inline void C3D_TexEnvFunc(C3D_TexEnv* env, int mode, int param)
 static inline void C3D_TexEnvColor(C3D_TexEnv* env, u32 color)
 {
 	env->color = color;
+}
+
+static inline void C3D_TexEnvScale(C3D_TexEnv* env, int mode, int param)
+{
+	if (mode & C3D_RGB)
+		env->scaleRgb = param;
+	if (mode & C3D_Alpha)
+		env->scaleAlpha = param;
 }

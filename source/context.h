@@ -36,6 +36,8 @@ typedef struct
 	C3D_Tex* tex[3];
 	C3D_TexEnv texEnv[6];
 
+	u32 texEnvBuf, texEnvBufClr;
+
 	C3D_RenderBuf* rb;
 	u32 viewport[5];
 	u32 scissor[3];
@@ -53,6 +55,7 @@ enum
 	C3DiF_Viewport = BIT(6),
 	C3DiF_Scissor = BIT(7),
 	C3DiF_Program = BIT(8),
+	C3DiF_TexEnvBuf = BIT(9),
 
 #define C3DiF_Tex(n) BIT(23+(n))
 	C3DiF_TexAll = 7 << 23,

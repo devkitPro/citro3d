@@ -49,7 +49,7 @@ static void C3Di_AptEventHook(int hookType, void* param)
 		{
 			ctx->flags |= C3DiF_AttrInfo | C3DiF_BufInfo | C3DiF_Effect | C3DiF_RenderBuf
 				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program
-				| C3DiF_TexAll | C3DiF_TexEnvAll;
+				| C3DiF_TexAll | C3DiF_TexEnvBuf | C3DiF_TexEnvAll;
 			break;
 		}
 	}
@@ -69,7 +69,7 @@ bool C3D_Init(size_t cmdBufSize)
 
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 
-	ctx->flags = C3DiF_Active | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexAll;
+	ctx->flags = C3DiF_Active | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexAll;
 
 	// TODO: replace with direct struct access
 	C3D_DepthMap(-1.0f, 0.0f);
@@ -80,6 +80,9 @@ bool C3D_Init(size_t cmdBufSize)
 	C3D_DepthTest(true, GPU_GREATER, GPU_WRITE_ALL);
 	C3D_AlphaTest(false, GPU_ALWAYS, 0x00);
 	C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA);
+
+	ctx->texEnvBuf = 0;
+	ctx->texEnvBufClr = 0xFFFFFFFF;
 
 	for (i = 0; i < 3; i ++)
 		ctx->tex[i] = NULL;
@@ -187,6 +190,13 @@ void C3Di_UpdateContext(void)
 		ctx->flags &= ~C3DiF_TexAll;
 		GPUCMD_AddMaskedWrite(GPUREG_006F, 0x2, units<<8);        // enables texcoord outputs
 		GPUCMD_AddWrite(GPUREG_TEXUNIT_ENABLE, 0x00011000|units); // enables texture units
+	}
+
+	if (ctx->flags & C3DiF_TexEnvBuf)
+	{
+		ctx->flags &= ~C3DiF_TexEnvBuf;
+		GPUCMD_AddMaskedWrite(GPUREG_TEXENV_UPDATE_BUFFER, 0x2, ctx->texEnvBuf);
+		GPUCMD_AddWrite(GPUREG_TEXENV_BUFFER_COLOR, ctx->texEnvBufClr);
 	}
 
 	if (ctx->flags & C3DiF_TexEnvAll)
