@@ -49,7 +49,11 @@ static void C3Di_AptEventHook(int hookType, void* param)
 		{
 			ctx->flags |= C3DiF_AttrInfo | C3DiF_BufInfo | C3DiF_Effect | C3DiF_RenderBuf
 				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program
-				| C3DiF_TexAll | C3DiF_TexEnvBuf | C3DiF_TexEnvAll;
+				| C3DiF_TexAll | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_LightEnv;
+
+			C3D_LightEnv* env = ctx->lightEnv;
+			if (env)
+				env->Dirty(env);
 			break;
 		}
 	}
@@ -208,6 +212,19 @@ void C3Di_UpdateContext(void)
 		}
 		ctx->flags &= ~C3DiF_TexEnvAll;
 	}
+
+	C3D_LightEnv* env = ctx->lightEnv;
+
+	if (ctx->flags & C3DiF_LightEnv)
+	{
+		u32 enable = env != NULL;
+		GPUCMD_AddWrite(GPUREG_LIGHTING_ENABLE0, enable);
+		GPUCMD_AddWrite(GPUREG_LIGHTING_ENABLE1, !enable);
+		ctx->flags &= ~C3DiF_LightEnv;
+	}
+
+	if (env)
+		env->Update(env);
 
 	C3D_UpdateUniforms(GPU_VERTEX_SHADER);
 	C3D_UpdateUniforms(GPU_GEOMETRY_SHADER);

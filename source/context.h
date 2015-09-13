@@ -6,6 +6,7 @@
 #include <c3d/texenv.h>
 #include <c3d/effect.h>
 #include <c3d/texture.h>
+#include <c3d/light.h>
 #include <c3d/renderbuffer.h>
 
 typedef struct
@@ -32,6 +33,7 @@ typedef struct
 	C3D_AttrInfo attrInfo;
 	C3D_BufInfo bufInfo;
 	C3D_Effect effect;
+	C3D_LightEnv* lightEnv;
 
 	C3D_Tex* tex[3];
 	C3D_TexEnv texEnv[6];
@@ -56,6 +58,7 @@ enum
 	C3DiF_Scissor = BIT(7),
 	C3DiF_Program = BIT(8),
 	C3DiF_TexEnvBuf = BIT(9),
+	C3DiF_LightEnv = BIT(10),
 
 #define C3DiF_Tex(n) BIT(23+(n))
 	C3DiF_TexAll = 7 << 23,
@@ -75,3 +78,5 @@ void C3Di_BufInfoBind(C3D_BufInfo* info);
 void C3Di_TexEnvBind(int id, C3D_TexEnv* env);
 void C3Di_EffectBind(C3D_Effect* effect);
 void C3Di_RenderBufBind(C3D_RenderBuf* rb);
+
+void C3Di_LightMtlBlend(C3D_Light* light);
