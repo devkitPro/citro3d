@@ -32,14 +32,15 @@ static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 			if (!(light->flags & C3DF_Light_Enabled)) continue;
 			conf->permutation |= GPU_LIGHTPERM(conf->numLights++, i);
 		}
+		if (conf->numLights > 0) conf->numLights --;
 		env->flags &= ~C3DF_LightEnv_LCDirty;
 		env->flags |= C3DF_LightEnv_Dirty;
 	}
 
-	if (env->flags & C3DF_Light_MatDirty)
+	if (env->flags & C3DF_LightEnv_MtlDirty)
 	{
 		C3Di_LightEnvMtlBlend(env);
-		env->flags &= ~C3DF_Light_MatDirty;
+		env->flags &= ~C3DF_LightEnv_MtlDirty;
 		env->flags |= C3DF_LightEnv_Dirty;
 	}
 
@@ -124,7 +125,7 @@ void C3D_LightEnvInit(C3D_LightEnv* env)
 	env->flags = C3DF_LightEnv_Dirty;
 	env->conf.config[0] = (4<<8) | BIT(27) | BIT(31);
 	env->conf.config[1] = ~0;
-	env->conf.lutInput.abs = 0xFF;
+	env->conf.lutInput.abs = 0x2222222;
 }
 
 void C3D_LightEnvBind(C3D_LightEnv* env)
@@ -141,10 +142,10 @@ void C3D_LightEnvBind(C3D_LightEnv* env)
 	ctx->lightEnv = env;
 }
 
-void C3D_LightEnvMaterial(C3D_LightEnv* env, C3D_Material* mtl)
+void C3D_LightEnvMaterial(C3D_LightEnv* env, const C3D_Material* mtl)
 {
 	int i;
-	memcpy(&env->material, mtl, sizeof(C3D_Material));
+	memcpy(&env->material, mtl, sizeof(*mtl));
 	env->flags |= C3DF_LightEnv_MtlDirty;
 	for (i = 0; i < 8; i ++)
 	{

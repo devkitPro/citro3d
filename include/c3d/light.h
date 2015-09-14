@@ -61,7 +61,7 @@ struct C3D_LightEnv_t
 void C3D_LightEnvInit(C3D_LightEnv* env);
 void C3D_LightEnvBind(C3D_LightEnv* env);
 
-void C3D_LightEnvMaterial(C3D_LightEnv* env, C3D_Material* mtl);
+void C3D_LightEnvMaterial(C3D_LightEnv* env, const C3D_Material* mtl);
 void C3D_LightEnvAmbient(C3D_LightEnv* env, float r, float g, float b);
 
 //-----------------------------------------------------------------------------

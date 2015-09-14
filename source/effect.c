@@ -66,7 +66,7 @@ void C3Di_EffectBind(C3D_Effect* e)
 	GPUCMD_AddWrite(GPUREG_BLEND_CONFIG, e->alphaBlend);
 	GPUCMD_AddMaskedWrite(GPUREG_BLEND_ENABLE, 2, 0x00000100);
 
-	// Wat
+	// Disable early depth test?
 	GPUCMD_AddMaskedWrite(GPUREG_0062, 1, 0);
 	GPUCMD_AddWrite(GPUREG_0118, 0);
 }

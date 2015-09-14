@@ -27,6 +27,7 @@ int C3D_LightInit(C3D_Light* light, C3D_LightEnv* env)
 			break;
 	if (i == 8) return -1;
 
+	env->lights[i] = light;
 	light->flags = C3DF_Light_Enabled | C3DF_Light_Dirty | C3DF_Light_MatDirty;
 	light->id = i;
 	light->parent = env;
@@ -92,10 +93,10 @@ static void C3Di_EnableCommon(C3D_Light* light, bool enable, u32 bit)
 	C3D_LightEnv* env = light->parent;
 	u32* var = &env->conf.config[1];
 
-	if ((*var & bit) == bit)
+	if ((*var & bit) ^ bit)
 		return;
 
-	if (enable)
+	if (!enable)
 		*var |= bit;
 	else
 		*var &= ~bit;
