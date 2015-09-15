@@ -120,6 +120,15 @@ void C3D_LightSpotDir(C3D_Light* light, float x, float y, float z)
 	light->flags |= C3DF_Light_Dirty;
 }
 
+void C3D_LightSpotLut(C3D_Light* light, C3D_LightLut* lut)
+{
+	bool hasLut = lut != NULL;
+	C3Di_EnableCommon(light, hasLut, GPU_LC1_SPOTBIT(light->id));
+	light->lut_SP = lut;
+	if (hasLut)
+		light->flags |= C3DF_Light_SPDirty;
+}
+
 void C3D_LightDistAttnEnable(C3D_Light* light, bool enable)
 {
 	C3Di_EnableCommon(light, enable, GPU_LC1_ATTNBIT(light->id));
@@ -131,4 +140,13 @@ void C3D_LightDistAttn(C3D_Light* light, float bias, float scale)
 	light->conf.distAttnBias  = f32tof20(bias);
 	light->conf.distAttnScale = f32tof20(scale);
 	light->flags |= C3DF_Light_Dirty;
+}
+
+void C3D_LightDistAttnLut(C3D_Light* light, C3D_LightLut* lut)
+{
+	bool hasLut = lut != NULL;
+	C3Di_EnableCommon(light, hasLut, GPU_LC1_ATTNBIT(light->id));
+	light->lut_DA = lut;
+	if (hasLut)
+		light->flags |= C3DF_Light_DADirty;
 }

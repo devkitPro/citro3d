@@ -16,6 +16,14 @@ static void C3Di_LightEnvMtlBlend(C3D_LightEnv* env)
 	env->conf.ambient = color;
 }
 
+static void C3Di_LightLutUpload(u32 config, C3D_LightLut* lut)
+{
+	int i;
+	GPUCMD_AddWrite(GPUREG_LIGHTING_LUT_INDEX, config);
+	for (i = 0; i < 256; i += 8)
+		GPUCMD_AddWrites(GPUREG_LIGHTING_LUT_DATA0, &lut->data[i], 8);
+}
+
 static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 {
 	int i;
@@ -57,8 +65,9 @@ static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 	{
 		for (i = 0; i < 5; i ++)
 		{
+			static const u8 lutIds[] = { 0, 1, 3, 4, 5, 6 };
 			if (!(env->flags & C3DF_LightEnv_LutDirty(i))) continue;
-			// TODO: Upload LUT
+			C3Di_LightLutUpload(GPU_LIGHTLUTIDX(GPU_LUTSELECT_COMMON, (u32)lutIds[i], 0), env->luts[i]);
 		}
 
 		env->flags &= ~C3DF_LightEnv_LutDirtyAll;
@@ -84,13 +93,13 @@ static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 
 		if (light->flags & C3DF_Light_SPDirty)
 		{
-			// TODO: Upload LUT
+			C3Di_LightLutUpload(GPU_LIGHTLUTIDX(GPU_LUTSELECT_SP, i, 0), light->lut_SP);
 			light->flags &= ~C3DF_Light_SPDirty;
 		}
 
 		if (light->flags & C3DF_Light_DADirty)
 		{
-			// TODO: Upload LUT
+			C3Di_LightLutUpload(GPU_LIGHTLUTIDX(GPU_LUTSELECT_DA, i, 0), light->lut_DA);
 			light->flags &= ~C3DF_Light_DADirty;
 		}
 	}
@@ -160,4 +169,30 @@ void C3D_LightEnvAmbient(C3D_LightEnv* env, float r, float g, float b)
 	env->ambient[1] = g;
 	env->ambient[2] = r;
 	env->flags |= C3DF_LightEnv_MtlDirty;
+}
+
+void C3D_LightEnvLut(C3D_LightEnv* env, int lutId, int input, bool abs, C3D_LightLut* lut)
+{
+	static const s8 ids[] = { 0, 1, -1, 2, 3, 4, 5, -1 };
+	int id = ids[lutId];
+	if (id >= 0)
+	{
+		env->luts[id] = lut;
+		if (lut)
+		{
+			env->conf.config[1] &= ~GPU_LC1_LUTBIT(lutId);
+			env->flags |= C3DF_LightEnv_LutDirty(id);
+		} else
+			env->luts[id] = NULL;
+	}
+
+	env->conf.lutInput.select &= ~GPU_LIGHTLUTINPUT(lutId, 0xF);
+	env->conf.lutInput.select |=  GPU_LIGHTLUTINPUT(lutId, input);
+
+	u32 absbit = 1 << (lutId*4 + 1);
+	env->conf.lutInput.abs &= ~absbit;
+	if (!abs)
+		env->conf.lutInput.abs |= absbit;
+
+	env->flags |= C3DF_LightEnv_Dirty;
 }
