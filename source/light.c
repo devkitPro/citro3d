@@ -31,7 +31,6 @@ int C3D_LightInit(C3D_Light* light, C3D_LightEnv* env)
 	light->flags = C3DF_Light_Enabled | C3DF_Light_Dirty | C3DF_Light_MatDirty;
 	light->id = i;
 	light->parent = env;
-	light->conf.config = BIT(0);
 
 	env->flags |= C3DF_LightEnv_LCDirty;
 	return i;
@@ -81,7 +80,7 @@ void C3D_LightPosition(C3D_Light* light, C3D_FVec* pos)
 {
 	// Enable/disable positional light depending on W coordinate
 	light->conf.config &= ~BIT(0);
-	light->conf.config |= (pos->w != 0.0);
+	light->conf.config |= (pos->w == 0.0);
 	light->conf.position[0] = f32tof16(pos->x);
 	light->conf.position[1] = f32tof16(pos->y);
 	light->conf.position[2] = f32tof16(pos->z);

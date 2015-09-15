@@ -220,6 +220,7 @@ void C3Di_UpdateContext(void)
 		u32 enable = env != NULL;
 		GPUCMD_AddWrite(GPUREG_LIGHTING_ENABLE0, enable);
 		GPUCMD_AddWrite(GPUREG_LIGHTING_ENABLE1, !enable);
+		GPUCMD_AddMaskedWrite(GPUREG_006F, 0x8, enable<<24); // Enable normalquat (& view?) outputs
 		ctx->flags &= ~C3DiF_LightEnv;
 	}
 
