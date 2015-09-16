@@ -71,3 +71,4 @@ void Mtx_RotateZ(C3D_Mtx* mtx, float angle, bool bRightSide);
 // Special versions of the projection matrices that take the 3DS' screen orientation into account
 void Mtx_OrthoTilt(C3D_Mtx* mtx, float left, float right, float bottom, float top, float near, float far);
 void Mtx_PerspTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far);
+void Mtx_PerspStereoTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, float iod, float screen);
