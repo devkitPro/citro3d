@@ -49,7 +49,7 @@ typedef struct
 enum
 {
 	C3DiF_Active = BIT(0),
-	C3DiF_NeedFinishDrawing = BIT(1),
+	C3DiF_DrawUsed = BIT(1),
 	C3DiF_AttrInfo = BIT(2),
 	C3DiF_BufInfo = BIT(3),
 	C3DiF_Effect = BIT(4),

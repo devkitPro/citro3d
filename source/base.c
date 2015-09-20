@@ -126,12 +126,6 @@ void C3Di_UpdateContext(void)
 	int i;
 	C3D_Context* ctx = C3Di_GetContext();
 
-	if (ctx->flags & C3DiF_NeedFinishDrawing)
-	{
-		ctx->flags &= ~C3DiF_NeedFinishDrawing;
-		//GPU_FinishDrawing();
-	}
-
 	if (ctx->flags & C3DiF_Program)
 	{
 		ctx->flags &= ~C3DiF_Program;
@@ -141,6 +135,11 @@ void C3Di_UpdateContext(void)
 	if (ctx->flags & C3DiF_RenderBuf)
 	{
 		ctx->flags &= ~C3DiF_RenderBuf;
+		if (ctx->flags & C3DiF_DrawUsed)
+		{
+			ctx->flags &= ~C3DiF_DrawUsed;
+			GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 1);
+		}
 		C3Di_RenderBufBind(ctx->rb);
 	}
 
@@ -238,12 +237,12 @@ void C3D_FlushAsync(void)
 	if (!(ctx->flags & C3DiF_Active))
 		return;
 
-	if (ctx->flags & C3DiF_NeedFinishDrawing)
+	if (ctx->flags & C3DiF_DrawUsed)
 	{
-		ctx->flags &= ~C3DiF_NeedFinishDrawing;
-		GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 0x00000001);
-		GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 0x00000001);
-		GPUCMD_AddWrite(GPUREG_0063, 0x00000001);
+		ctx->flags &= ~C3DiF_DrawUsed;
+		GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 1);
+		GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 1);
+		GPUCMD_AddWrite(GPUREG_0063, 1); // Does this even do anything at all?
 	}
 
 	GPUCMD_Finalize();

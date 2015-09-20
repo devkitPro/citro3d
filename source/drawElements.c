@@ -28,5 +28,5 @@ void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void
 	GPUCMD_AddMaskedWrite(GPUREG_0245, 1, 0x00000001);
 	GPUCMD_AddWrite(GPUREG_0231, 0x00000001);
 
-	C3Di_GetContext()->flags |= C3DiF_NeedFinishDrawing;
+	C3Di_GetContext()->flags |= C3DiF_DrawUsed;
 }

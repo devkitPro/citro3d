@@ -23,16 +23,25 @@ bool C3D_RenderBufInit(C3D_RenderBuf* rb, int width, int height, int colorFmt, i
 	rb->height = height;
 	rb->clearColor = rb->clearDepth = 0;
 
-	rb->colorBuf = vramAlloc(calcColorBufSize(width, height, colorFmt));
-	if (!rb->colorBuf) return false;
-
-	rb->depthBuf = vramAlloc(calcDepthBufSize(width, height, depthFmt));
-	if (!rb->depthBuf)
+	if (colorFmt >= 0)
 	{
-		vramFree(rb->colorBuf);
-		rb->colorBuf = NULL;
-		return false;
-	}
+		rb->colorBuf = vramAlloc(calcColorBufSize(width, height, colorFmt));
+		if (!rb->colorBuf) return false;
+	} else
+		rb->colorFmt = GPU_RB_RGBA8;
+
+	if (depthFmt >= 0)
+	{
+		rb->depthBuf = vramAlloc(calcDepthBufSize(width, height, depthFmt));
+		if (!rb->depthBuf)
+		{
+			if (rb->colorBuf)
+				vramFree(rb->colorBuf);
+			rb->colorBuf = NULL;
+			return false;
+		}
+	} else
+		rb->depthFmt = GPU_RB_DEPTH16;
 
 	return true;
 }
@@ -62,7 +71,7 @@ void C3D_RenderBufBind(C3D_RenderBuf* rb)
 
 void C3Di_RenderBufBind(C3D_RenderBuf* rb)
 {
-	u32 param[4];
+	u32 param[4] = { 0, 0, 0, 0 };
 
 	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 1);
 
@@ -77,8 +86,10 @@ void C3Di_RenderBufBind(C3D_RenderBuf* rb)
 	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_BLOCK32, 0x00000000); //?
 
 	// "Enable depth buffer" (?)
-	param[0] = param[1] = 0xF;
-	param[2] = param[3] = 0x2;
+	if (rb->colorBuf)
+		param[0] = param[1] = 0xF;
+	if (rb->depthBuf)
+		param[2] = param[3] = 0x2;
 	GPUCMD_AddIncrementalWrites(GPUREG_COLORBUFFER_READ, param, 4);
 }
 
