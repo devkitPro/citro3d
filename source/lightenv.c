@@ -109,7 +109,7 @@ static void C3Di_LightEnvDirty(C3D_LightEnv* env)
 {
 	env->flags |= C3DF_LightEnv_Dirty;
 	int i;
-	for (i = 0; i < 5; i ++)
+	for (i = 0; i < 6; i ++)
 		if (env->luts[i])
 			env->flags |= C3DF_LightEnv_LutDirty(i);
 	for (i = 0; i < 8; i ++)
