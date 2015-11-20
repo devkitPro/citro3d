@@ -8,6 +8,12 @@ endif
 
 include $(DEVKITARM)/3ds_rules
 
+export CITRO3D_MAJOR	:= 1
+export CITRO3D_MINOR	:= 0
+export CITRO3D_PATCH	:= 0
+
+VERSION	:=	$(CITRO3D_MAJOR).$(CITRO3D_MINOR).$(CITRO3D_PATCH)
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -27,9 +33,8 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard
 
-CFLAGS	:=	-g -Wall -O2 -mword-relocations \
-			-ffunction-sections \
-			-fomit-frame-pointer -ffast-math \
+CFLAGS	:=	-g -Wall -Werror -O2 -mword-relocations \
+			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DCITRO3D_BUILD
@@ -61,7 +66,6 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-VSHFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.vsh)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
 #---------------------------------------------------------------------------------
@@ -78,7 +82,7 @@ else
 endif
 #---------------------------------------------------------------------------------
 
-export OFILES	:=	$(addsuffix .o,$(BINFILES)) $(VSHFILES:.vsh=.shbin.o) \
+export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
 			$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
@@ -89,6 +93,13 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 
 #---------------------------------------------------------------------------------
 all: $(BUILD)
+
+dist: all
+	@tar -cjf citro3d-$(VERSION).tar.bz2 include lib
+
+install: dist
+	mkdir -p $(DEVKITPRO)/libctru
+	bzip2 -cd citro3d-$(VERSION).tar.bz2 | tar -xf - -C $(DEVKITPRO)/libctru
 
 lib:
 	@[ -d $@ ] || mkdir -p $@
@@ -117,17 +128,6 @@ $(OUTPUT)	:	$(OFILES)
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)
-
-#---------------------------------------------------------------------------------
-%.shbin.o: %.vsh
-	@echo $(notdir $<)
-	$(eval CURBIN := $(patsubst %.vsh,%.shbin,$(notdir $<)))
-	$(eval CURH := $(patsubst %.vsh,%.vsh.h,$(notdir $<)))
-	@picasso -o $(CURBIN) $< -h $(CURH)
-	@bin2s $(CURBIN) | $(AS) -o $@
-	@echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"_end[];" > `(echo $(CURBIN) | tr . _)`.h
-	@echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"[];" >> `(echo $(CURBIN) | tr . _)`.h
-	@echo "extern const u32" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`_size";" >> `(echo $(CURBIN) | tr . _)`.h
 
 -include $(DEPENDS)
 
