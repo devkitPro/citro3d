@@ -3,7 +3,7 @@
 void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void* indices)
 {
 	C3D_Context* ctx = C3Di_GetContext();
-	u32 pa = osConvertVirtToPhys((u32)indices);
+	u32 pa = osConvertVirtToPhys(indices);
 	u32 base = ctx->bufInfo.base_paddr;
 	if (pa < base) return;
 

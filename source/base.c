@@ -6,7 +6,7 @@ static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 {
 	u32 reg[4];
 	reg[0] = tex->fmt;
-	reg[1] = osConvertVirtToPhys((u32)tex->data) >> 3;
+	reg[1] = osConvertVirtToPhys(tex->data) >> 3;
 	reg[2] = (u32)tex->height | ((u32)tex->width << 16);
 	reg[3] = tex->param;
 

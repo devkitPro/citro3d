@@ -15,7 +15,7 @@ int BufInfo_Add(C3D_BufInfo* info, const void* data, ptrdiff_t stride, int attri
 	if (info->bufCount == 12) return -1;
 	int id = info->bufCount++;
 
-	u32 pa = osConvertVirtToPhys((u32)data);
+	u32 pa = osConvertVirtToPhys(data);
 	if (pa < info->base_paddr) return -2;
 
 	C3D_BufCfg* buf = &info->buffers[id];

@@ -75,8 +75,8 @@ void C3Di_RenderBufBind(C3D_RenderBuf* rb)
 
 	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 1);
 
-	param[0] = osConvertVirtToPhys((u32)rb->depthBuf) >> 3;
-	param[1] = osConvertVirtToPhys((u32)rb->colorBuf) >> 3;
+	param[0] = osConvertVirtToPhys(rb->depthBuf) >> 3;
+	param[1] = osConvertVirtToPhys(rb->colorBuf) >> 3;
 	param[2] = 0x01000000 | (((u32)(rb->height-1) & 0xFFF) << 12) | (rb->width & 0xFFF);
 	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHBUFFER_LOC, param, 3);
 
