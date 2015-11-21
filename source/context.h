@@ -59,6 +59,8 @@ enum
 	C3DiF_Program = BIT(8),
 	C3DiF_TexEnvBuf = BIT(9),
 	C3DiF_LightEnv = BIT(10),
+	C3DiF_VshCode = BIT(11),
+	C3DiF_GshCode = BIT(12),
 
 #define C3DiF_Tex(n) BIT(23+(n))
 	C3DiF_TexAll = 7 << 23,
@@ -80,3 +82,7 @@ void C3Di_EffectBind(C3D_Effect* effect);
 void C3Di_RenderBufBind(C3D_RenderBuf* rb);
 
 void C3Di_LightMtlBlend(C3D_Light* light);
+
+void C3Di_DirtyUniforms(GPU_SHADER_TYPE type);
+void C3Di_LoadShaderUniforms(shaderInstance_s* si);
+void C3Di_ClearShaderUniforms(GPU_SHADER_TYPE type);

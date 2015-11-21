@@ -49,8 +49,11 @@ static void C3Di_AptEventHook(APT_HookType hookType, void* param)
 		case APTHOOK_ONRESTORE:
 		{
 			ctx->flags |= C3DiF_AttrInfo | C3DiF_BufInfo | C3DiF_Effect | C3DiF_RenderBuf
-				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program
+				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program | C3DiF_VshCode | C3DiF_GshCode
 				| C3DiF_TexAll | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_LightEnv;
+
+			C3Di_DirtyUniforms(GPU_VERTEX_SHADER);
+			C3Di_DirtyUniforms(GPU_GEOMETRY_SHADER);
 
 			C3D_LightEnv* env = ctx->lightEnv;
 			if (env)
@@ -129,8 +132,8 @@ void C3Di_UpdateContext(void)
 
 	if (ctx->flags & C3DiF_Program)
 	{
-		ctx->flags &= ~C3DiF_Program;
-		shaderProgramUse(ctx->program);
+		shaderProgramConfigure(ctx->program, (ctx->flags & C3DiF_VshCode) != 0, (ctx->flags & C3DiF_GshCode) != 0);
+		ctx->flags &= ~(C3DiF_Program | C3DiF_VshCode | C3DiF_GshCode);
 	}
 
 	if (ctx->flags & C3DiF_RenderBuf)
@@ -270,6 +273,27 @@ void C3D_BindProgram(shaderProgram_s* program)
 	if (!(ctx->flags & C3DiF_Active))
 		return;
 
-	ctx->program = program;
-	ctx->flags |= C3DiF_Program;
+	shaderProgram_s* oldProg = ctx->program;
+	shaderInstance_s* newGsh = program->geometryShader;
+	if (oldProg != program)
+	{
+		ctx->program = program;
+		ctx->flags |= C3DiF_Program;
+
+		if (oldProg)
+		{
+			if (oldProg->vertexShader->dvle->dvlp != program->vertexShader->dvle->dvlp)
+				ctx->flags |= C3DiF_VshCode;
+			shaderInstance_s* oldGsh = oldProg->geometryShader;
+			if (newGsh && (!oldGsh || oldGsh->dvle->dvlp != newGsh->dvle->dvlp))
+				ctx->flags |= C3DiF_GshCode;
+		} else
+			ctx->flags |= C3DiF_VshCode | C3DiF_GshCode;
+	}
+
+	C3Di_LoadShaderUniforms(program->vertexShader);
+	if (newGsh)
+		C3Di_LoadShaderUniforms(newGsh);
+	else
+		C3Di_ClearShaderUniforms(GPU_GEOMETRY_SHADER);
 }
