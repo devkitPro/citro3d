@@ -3,6 +3,12 @@
 #include "buffers.h"
 #define C3D_DEFAULT_CMDBUF_SIZE 0x40000
 
+enum
+{
+	C3D_UNSIGNED_BYTE = 0,
+	C3D_UNSIGNED_SHORT = 1,
+};
+
 bool C3D_Init(size_t cmdBufSize);
 void C3D_FlushAsync(void);
 void C3D_Fini(void);
