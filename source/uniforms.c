@@ -52,7 +52,7 @@ void C3D_UpdateUniforms(GPU_SHADER_TYPE type)
 
 		// Upload the uniforms
 		GPUCMD_AddWrite(GPUREG_VSH_FLOATUNIFORM_CONFIG+offset, 0x80000000|i);
-		GPUCMD_AddWrites(GPUREG_VSH_FLOATUNIFORM_DATA+offset, (u32*)&C3D_FVUnif[i], (j-i)*4);
+		GPUCMD_AddWrites(GPUREG_VSH_FLOATUNIFORM_DATA+offset, (u32*)&C3D_FVUnif[type][i], (j-i)*4);
 
 		// Clear the dirty flag
 		int k;
