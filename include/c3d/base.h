@@ -21,6 +21,11 @@ void C3D_SetScissor(GPU_SCISSORMODE mode, u32 x, u32 y, u32 w, u32 h);
 void C3D_DrawArrays(GPU_Primitive_t primitive, int first, int size);
 void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void* indices);
 
+// Immediate-mode vertex submission
+void C3D_ImmDrawBegin(GPU_Primitive_t primitive);
+void C3D_ImmSendAttrib(float x, float y, float z, float w);
+void C3D_ImmDrawEnd(void);
+
 static inline void C3D_FlushAwait(void)
 {
 	gspWaitForP3D();
