@@ -55,6 +55,8 @@ static void C3Di_AptEventHook(APT_HookType hookType, void* param)
 			C3Di_DirtyUniforms(GPU_VERTEX_SHADER);
 			C3Di_DirtyUniforms(GPU_GEOMETRY_SHADER);
 
+			ctx->fixedAttribDirty |= ctx->fixedAttribEverDirty;
+
 			C3D_LightEnv* env = ctx->lightEnv;
 			if (env)
 				env->Dirty(env);
@@ -97,6 +99,9 @@ bool C3D_Init(size_t cmdBufSize)
 
 	for (i = 0; i < 6; i ++)
 		TexEnv_Init(&ctx->texEnv[i]);
+
+	ctx->fixedAttribDirty = 0;
+	ctx->fixedAttribEverDirty = 0;
 
 	aptHook(&hookCookie, C3Di_AptEventHook, NULL);
 
@@ -230,6 +235,19 @@ void C3Di_UpdateContext(void)
 	if (env)
 		env->Update(env);
 
+	if (ctx->fixedAttribDirty)
+	{
+		for (i = 0; i < 12; i ++)
+		{
+			if (!(ctx->fixedAttribDirty & BIT(i))) continue;
+			C3D_FVec* v = &ctx->fixedAttribs[i];
+
+			GPUCMD_AddWrite(GPUREG_FIXEDATTRIB_INDEX, i);
+			C3D_ImmSendAttrib(v->x, v->y, v->z, v->w);
+		}
+		ctx->fixedAttribDirty = 0;
+	}
+
 	C3D_UpdateUniforms(GPU_VERTEX_SHADER);
 	C3D_UpdateUniforms(GPU_GEOMETRY_SHADER);
 }
@@ -296,4 +314,19 @@ void C3D_BindProgram(shaderProgram_s* program)
 		C3Di_LoadShaderUniforms(newGsh);
 	else
 		C3Di_ClearShaderUniforms(GPU_GEOMETRY_SHADER);
+}
+
+C3D_FVec* C3D_FixedAttribGetWritePtr(int id)
+{
+	if (id < 0 || id >= 12)
+		return NULL;
+
+	C3D_Context* ctx = C3Di_GetContext();
+
+	if (!(ctx->flags & C3DiF_Active))
+		return NULL;
+
+	ctx->fixedAttribDirty     |= BIT(id);
+	ctx->fixedAttribEverDirty |= BIT(id);
+	return &ctx->fixedAttribs[id];
 }

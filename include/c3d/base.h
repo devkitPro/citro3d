@@ -36,3 +36,15 @@ static inline void C3D_Flush(void)
 	C3D_FlushAsync();
 	C3D_FlushAwait();
 }
+
+// Fixed vertex attributes
+C3D_FVec* C3D_FixedAttribGetWritePtr(int id);
+
+static inline void C3D_FixedAttribSet(int id, float x, float y, float z, float w)
+{
+	C3D_FVec* ptr = C3D_FixedAttribGetWritePtr(id);
+	ptr->x = x;
+	ptr->y = y;
+	ptr->z = z;
+	ptr->w = w;
+}

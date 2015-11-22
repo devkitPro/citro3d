@@ -44,6 +44,9 @@ typedef struct
 	u32 viewport[5];
 	u32 scissor[3];
 
+	u16 fixedAttribDirty, fixedAttribEverDirty;
+	C3D_FVec fixedAttribs[12];
+
 } C3D_Context;
 
 enum
