@@ -54,6 +54,22 @@ void C3D_AlphaBlend(GPU_BLENDEQUATION colorEq, GPU_BLENDEQUATION alphaEq, GPU_BL
 {
 	C3D_Effect* e = getEffect();
 	e->alphaBlend = colorEq | (alphaEq << 8) | (srcClr << 16) | (dstClr << 20) | (srcAlpha << 24) | (dstAlpha << 28);
+	e->fragOpMode &= ~0xFF00;
+	e->fragOpMode |= 0x0100;
+}
+
+void C3D_ColorLogicOp(GPU_LOGICOP op)
+{
+	C3D_Effect* e = getEffect();
+	e->fragOpMode &= ~0xFF00;
+	e->clrLogicOp = op;
+}
+
+void C3D_FragOpMode(GPU_FRAGOPMODE mode)
+{
+	C3D_Effect* e = getEffect();
+	e->fragOpMode &= ~0xFF00FF;
+	e->fragOpMode |= 0xE40000 | mode;
 }
 
 void C3Di_EffectBind(C3D_Effect* e)
@@ -64,7 +80,8 @@ void C3Di_EffectBind(C3D_Effect* e)
 	GPUCMD_AddIncrementalWrites(GPUREG_ALPHATEST_CONFIG, (u32*)&e->alphaTest, 4);
 	GPUCMD_AddWrite(GPUREG_BLEND_COLOR, e->blendClr);
 	GPUCMD_AddWrite(GPUREG_BLEND_CONFIG, e->alphaBlend);
-	GPUCMD_AddMaskedWrite(GPUREG_BLEND_ENABLE, 2, 0x00000100);
+	GPUCMD_AddWrite(GPUREG_LOGICOP_CONFIG, e->clrLogicOp);
+	GPUCMD_AddMaskedWrite(GPUREG_BLEND_ENABLE, 2, e->fragOpMode);
 
 	// Disable early depth test?
 	GPUCMD_AddMaskedWrite(GPUREG_0062, 1, 0);

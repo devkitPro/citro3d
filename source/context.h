@@ -11,6 +11,7 @@
 
 typedef struct
 {
+	u32 fragOpMode;
 	u32 zScale, zOffset;
 	GPU_CULLMODE cullMode;
 
@@ -20,6 +21,7 @@ typedef struct
 
 	u32 blendClr;
 	u32 alphaBlend;
+	GPU_LOGICOP clrLogicOp;
 } C3D_Effect;
 
 typedef struct

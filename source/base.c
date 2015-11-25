@@ -90,6 +90,7 @@ bool C3D_Init(size_t cmdBufSize)
 	C3D_DepthTest(true, GPU_GREATER, GPU_WRITE_ALL);
 	C3D_AlphaTest(false, GPU_ALWAYS, 0x00);
 	C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA);
+	C3D_FragOpMode(GPU_FRAGOPMODE_GL);
 
 	ctx->texEnvBuf = 0;
 	ctx->texEnvBufClr = 0xFFFFFFFF;
