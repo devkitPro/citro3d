@@ -92,7 +92,7 @@ static void C3Di_EnableCommon(C3D_Light* light, bool enable, u32 bit)
 	C3D_LightEnv* env = light->parent;
 	u32* var = &env->conf.config[1];
 
-	if ((*var & bit) ^ bit)
+	if (enable == !(*var & bit))
 		return;
 
 	if (!enable)
@@ -134,19 +134,14 @@ void C3D_LightDistAttnEnable(C3D_Light* light, bool enable)
 	C3Di_EnableCommon(light, enable, GPU_LC1_ATTNBIT(light->id));
 }
 
-void C3D_LightDistAttn(C3D_Light* light, float bias, float scale)
-{
-	C3Di_EnableCommon(light, true, GPU_LC1_ATTNBIT(light->id));
-	light->conf.distAttnBias  = f32tof20(bias);
-	light->conf.distAttnScale = f32tof20(scale);
-	light->flags |= C3DF_Light_Dirty;
-}
-
-void C3D_LightDistAttnLut(C3D_Light* light, C3D_LightLut* lut)
+void C3D_LightDistAttn(C3D_Light* light, C3D_LightLutDA* lut)
 {
 	bool hasLut = lut != NULL;
 	C3Di_EnableCommon(light, hasLut, GPU_LC1_ATTNBIT(light->id));
-	light->lut_DA = lut;
-	if (hasLut)
-		light->flags |= C3DF_Light_DADirty;
+	if (!hasLut) return;
+
+	light->conf.distAttnBias  = f32tof20(lut->bias);
+	light->conf.distAttnScale = f32tof20(lut->scale);
+	light->lut_DA = &lut->lut;
+	light->flags |= C3DF_Light_Dirty | C3DF_Light_DADirty;
 }

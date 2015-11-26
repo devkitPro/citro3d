@@ -44,3 +44,23 @@ void LightLut_FromFunc(C3D_LightLut* lut, C3D_LightLutFunc func, float param, bo
 	}
 	LightLut_FromArray(lut, data);
 }
+
+void LightLutDA_Create(C3D_LightLutDA* lut, C3D_LightLutFuncDA func, float from, float to, float arg0, float arg1)
+{
+	int i;
+	float data[512];
+	data[511] = 0;
+
+	lut->scale = 1.0f / (to-from);
+	lut->bias = -from*lut->scale;
+
+	for (i = 0; i < 256; i ++)
+	{
+		float dist = ((float)i/255 - lut->bias) / lut->scale;
+		data[i] = func(dist, arg0, arg1);
+		if (i > 0)
+			data[i+255] = data[i]-data[i-1];
+	}
+
+	LightLut_FromArray(&lut->lut, data);
+}

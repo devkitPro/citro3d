@@ -118,5 +118,4 @@ void C3D_LightSpotEnable(C3D_Light* light, bool enable);
 void C3D_LightSpotDir(C3D_Light* light, float x, float y, float z);
 void C3D_LightSpotLut(C3D_Light* light, C3D_LightLut* lut);
 void C3D_LightDistAttnEnable(C3D_Light* light, bool enable);
-void C3D_LightDistAttn(C3D_Light* light, float bias, float scale);
-void C3D_LightDistAttnLut(C3D_Light* light, C3D_LightLut* lut);
+void C3D_LightDistAttn(C3D_Light* light, C3D_LightLutDA* lut);
