@@ -24,6 +24,30 @@ static void C3Di_LightLutUpload(u32 config, C3D_LightLut* lut)
 		GPUCMD_AddWrites(GPUREG_LIGHTING_LUT_DATA0, &lut->data[i], 8);
 }
 
+static void C3Di_LightEnvSelectLayer(C3D_LightEnv* env)
+{
+	static const u8 layer_enabled[] =
+	{
+		BIT(GPU_LUT_D0) | BIT(GPU_LUT_RR) | BIT(GPU_LUT_SP) | BIT(GPU_LUT_DA),
+		BIT(GPU_LUT_FR) | BIT(GPU_LUT_RR) | BIT(GPU_LUT_SP) | BIT(GPU_LUT_DA),
+		BIT(GPU_LUT_D0) | BIT(GPU_LUT_D1) | BIT(GPU_LUT_RR) | BIT(GPU_LUT_DA),
+		BIT(GPU_LUT_D0) | BIT(GPU_LUT_D1) | BIT(GPU_LUT_FR) | BIT(GPU_LUT_DA),
+		0xFF &~ BIT(GPU_LUT_FR),
+		0xFF &~ BIT(GPU_LUT_D1),
+		0xFF &~ (BIT(GPU_LUT_RB) | BIT(GPU_LUT_RG)),
+	};
+
+	u32 reg = ~env->conf.config[1];
+	if (reg & (0xFF<< 8)) reg |= GPU_LC1_LUTBIT(GPU_LUT_SP);
+	if (reg & (0xFF<<24)) reg |= GPU_LC1_LUTBIT(GPU_LUT_DA);
+	reg = (reg >> 16) & 0xFF;
+	int i;
+	for (i = 0; i < 7; i ++)
+		if ((layer_enabled[i] & reg) == reg) // Check if the layer supports all LUTs we need
+			break;
+	env->conf.config[0] = (env->conf.config[0] &~ (0xF<<4)) | (GPU_LIGHT_ENV_LAYER_CONFIG(i)<<4);
+}
+
 static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 {
 	int i;
@@ -54,6 +78,7 @@ static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 
 	if (env->flags & C3DF_LightEnv_Dirty)
 	{
+		C3Di_LightEnvSelectLayer(env);
 		GPUCMD_AddWrite(GPUREG_LIGHTING_AMBIENT, conf->ambient);
 		GPUCMD_AddIncrementalWrites(GPUREG_LIGHTING_NUM_LIGHTS, (u32*)&conf->numLights, 3);
 		GPUCMD_AddIncrementalWrites(GPUREG_LIGHTING_LUTINPUT_ABS, (u32*)&conf->lutInput, 3);
