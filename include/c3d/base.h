@@ -16,7 +16,7 @@ void C3D_Fini(void);
 void C3D_BindProgram(shaderProgram_s* program);
 
 void C3D_SetViewport(u32 x, u32 y, u32 w, u32 h);
-void C3D_SetScissor(GPU_SCISSORMODE mode, u32 x, u32 y, u32 w, u32 h);
+void C3D_SetScissor(GPU_SCISSORMODE mode, u32 left, u32 top, u32 right, u32 bottom);
 
 void C3D_DrawArrays(GPU_Primitive_t primitive, int first, int size);
 void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void* indices);

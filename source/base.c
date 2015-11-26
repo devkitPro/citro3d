@@ -121,14 +121,14 @@ void C3D_SetViewport(u32 x, u32 y, u32 w, u32 h)
 	ctx->scissor[0] = GPU_SCISSOR_DISABLE;
 }
 
-void C3D_SetScissor(GPU_SCISSORMODE mode, u32 x, u32 y, u32 w, u32 h)
+void C3D_SetScissor(GPU_SCISSORMODE mode, u32 left, u32 top, u32 right, u32 bottom)
 {
 	C3D_Context* ctx = C3Di_GetContext();
 	ctx->flags |= C3DiF_Scissor;
 	ctx->scissor[0] = mode;
 	if (mode == GPU_SCISSOR_DISABLE) return;
-	ctx->scissor[1] = (y << 16) | (x & 0xFFFF);
-	ctx->scissor[2] = ((h-1) << 16) | ((w-1) & 0xFFFF);
+	ctx->scissor[1] = (top << 16) | (left & 0xFFFF);
+	ctx->scissor[2] = ((bottom-1) << 16) | ((right-1) & 0xFFFF);
 }
 
 void C3Di_UpdateContext(void)
