@@ -36,10 +36,7 @@ void MtxStack_Update(C3D_MtxStack* stk)
 	if (!stk->isDirty) return;
 
 	if (stk->unifPos != 0xFF)
-	{
-		C3D_FVec* out = C3D_FVUnifWritePtr(stk->unifType, stk->unifPos, stk->unifLen);
-		memcpy(out, &stk->m[stk->pos], (u32)stk->unifLen * sizeof(C3D_FVec));
-	}
+		C3D_FVUnifMtxNx4(stk->unifType, stk->unifPos, &stk->m[stk->pos], stk->unifLen);
 
 	stk->isDirty = false;
 }

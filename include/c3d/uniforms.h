@@ -25,12 +25,27 @@ static inline C3D_IVec* C3D_IVUnifWritePtr(GPU_SHADER_TYPE type, int id)
 	return &C3D_IVUnif[type][id];
 }
 
-static inline void C3D_FVUnifMtx(GPU_SHADER_TYPE type, int id, C3D_Mtx* mtx)
+static inline void C3D_FVUnifMtxNx4(GPU_SHADER_TYPE type, int id, C3D_Mtx* mtx, int num)
 {
 	int i;
-	C3D_FVec* ptr = C3D_FVUnifWritePtr(type, id, 4);
-	for (i = 0; i < 4; i ++)
-		ptr[i] = mtx->r[i];
+	C3D_FVec* ptr = C3D_FVUnifWritePtr(type, id, num);
+	for (i = 0; i < num; i ++)
+		ptr[i] = mtx->r[i]; // Struct copy.
+}
+
+static inline void C3D_FVUnifMtx4x4(GPU_SHADER_TYPE type, int id, C3D_Mtx* mtx)
+{
+	C3D_FVUnifMtxNx4(type, id, mtx, 4);
+}
+
+static inline void C3D_FVUnifMtx3x4(GPU_SHADER_TYPE type, int id, C3D_Mtx* mtx)
+{
+	C3D_FVUnifMtxNx4(type, id, mtx, 3);
+}
+
+static inline void C3D_FVUnifMtx2x4(GPU_SHADER_TYPE type, int id, C3D_Mtx* mtx)
+{
+	C3D_FVUnifMtxNx4(type, id, mtx, 2);
 }
 
 static inline void C3D_FVUnifSet(GPU_SHADER_TYPE type, int id, float x, float y, float z, float w)
