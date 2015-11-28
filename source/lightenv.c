@@ -221,3 +221,50 @@ void C3D_LightEnvLut(C3D_LightEnv* env, int lutId, int input, bool abs, C3D_Ligh
 
 	env->flags |= C3DF_LightEnv_Dirty;
 }
+
+void C3D_LightEnvFresnel(C3D_LightEnv* env, GPU_FRESNELSEL selector)
+{
+	env->conf.config[0] &= ~(3<<2);
+	env->conf.config[0] |= (selector&3)<<2;
+	env->flags |= C3DF_LightEnv_Dirty;
+}
+
+void C3D_LightEnvBumpMode(C3D_LightEnv* env, GPU_BUMPMODE mode)
+{
+	env->conf.config[0] &= ~(3<<28);
+	env->conf.config[0] |= (mode&3)<<28;
+	env->flags |= C3DF_LightEnv_Dirty;
+}
+
+void C3D_LightEnvBumpSel(C3D_LightEnv* env, int texUnit)
+{
+	env->conf.config[0] &= ~(3<<22);
+	env->conf.config[0] |= (texUnit&3)<<22;
+	env->flags |= C3DF_LightEnv_Dirty;
+}
+
+void C3D_LightEnvShadowMode(C3D_LightEnv* env, u32 mode)
+{
+	mode &= 0xF<<16;
+	if (mode & (GPU_SHADOW_PRIMARY | GPU_INVERT_SHADOW | GPU_SHADOW_ALPHA))
+		mode |= BIT(0);
+	env->conf.config[0] &= ~((3<<28) | BIT(0));
+	env->conf.config[0] |= mode;
+	env->flags |= C3DF_LightEnv_Dirty;
+}
+
+void C3D_LightEnvShadowSel(C3D_LightEnv* env, int texUnit)
+{
+	env->conf.config[0] &= ~(3<<24);
+	env->conf.config[0] |= (texUnit&3)<<24;
+	env->flags |= C3DF_LightEnv_Dirty;
+}
+
+void C3D_LightEnvClampHighlights(C3D_LightEnv* env, bool clamp)
+{
+	if (clamp)
+		env->conf.config[0] |= BIT(27);
+	else
+		env->conf.config[0] &= ~BIT(27);
+	env->flags |= C3DF_LightEnv_Dirty;
+}
