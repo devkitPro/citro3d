@@ -18,7 +18,13 @@ static inline size_t fmtSize(GPU_TEXCOLOR fmt)
 	}
 }
 
-bool C3D_TexInit(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR format)
+static inline bool addrIsVRAM(const void* addr)
+{
+	u32 vaddr = (u32)addr;
+	return vaddr >= 0x1F000000 && vaddr < 0x1F600000;
+}
+
+static bool C3Di_TexInitCommon(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR format, void* (*texAlloc)(size_t))
 {
 	if (tex->data) return false;
 
@@ -26,7 +32,7 @@ bool C3D_TexInit(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR format)
 	if (!size) return false;
 	size *= width * height;
 
-	tex->data = linearMemAlign(size, 0x80);
+	tex->data = texAlloc(size);
 	if (!tex->data) return false;
 
 	tex->width = width;
@@ -37,9 +43,19 @@ bool C3D_TexInit(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR format)
 	return true;
 }
 
+bool C3D_TexInit(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR format)
+{
+	return C3Di_TexInitCommon(tex, width, height, format, linearAlloc);
+}
+
+bool C3D_TexInitVRAM(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR format)
+{
+	return C3Di_TexInitCommon(tex, width, height, format, vramAlloc);
+}
+
 void C3D_TexUpload(C3D_Tex* tex, const void* data)
 {
-	if (tex->data)
+	if (tex->data && !addrIsVRAM(tex->data))
 		memcpy(tex->data, data, tex->size);
 }
 
@@ -68,7 +84,7 @@ void C3D_TexBind(int unitId, C3D_Tex* tex)
 
 void C3D_TexFlush(C3D_Tex* tex)
 {
-	if (tex->data)
+	if (tex->data && !addrIsVRAM(tex->data))
 		GSPGPU_FlushDataCache(tex->data, tex->size);
 }
 
@@ -76,6 +92,10 @@ void C3D_TexDelete(C3D_Tex* tex)
 {
 	if (!tex->data) return;
 
-	linearFree(tex->data);
+	if (addrIsVRAM(tex->data))
+		vramFree(tex->data);
+	else
+		linearFree(tex->data);
+
 	tex->data = NULL;
 }
