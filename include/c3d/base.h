@@ -37,6 +37,12 @@ static inline void C3D_Flush(void)
 	C3D_FlushAwait();
 }
 
+static inline void C3D_VideoSync(void)
+{
+	gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
+	gfxSwapBuffersGpu();
+}
+
 // Fixed vertex attributes
 C3D_FVec* C3D_FixedAttribGetWritePtr(int id);
 
