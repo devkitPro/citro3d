@@ -81,7 +81,7 @@ void C3Di_EffectBind(C3D_Effect* e)
 	GPUCMD_AddWrite(GPUREG_BLEND_COLOR, e->blendClr);
 	GPUCMD_AddWrite(GPUREG_BLEND_CONFIG, e->alphaBlend);
 	GPUCMD_AddWrite(GPUREG_LOGICOP_CONFIG, e->clrLogicOp);
-	GPUCMD_AddMaskedWrite(GPUREG_BLEND_ENABLE, 2, e->fragOpMode);
+	GPUCMD_AddMaskedWrite(GPUREG_BLEND_ENABLE, 7, e->fragOpMode);
 
 	// Disable early depth test?
 	GPUCMD_AddMaskedWrite(GPUREG_0062, 1, 0);

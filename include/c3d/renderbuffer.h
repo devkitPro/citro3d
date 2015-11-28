@@ -1,12 +1,12 @@
 #pragma once
 #include "types.h"
+#include "texture.h"
 
 typedef struct
 {
-	void *colorBuf, *depthBuf;
-	u16 colorFmt, depthFmt;
-	u16 width, height;
+	C3D_Tex colorBuf, depthBuf;
 	u32 clearColor, clearDepth;
+	int depthFmt;
 } C3D_RenderBuf;
 
 bool C3D_RenderBufInit(C3D_RenderBuf* rb, int width, int height, int colorFmt, int depthFmt);
