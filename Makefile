@@ -31,7 +31,7 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard
+ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS	:=	-g -Wall -Werror -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
@@ -94,10 +94,15 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 #---------------------------------------------------------------------------------
 all: $(BUILD)
 
-dist: all
-	@tar -cjf citro3d-$(VERSION).tar.bz2 include lib
+dist-bin: all
+	@tar --exclude=*~ -cjf citro3d-$(VERSION).tar.bz2 include lib
 
-install: dist
+dist-src:
+	@tar --exclude=*~ -cjf citro3d-src-$(VERSION).tar.bz2 include source Makefile
+
+dist: dist-src dist-bin
+
+install: dist-bin
 	mkdir -p $(DEVKITPRO)/libctru
 	bzip2 -cd citro3d-$(VERSION).tar.bz2 | tar -xf - -C $(DEVKITPRO)/libctru
 
