@@ -201,8 +201,7 @@ void C3Di_UpdateContext(void)
 		}
 
 		ctx->flags &= ~C3DiF_TexAll;
-		GPUCMD_AddMaskedWrite(GPUREG_SH_OUTATTR_CLOCK, 0x2, units<<8); // enables texcoord outputs
-		GPUCMD_AddWrite(GPUREG_TEXUNIT_CONFIG, 0x00011000|units);      // enables texture units
+		GPUCMD_AddWrite(GPUREG_TEXUNIT_CONFIG, 0x00011000|units); // Enable texture units
 	}
 
 	if (ctx->flags & C3DiF_TexEnvBuf)
@@ -229,7 +228,6 @@ void C3Di_UpdateContext(void)
 		u32 enable = env != NULL;
 		GPUCMD_AddWrite(GPUREG_LIGHTING_ENABLE0, enable);
 		GPUCMD_AddWrite(GPUREG_LIGHTING_ENABLE1, !enable);
-		GPUCMD_AddMaskedWrite(GPUREG_SH_OUTATTR_CLOCK, 0x8, enable<<24); // Enable normalquat (& view?) outputs
 		ctx->flags &= ~C3DiF_LightEnv;
 	}
 
