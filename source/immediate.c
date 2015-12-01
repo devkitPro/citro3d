@@ -11,8 +11,8 @@ void C3D_ImmDrawBegin(GPU_Primitive_t primitive)
 	GPUCMD_AddWrite(GPUREG_INDEXBUFFER_CONFIG, 0x80000000);
 
 	// Unknown commands
-	GPUCMD_AddMaskedWrite(GPUREG_0253, 1, 0x00000001);
-	GPUCMD_AddMaskedWrite(GPUREG_0245, 1, 0x00000000);
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 1, 0x00000001);
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000000);
 
 	// Begin immediate-mode vertex submission
 	GPUCMD_AddWrite(GPUREG_FIXEDATTRIB_INDEX, 0xF);
@@ -56,8 +56,8 @@ void C3D_ImmSendAttrib(float x, float y, float z, float w)
 
 void C3D_ImmDrawEnd(void)
 {
-	GPUCMD_AddMaskedWrite(GPUREG_0245, 1, 0x00000001);
-	GPUCMD_AddWrite(GPUREG_0231, 0x00000001);
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000001);
+	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 0x00000001);
 
 	C3Di_GetContext()->flags |= C3DiF_DrawUsed;
 }

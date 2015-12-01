@@ -14,19 +14,19 @@ static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 	{
 		case GPU_TEXUNIT0:
 			GPUCMD_AddWrite(GPUREG_TEXUNIT0_TYPE, reg[0]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT0_LOC, reg[1]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT0_ADDR1, reg[1]);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT0_DIM, reg[2]);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT0_PARAM, reg[3]);
 			break;
 		case GPU_TEXUNIT1:
 			GPUCMD_AddWrite(GPUREG_TEXUNIT1_TYPE, reg[0]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT1_LOC, reg[1]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT1_ADDR, reg[1]);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT1_DIM, reg[2]);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT1_PARAM, reg[3]);
 			break;
 		case GPU_TEXUNIT2:
 			GPUCMD_AddWrite(GPUREG_TEXUNIT2_TYPE, reg[0]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT2_LOC, reg[1]);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT2_ADDR, reg[1]);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT2_DIM, reg[2]);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT2_PARAM, reg[3]);
 			break;
@@ -201,8 +201,8 @@ void C3Di_UpdateContext(void)
 		}
 
 		ctx->flags &= ~C3DiF_TexAll;
-		GPUCMD_AddMaskedWrite(GPUREG_006F, 0x2, units<<8);        // enables texcoord outputs
-		GPUCMD_AddWrite(GPUREG_TEXUNIT_ENABLE, 0x00011000|units); // enables texture units
+		GPUCMD_AddMaskedWrite(GPUREG_SH_OUTATTR_CLOCK, 0x2, units<<8); // enables texcoord outputs
+		GPUCMD_AddWrite(GPUREG_TEXUNIT_CONFIG, 0x00011000|units);      // enables texture units
 	}
 
 	if (ctx->flags & C3DiF_TexEnvBuf)
@@ -229,7 +229,7 @@ void C3Di_UpdateContext(void)
 		u32 enable = env != NULL;
 		GPUCMD_AddWrite(GPUREG_LIGHTING_ENABLE0, enable);
 		GPUCMD_AddWrite(GPUREG_LIGHTING_ENABLE1, !enable);
-		GPUCMD_AddMaskedWrite(GPUREG_006F, 0x8, enable<<24); // Enable normalquat (& view?) outputs
+		GPUCMD_AddMaskedWrite(GPUREG_SH_OUTATTR_CLOCK, 0x8, enable<<24); // Enable normalquat (& view?) outputs
 		ctx->flags &= ~C3DiF_LightEnv;
 	}
 
@@ -265,7 +265,7 @@ void C3D_FlushAsync(void)
 		ctx->flags &= ~C3DiF_DrawUsed;
 		GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 1);
 		GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 1);
-		GPUCMD_AddWrite(GPUREG_0063, 1); // Does this even do anything at all?
+		GPUCMD_AddWrite(GPUREG_EARLYDEPTH_CLEAR, 1);
 	}
 
 	GPUCMD_Finalize();

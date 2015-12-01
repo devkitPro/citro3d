@@ -21,12 +21,12 @@ void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void
 
 	// Unknown commands
 	//GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG, 2, 0x00000100);
-	GPUCMD_AddMaskedWrite(GPUREG_0253, 2, 0x00000100);
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 2, 0x00000100);
 
-	GPUCMD_AddMaskedWrite(GPUREG_0245, 1, 0x00000000);
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000000);
 	GPUCMD_AddWrite(GPUREG_DRAWELEMENTS, 0x00000001);
-	GPUCMD_AddMaskedWrite(GPUREG_0245, 1, 0x00000001);
-	GPUCMD_AddWrite(GPUREG_0231, 0x00000001);
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000001);
+	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 0x00000001);
 
 	C3Di_GetContext()->flags |= C3DiF_DrawUsed;
 }

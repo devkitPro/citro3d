@@ -74,7 +74,7 @@ void C3D_FragOpMode(GPU_FRAGOPMODE mode)
 
 void C3Di_EffectBind(C3D_Effect* e)
 {
-	GPUCMD_AddWrite(GPUREG_006D, 0x00000001);
+	GPUCMD_AddWrite(GPUREG_DEPTHMAP_ENABLE, 1);
 	GPUCMD_AddWrite(GPUREG_FACECULLING_CONFIG, e->cullMode & 0x3);
 	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHMAP_SCALE, (u32*)&e->zScale, 2);
 	GPUCMD_AddIncrementalWrites(GPUREG_ALPHATEST_CONFIG, (u32*)&e->alphaTest, 4);
@@ -84,6 +84,6 @@ void C3Di_EffectBind(C3D_Effect* e)
 	GPUCMD_AddMaskedWrite(GPUREG_BLEND_ENABLE, 7, e->fragOpMode);
 
 	// Disable early depth test?
-	GPUCMD_AddMaskedWrite(GPUREG_0062, 1, 0);
-	GPUCMD_AddWrite(GPUREG_0118, 0);
+	GPUCMD_AddMaskedWrite(GPUREG_EARLYDEPTH_TEST1, 1, 0);
+	GPUCMD_AddWrite(GPUREG_EARLYDEPTH_TEST2, 0);
 }

@@ -92,7 +92,7 @@ void C3Di_RenderBufBind(C3D_RenderBuf* rb)
 	param[2] = 0x01000000 | (((u32)(rb->colorBuf.height-1) & 0xFFF) << 12) | (rb->colorBuf.width & 0xFFF);
 	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHBUFFER_LOC, param, 3);
 
-	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_DIM2, param[2]); //?
+	GPUCMD_AddWrite(GPUREG_RENDERBUF_DIM, param[2]);
 	GPUCMD_AddWrite(GPUREG_DEPTHBUFFER_FORMAT, rb->depthFmt >= 0 ? rb->depthFmt : GPU_RB_DEPTH16);
 	GPUCMD_AddWrite(GPUREG_COLORBUFFER_FORMAT, getColorBufFormatReg(rb->colorBuf.fmt));
 	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_BLOCK32, 0x00000000); //?

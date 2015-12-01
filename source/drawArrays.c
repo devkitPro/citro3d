@@ -15,12 +15,12 @@ void C3D_DrawArrays(GPU_Primitive_t primitive, int first, int size)
 	GPUCMD_AddWrite(GPUREG_VERTEX_OFFSET, first);
 
 	// Unknown commands
-	GPUCMD_AddMaskedWrite(GPUREG_0253, 1, 0x00000001);
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 1, 0x00000001);
 
-	GPUCMD_AddMaskedWrite(GPUREG_0245, 1, 0x00000000);
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000000);
 	GPUCMD_AddWrite(GPUREG_DRAWARRAYS, 0x00000001);
-	GPUCMD_AddMaskedWrite(GPUREG_0245, 1, 0x00000001);
-	GPUCMD_AddWrite(GPUREG_0231, 0x00000001);
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000001);
+	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 0x00000001);
 
 	C3Di_GetContext()->flags |= C3DiF_DrawUsed;
 }
