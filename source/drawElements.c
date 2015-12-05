@@ -11,22 +11,25 @@ void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void
 
 	// Set primitive type
 	GPUCMD_AddMaskedWrite(GPUREG_PRIMITIVE_CONFIG, 2, primitive);
-	GPUCMD_AddMaskedWrite(GPUREG_RESTART_PRIMITIVE, 2, 0x00000001);
+	// Start a new primitive (breaks off a triangle strip/fan)
+	GPUCMD_AddWrite(GPUREG_RESTART_PRIMITIVE, 1);
 	// Configure the index buffer
 	GPUCMD_AddWrite(GPUREG_INDEXBUFFER_CONFIG, (pa - base) | (type << 31));
 	// Number of vertices
 	GPUCMD_AddWrite(GPUREG_NUMVERTICES, count);
 	// First vertex
 	GPUCMD_AddWrite(GPUREG_VERTEX_OFFSET, 0);
-
-	// Unknown commands
-	//GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG, 2, 0x00000100);
-	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 2, 0x00000100);
-
-	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000000);
-	GPUCMD_AddWrite(GPUREG_DRAWELEMENTS, 0x00000001);
-	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000001);
-	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 0x00000001);
+	// Disable "triangles" mode (otherwise stuff breaks)
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG,  2, 0x000);
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 3, 0x000);
+	// Enable drawing mode
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0);
+	// Trigger element drawing
+	GPUCMD_AddWrite(GPUREG_DRAWELEMENTS, 1);
+	// Go back to configuration mode
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 1);
+	// Clear the post-vertex cache
+	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 1);
 
 	C3Di_GetContext()->flags |= C3DiF_DrawUsed;
 }

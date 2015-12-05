@@ -4,16 +4,16 @@ void C3D_ImmDrawBegin(GPU_Primitive_t primitive)
 {
 	C3Di_UpdateContext();
 
-	// Set primitive type & restart the primitive
+	// Set primitive type
 	GPUCMD_AddMaskedWrite(GPUREG_PRIMITIVE_CONFIG, 2, primitive);
-	GPUCMD_AddMaskedWrite(GPUREG_RESTART_PRIMITIVE, 2, 0x00000001);
-	// Not sure if GPUREG_INDEXBUFFER_CONFIG is necessary
+	// Start a new primitive (breaks off a triangle strip/fan)
+	GPUCMD_AddWrite(GPUREG_RESTART_PRIMITIVE, 1);
+	// Not sure if this command is necessary
 	GPUCMD_AddWrite(GPUREG_INDEXBUFFER_CONFIG, 0x80000000);
-
-	// Unknown commands
-	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 1, 0x00000001);
-	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000000);
-
+	// Enable submitting vertex data
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 3, 0x001);
+	// Enable drawing mode
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0);
 	// Begin immediate-mode vertex submission
 	GPUCMD_AddWrite(GPUREG_FIXEDATTRIB_INDEX, 0xF);
 }
@@ -56,8 +56,12 @@ void C3D_ImmSendAttrib(float x, float y, float z, float w)
 
 void C3D_ImmDrawEnd(void)
 {
-	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0x00000001);
-	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 0x00000001);
+	// Go back to configuration mode
+	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 1);
+	// Disable array drawing mode
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 1, 0);
+	// Clear the post-vertex cache
+	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 1);
 
 	C3Di_GetContext()->flags |= C3DiF_DrawUsed;
 }
