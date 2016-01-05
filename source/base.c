@@ -73,13 +73,14 @@ bool C3D_Init(size_t cmdBufSize)
 	if (ctx->flags & C3DiF_Active)
 		return false;
 
-	ctx->cmdBufSize = cmdBufSize;
-	ctx->cmdBuf = linearAlloc(cmdBufSize);
+	ctx->cmdBufSize = cmdBufSize/8; // Half of the size of the cmdbuf, in words
+	ctx->cmdBuf = (u32*)linearAlloc(cmdBufSize);
 	if (!ctx->cmdBuf) return false;
 
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 
 	ctx->flags = C3DiF_Active | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexAll;
+	ctx->renderQueueExit = NULL;
 
 	// TODO: replace with direct struct access
 	C3D_DepthMap(-1.0f, 0.0f);
@@ -149,6 +150,7 @@ void C3Di_UpdateContext(void)
 		{
 			ctx->flags &= ~C3DiF_DrawUsed;
 			GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 1);
+			GPUCMD_AddWrite(GPUREG_EARLYDEPTH_CLEAR, 1);
 		}
 		C3Di_RenderBufBind(ctx->rb);
 	}
@@ -251,12 +253,9 @@ void C3Di_UpdateContext(void)
 	C3D_UpdateUniforms(GPU_GEOMETRY_SHADER);
 }
 
-void C3D_FlushAsync(void)
+void C3Di_FinalizeFrame(u32** pBuf, u32* pSize)
 {
 	C3D_Context* ctx = C3Di_GetContext();
-
-	if (!(ctx->flags & C3DiF_Active))
-		return;
 
 	if (ctx->flags & C3DiF_DrawUsed)
 	{
@@ -267,8 +266,30 @@ void C3D_FlushAsync(void)
 	}
 
 	GPUCMD_Finalize();
-	GPUCMD_FlushAndRun();
-	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
+	GPUCMD_GetBuffer(pBuf, NULL, pSize);
+	*pSize *= 4;
+
+	ctx->flags ^= C3DiF_CmdBuffer;
+	u32* buf = ctx->cmdBuf;
+	if (ctx->flags & C3DiF_CmdBuffer)
+		buf += ctx->cmdBufSize;
+	GPUCMD_SetBuffer(buf, ctx->cmdBufSize, 0);
+}
+
+void C3D_FlushAsync(void)
+{
+	if (!(C3Di_GetContext()->flags & C3DiF_Active))
+		return;
+
+	u32* cmdBuf;
+	u32 cmdBufSize;
+	C3Di_FinalizeFrame(&cmdBuf, &cmdBufSize);
+
+	//take advantage of GX_FlushCacheRegions to flush gsp heap
+	extern u32 __ctru_linear_heap;
+	extern u32 __ctru_linear_heap_size;
+	GX_FlushCacheRegions(cmdBuf, cmdBufSize, (u32 *) __ctru_linear_heap, __ctru_linear_heap_size, NULL, 0);
+	GX_ProcessCommandList(cmdBuf, cmdBufSize, 0x0);
 }
 
 void C3D_Fini(void)
@@ -277,6 +298,9 @@ void C3D_Fini(void)
 
 	if (!(ctx->flags & C3DiF_Active))
 		return;
+
+	if (ctx->renderQueueExit)
+		ctx->renderQueueExit();
 
 	aptUnhook(&hookCookie);
 	linearFree(ctx->cmdBuf);

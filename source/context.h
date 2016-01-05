@@ -26,7 +26,7 @@ typedef struct
 
 typedef struct
 {
-	void* cmdBuf;
+	u32* cmdBuf;
 	size_t cmdBufSize;
 
 	u32 flags;
@@ -49,6 +49,8 @@ typedef struct
 	u16 fixedAttribDirty, fixedAttribEverDirty;
 	C3D_FVec fixedAttribs[12];
 
+	void (* renderQueueExit)(void);
+
 } C3D_Context;
 
 enum
@@ -66,6 +68,7 @@ enum
 	C3DiF_LightEnv = BIT(10),
 	C3DiF_VshCode = BIT(11),
 	C3DiF_GshCode = BIT(12),
+	C3DiF_CmdBuffer = BIT(13),
 
 #define C3DiF_Tex(n) BIT(23+(n))
 	C3DiF_TexAll = 7 << 23,
@@ -91,3 +94,5 @@ void C3Di_LightMtlBlend(C3D_Light* light);
 void C3Di_DirtyUniforms(GPU_SHADER_TYPE type);
 void C3Di_LoadShaderUniforms(shaderInstance_s* si);
 void C3Di_ClearShaderUniforms(GPU_SHADER_TYPE type);
+
+void C3Di_FinalizeFrame(u32** pBuf, u32* pSize);
