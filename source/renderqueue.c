@@ -186,8 +186,6 @@ static void C3Di_RenderQueueExit(void)
 	int i;
 	C3D_RenderTarget *a, *next;
 
-	if (inFrame) return;
-
 	for (a = firstTarget; a; a = next)
 	{
 		next = a->next;
@@ -310,6 +308,8 @@ C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, int colorFmt, in
 
 void C3D_RenderTargetDelete(C3D_RenderTarget* target)
 {
+	target->clearBits = 0;
+	target->linked = false;
 	while (!target->drawOk)
 		gspWaitForAnyEvent();
 	C3D_RenderBufDelete(&target->renderBuf);
