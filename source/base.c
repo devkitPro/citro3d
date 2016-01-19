@@ -75,6 +75,7 @@ bool C3D_Init(size_t cmdBufSize)
 
 	ctx->cmdBufSize = cmdBufSize/8; // Half of the size of the cmdbuf, in words
 	ctx->cmdBuf = (u32*)linearAlloc(cmdBufSize);
+	ctx->cmdBufUsage = 0;
 	if (!ctx->cmdBuf) return false;
 
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
@@ -267,6 +268,7 @@ void C3Di_FinalizeFrame(u32** pBuf, u32* pSize)
 
 	GPUCMD_Finalize();
 	GPUCMD_GetBuffer(pBuf, NULL, pSize);
+	ctx->cmdBufUsage = (float)(*pSize) / ctx->cmdBufSize;
 	*pSize *= 4;
 
 	ctx->flags ^= C3DiF_CmdBuffer;
@@ -290,6 +292,11 @@ void C3D_FlushAsync(void)
 	extern u32 __ctru_linear_heap_size;
 	GX_FlushCacheRegions(cmdBuf, cmdBufSize, (u32 *) __ctru_linear_heap, __ctru_linear_heap_size, NULL, 0);
 	GX_ProcessCommandList(cmdBuf, cmdBufSize, 0x0);
+}
+
+float C3D_GetCmdBufUsage(void)
+{
+	return C3Di_GetContext()->cmdBufUsage;
 }
 
 void C3D_Fini(void)

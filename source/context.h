@@ -28,6 +28,7 @@ typedef struct
 {
 	u32* cmdBuf;
 	size_t cmdBufSize;
+	float cmdBufUsage;
 
 	u32 flags;
 	shaderProgram_s* program;
