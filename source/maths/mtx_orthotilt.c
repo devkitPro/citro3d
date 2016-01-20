@@ -10,8 +10,8 @@ void Mtx_OrthoTilt(C3D_Mtx* mtx, float left, float right, float bottom, float to
 	mp.r[0].w = (left + right) / (left - right);
 	mp.r[1].y = 2.0f / (top - bottom);
 	mp.r[1].w = (bottom + top) / (bottom - top);
-	mp.r[2].z = 2.0f / (near - far);
-	mp.r[2].w = (far + near) / (far - near);
+	mp.r[2].z = 2.0f / (far - near);
+	mp.r[2].w = (near + far) / (near - far);
 	mp.r[3].w = 1.0f;
 
 	// Fix depth range to [-1, 0]
