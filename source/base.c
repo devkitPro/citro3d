@@ -42,8 +42,9 @@ static void C3Di_AptEventHook(APT_HookType hookType, void* param)
 	switch (hookType)
 	{
 		case APTHOOK_ONSUSPEND:
-		default:
 		{
+			if (ctx->renderQueueWaitDone)
+				ctx->renderQueueWaitDone();
 			break;
 		}
 		case APTHOOK_ONRESTORE:
@@ -62,6 +63,8 @@ static void C3Di_AptEventHook(APT_HookType hookType, void* param)
 				env->Dirty(env);
 			break;
 		}
+		default:
+			break;
 	}
 }
 

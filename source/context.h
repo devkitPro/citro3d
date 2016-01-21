@@ -50,6 +50,7 @@ typedef struct
 	u16 fixedAttribDirty, fixedAttribEverDirty;
 	C3D_FVec fixedAttribs[12];
 
+	void (* renderQueueWaitDone)(void);
 	void (* renderQueueExit)(void);
 
 } C3D_Context;

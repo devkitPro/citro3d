@@ -204,6 +204,12 @@ static void C3Di_RenderQueueExit(void)
 	queuedState = 0;
 }
 
+static void C3Di_RenderQueueWaitDone(void)
+{
+	while (queuedCount || transferQueue || clearQueue)
+		gspWaitForAnyEvent();
+}
+
 bool checkRenderQueueInit(void)
 {
 	C3D_Context* ctx = C3Di_GetContext();
@@ -214,6 +220,7 @@ bool checkRenderQueueInit(void)
 	if (!ctx->renderQueueExit)
 	{
 		C3Di_RenderQueueInit();
+		ctx->renderQueueWaitDone = C3Di_RenderQueueWaitDone;
 		ctx->renderQueueExit = C3Di_RenderQueueExit;
 	}
 
