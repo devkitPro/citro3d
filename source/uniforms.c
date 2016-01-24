@@ -79,7 +79,7 @@ void C3D_UpdateUniforms(GPU_SHADER_TYPE type)
 	// Update bool uniforms
 	if (C3D_BoolUnifsDirty[type])
 	{
-		GPUCMD_AddWrite(GPUREG_VSH_BOOLUNIFORM+offset, 0x7FFF0000 | (u32)~C3D_BoolUnifs[type]);
+		GPUCMD_AddWrite(GPUREG_VSH_BOOLUNIFORM+offset, 0x7FFF0000 | C3D_BoolUnifs[type]);
 		C3D_BoolUnifsDirty[type] = false;
 	}
 }

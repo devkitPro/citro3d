@@ -21,7 +21,7 @@ static inline C3D_FVec* C3D_FVUnifWritePtr(GPU_SHADER_TYPE type, int id, int siz
 
 static inline C3D_IVec* C3D_IVUnifWritePtr(GPU_SHADER_TYPE type, int id)
 {
-	id -= 0x70;
+	id -= 0x60;
 	C3D_IVUnifDirty[type][id] = true;
 	return &C3D_IVUnif[type][id];
 }
@@ -66,7 +66,7 @@ static inline void C3D_IVUnifSet(GPU_SHADER_TYPE type, int id, int x, int y, int
 
 static inline void C3D_BoolUnifSet(GPU_SHADER_TYPE type, int id, bool value)
 {
-	id -= 0x78;
+	id -= 0x68;
 	C3D_BoolUnifsDirty[type] = true;
 	if (value)
 		C3D_BoolUnifs[type] |= BIT(id);
