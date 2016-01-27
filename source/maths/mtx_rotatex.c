@@ -10,8 +10,8 @@ void Mtx_RotateX(C3D_Mtx* mtx, float angle, bool bRightSide)
 	Mtx_Zeros(&rm);
 	rm.r[0].x = 1.0f;
 	rm.r[1].y = cosAngle;
-	rm.r[1].z = sinAngle;
-	rm.r[2].y = -sinAngle;
+	rm.r[1].z = -sinAngle;
+	rm.r[2].y = sinAngle;
 	rm.r[2].z = cosAngle;
 	rm.r[3].w = 1.0f;
 

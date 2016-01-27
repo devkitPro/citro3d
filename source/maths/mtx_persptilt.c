@@ -39,6 +39,6 @@ void Mtx_PerspTilt(C3D_Mtx* mtx, float fovx, float invaspect, float near, float 
 	mp2.r[2].w = -0.5;
 	Mtx_Multiply(mtx, &mp2, &mp);
 
-	// Rotate the matrix one quarter of a turn CCW in order to fix the 3DS screens' orientation
-	Mtx_RotateZ(mtx, M_TAU/4, true);
+	// Rotate the matrix one quarter of a turn clockwise in order to fix the 3DS screens' orientation
+	Mtx_RotateZ(mtx, -M_TAU/4, true);
 }
