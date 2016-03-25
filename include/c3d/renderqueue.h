@@ -40,3 +40,7 @@ C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, int colorFmt, in
 void C3D_RenderTargetDelete(C3D_RenderTarget* target);
 void C3D_RenderTargetSetClear(C3D_RenderTarget* target, u32 clearBits, u32 clearColor, u32 clearDepth);
 void C3D_RenderTargetSetOutput(C3D_RenderTarget* target, gfxScreen_t screen, gfx3dSide_t side, u32 transferFlags);
+
+void C3D_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags);
+void C3D_SafeTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 size, u32 flags);
+void C3D_SafeMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0, u32* buf1a, u32 buf1v, u32* buf1e, u16 control1);

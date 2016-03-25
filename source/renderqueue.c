@@ -16,7 +16,7 @@ static struct
 } queuedFrame[2];
 static u8 queueSwap, queuedCount, queuedState;
 
-static bool inFrame;
+static bool inFrame, inSafeTransfer, inSafeClear;
 
 static void onRenderFinish(void* unused);
 static void onTransferFinish(void* unused);
@@ -30,6 +30,7 @@ static void performDraw(void)
 
 static void performTransfer(void)
 {
+	if (inSafeTransfer) return; // Let the safe transfer finish handler retry this
 	C3D_RenderBuf* renderBuf = &transferQueue->renderBuf;
 	u32* frameBuf = (u32*)gfxGetFramebuffer(transferQueue->screen, transferQueue->side, NULL, NULL);
 	if (transferQueue->side == GFX_LEFT)
@@ -40,6 +41,7 @@ static void performTransfer(void)
 
 static void performClear(void)
 {
+	if (inSafeClear) return; // Let the safe clear finish handler retry this
 	C3D_RenderBuf* renderBuf = &clearQueue->renderBuf;
 	// TODO: obey renderBuf->clearBits
 	gspSetEventCallback(renderBuf->colorBuf.data ? GSPGPU_EVENT_PSC0 : GSPGPU_EVENT_PSC1, onClearDone, NULL, true);
@@ -153,6 +155,14 @@ void onRenderFinish(void* unused)
 void onTransferFinish(void* unused)
 {
 	C3D_RenderTarget* target = transferQueue;
+	if (inSafeTransfer)
+	{
+		inSafeTransfer = false;
+		// Try again if there are queued transfers
+		if (target)
+			performTransfer();
+		return;
+	}
 	transferQueue = target->link;
 	if (target->clearBits)
 		clearTarget(target);
@@ -167,6 +177,14 @@ void onTransferFinish(void* unused)
 void onClearDone(void* unused)
 {
 	C3D_RenderTarget* target = clearQueue;
+	if (inSafeClear)
+	{
+		inSafeClear = false;
+		// Try again if there are queued clears
+		if (target)
+			performClear();
+		return;
+	}
 	clearQueue = target->link;
 	target->drawOk = true;
 	if (clearQueue)
@@ -356,4 +374,31 @@ void C3D_RenderTargetSetOutput(C3D_RenderTarget* target, gfxScreen_t screen, gfx
 	target->transferFlags = transferFlags;
 	target->screen = screen;
 	target->side = side;
+}
+
+void C3D_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)
+{
+	while (transferQueue || inSafeTransfer)
+		gspWaitForPPF();
+	inSafeTransfer = true;
+	gspSetEventCallback(GSPGPU_EVENT_PPF, onTransferFinish, NULL, true);
+	GX_DisplayTransfer(inadr, indim, outadr, outdim, flags);
+}
+
+void C3D_SafeTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 size, u32 flags)
+{
+	while (transferQueue || inSafeTransfer)
+		gspWaitForPPF();
+	inSafeTransfer = true;
+	gspSetEventCallback(GSPGPU_EVENT_PPF, onTransferFinish, NULL, true);
+	GX_TextureCopy(inadr, indim, outadr, outdim, size, flags);
+}
+
+void C3D_SafeMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0, u32* buf1a, u32 buf1v, u32* buf1e, u16 control1)
+{
+	while (clearQueue || inSafeClear)
+		gspWaitForAnyEvent();
+	inSafeClear = true;
+	gspSetEventCallback(buf0a ? GSPGPU_EVENT_PSC0 : GSPGPU_EVENT_PSC1, onClearDone, NULL, true);
+	GX_MemoryFill(buf0a, buf0v, buf0e, control0, buf1a, buf1v, buf1e, control1);
 }
