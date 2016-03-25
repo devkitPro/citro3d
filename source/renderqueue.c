@@ -329,8 +329,6 @@ void C3D_RenderTargetDelete(C3D_RenderTarget* target)
 
 void C3D_RenderTargetSetClear(C3D_RenderTarget* target, u32 clearBits, u32 clearColor, u32 clearDepth)
 {
-	if (!target->drawOk) return;
-
 	if (target->renderBuf.colorBuf.data==NULL) clearBits &= ~C3D_CLEAR_COLOR;
 	if (target->renderBuf.depthBuf.data==NULL) clearBits &= ~C3D_CLEAR_DEPTH;
 
@@ -339,7 +337,7 @@ void C3D_RenderTargetSetClear(C3D_RenderTarget* target, u32 clearBits, u32 clear
 	target->renderBuf.clearColor = clearColor;
 	target->renderBuf.clearDepth = clearDepth;
 
-	if (clearBits &~ oldClearBits)
+	if (clearBits &~ oldClearBits && target->drawOk)
 	{
 		target->drawOk = false;
 		clearTarget(target);
