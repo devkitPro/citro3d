@@ -88,7 +88,7 @@ static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 
 	if (env->flags & C3DF_LightEnv_LutDirtyAll)
 	{
-		for (i = 0; i < 5; i ++)
+		for (i = 0; i < 6; i ++)
 		{
 			static const u8 lutIds[] = { 0, 1, 3, 4, 5, 6 };
 			if (!(env->flags & C3DF_LightEnv_LutDirty(i))) continue;
