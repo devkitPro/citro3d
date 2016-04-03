@@ -12,7 +12,15 @@ static inline size_t fmtSize(GPU_TEXCOLOR fmt)
 		case GPU_RGBA5551:
 		case GPU_RGB565:
 		case GPU_RGBA4:
+		case GPU_LA8:
+		case GPU_HILO8:
 			return 2;
+		case GPU_L8:
+		case GPU_A8:
+		case GPU_LA4:
+			return 1;
+		//case GPU_L4: // is actually 0.5
+		//TODO: ETC is ??
 		default:
 			return 0;
 	}
