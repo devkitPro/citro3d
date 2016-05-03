@@ -1,26 +1,30 @@
 #include "context.h"
 #include <string.h>
 
+// Return bits per pixel
 static inline size_t fmtSize(GPU_TEXCOLOR fmt)
 {
 	switch (fmt)
 	{
 		case GPU_RGBA8:
-			return 4;
+			return 32;
 		case GPU_RGB8:
-			return 3;
+			return 24;
 		case GPU_RGBA5551:
 		case GPU_RGB565:
 		case GPU_RGBA4:
 		case GPU_LA8:
 		case GPU_HILO8:
-			return 2;
+			return 16;
 		case GPU_L8:
 		case GPU_A8:
 		case GPU_LA4:
-			return 1;
-		//case GPU_L4: // is actually 0.5
-		//TODO: ETC is ??
+		case GPU_ETC1A4:
+			return 8;
+		case GPU_L4:
+		case GPU_A4:
+		case GPU_ETC1:
+			return 4;
 		default:
 			return 0;
 	}
@@ -38,7 +42,7 @@ static bool C3Di_TexInitCommon(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR
 
 	u32 size = fmtSize(format);
 	if (!size) return false;
-	size *= width * height;
+	size *= width * height / 8;
 
 	tex->data = texAlloc(size);
 	if (!tex->data) return false;
@@ -46,6 +50,8 @@ static bool C3Di_TexInitCommon(C3D_Tex* tex, int width, int height, GPU_TEXCOLOR
 	tex->width = width;
 	tex->height = height;
 	tex->param = GPU_TEXTURE_MAG_FILTER(GPU_NEAREST) | GPU_TEXTURE_MIN_FILTER(GPU_NEAREST);
+	if (format == GPU_ETC1)
+		tex->param |= GPU_TEXTURE_ETC1_PARAM;
 	tex->fmt = format;
 	tex->size = size;
 	return true;
