@@ -10,8 +10,8 @@ void C3D_ImmDrawBegin(GPU_Primitive_t primitive)
 	GPUCMD_AddWrite(GPUREG_RESTART_PRIMITIVE, 1);
 	// Not sure if this command is necessary
 	GPUCMD_AddWrite(GPUREG_INDEXBUFFER_CONFIG, 0x80000000);
-	// Enable submitting vertex data
-	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 3, 0x001);
+	// Enable vertex submission mode
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 1, 1);
 	// Enable drawing mode
 	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0);
 	// Begin immediate-mode vertex submission
@@ -58,7 +58,7 @@ void C3D_ImmDrawEnd(void)
 {
 	// Go back to configuration mode
 	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 1);
-	// Disable array drawing mode
+	// Disable vertex submission mode
 	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 1, 0);
 	// Clear the post-vertex cache
 	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 1);

@@ -19,15 +19,24 @@ void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void
 	GPUCMD_AddWrite(GPUREG_NUMVERTICES, count);
 	// First vertex
 	GPUCMD_AddWrite(GPUREG_VERTEX_OFFSET, 0);
-	// Disable "triangles" mode (otherwise stuff breaks)
-	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG,  2, 0x000);
-	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 3, 0x000);
+	// Enable triangle element drawing mode if necessary
+	if (primitive == GPU_TRIANGLES)
+	{
+		GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG, 2, 0x100);
+		GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 2, 0x100);
+	}
 	// Enable drawing mode
 	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0);
 	// Trigger element drawing
 	GPUCMD_AddWrite(GPUREG_DRAWELEMENTS, 1);
 	// Go back to configuration mode
 	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 1);
+	// Disable triangle element drawing mode if necessary
+	if (primitive == GPU_TRIANGLES)
+	{
+		GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG, 2, 0);
+		GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 2, 0);
+	}
 	// Clear the post-vertex cache
 	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 1);
 

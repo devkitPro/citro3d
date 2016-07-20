@@ -99,15 +99,18 @@ void C3Di_DirtyUniforms(GPU_SHADER_TYPE type)
 void C3Di_LoadShaderUniforms(shaderInstance_s* si)
 {
 	GPU_SHADER_TYPE type = si->dvle->type;
-	int i;
 	if (si->boolUniformMask)
 	{
 		C3D_BoolUnifs[type] &= ~si->boolUniformMask;
 		C3D_BoolUnifs[type] |= si->boolUniforms;
-		C3D_BoolUnifsDirty[type] = true;
 	}
+
+	C3D_BoolUnifs[type] &= ~BIT(15);
+	C3D_BoolUnifsDirty[type] = true;
+
 	if (si->intUniformMask)
 	{
+		int i;
 		for (i = 0; i < 4; i ++)
 		{
 			if (si->intUniformMask & BIT(i))

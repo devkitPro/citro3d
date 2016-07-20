@@ -15,7 +15,7 @@ void C3D_DrawArrays(GPU_Primitive_t primitive, int first, int size)
 	// First vertex
 	GPUCMD_AddWrite(GPUREG_VERTEX_OFFSET, first);
 	// Enable array drawing mode
-	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 3, 0x001);
+	GPUCMD_AddMaskedWrite(GPUREG_GEOSTAGE_CONFIG2, 1, 1);
 	// Enable drawing mode
 	GPUCMD_AddMaskedWrite(GPUREG_START_DRAW_FUNC0, 1, 0);
 	// Trigger array drawing
