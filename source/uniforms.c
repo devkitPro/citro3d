@@ -105,7 +105,8 @@ void C3Di_LoadShaderUniforms(shaderInstance_s* si)
 		C3D_BoolUnifs[type] |= si->boolUniforms;
 	}
 
-	C3D_BoolUnifs[type] &= ~BIT(15);
+	if (type == GPU_GEOMETRY_SHADER)
+		C3D_BoolUnifs[type] &= ~BIT(15);
 	C3D_BoolUnifsDirty[type] = true;
 
 	if (si->intUniformMask)
