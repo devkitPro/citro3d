@@ -2,6 +2,7 @@
 #include "types.h"
 #include <string.h>
 #include <math.h>
+#include <float.h>
 
 // See http://tauday.com/tau-manifesto
 //#define M_TAU 6.28318530717958647693
@@ -61,6 +62,8 @@ static inline void Mtx_Copy(C3D_Mtx* out, const C3D_Mtx* in)
 
 void Mtx_Identity(C3D_Mtx* out);
 void Mtx_Multiply(C3D_Mtx* out, const C3D_Mtx* a, const C3D_Mtx* b);
+
+bool Mtx_Inverse(C3D_Mtx* out);
 
 void Mtx_Translate(C3D_Mtx* mtx, float x, float y, float z);
 void Mtx_Scale(C3D_Mtx* mtx, float x, float y, float z);
