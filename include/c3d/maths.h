@@ -2,6 +2,7 @@
 #include "types.h"
 #include <string.h>
 #include <math.h>
+#include <float.h>
 
 // See http://tauday.com/tau-manifesto
 //#define M_TAU 6.28318530717958647693
