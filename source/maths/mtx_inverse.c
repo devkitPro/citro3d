@@ -121,13 +121,13 @@ bool Mtx_Inverse(C3D_Mtx* out)
 					out->m[8] * out->m[2] * out->m[5];
 
 		det = 1.0 / det;
-	
+
 		for (i = 0; i < 16; i++)
 			out->m[i] = inv[i] * det;
-		
+
 		return true;
-    }
-    
+	}
+	
 	return false;
-    
+	
 }
