@@ -1,6 +1,6 @@
 #include <c3d/maths.h>
 
-void Mtx_Inverse(C3D_Mtx* out)
+int Mtx_Inverse(C3D_Mtx* out)
 {
 	float inv[16], det;
     int i;
@@ -124,6 +124,10 @@ void Mtx_Inverse(C3D_Mtx* out)
 	
 		for (i = 0; i < 16; i++)
 			out->m[i] = inv[i] * det;
+		
+		return 0;
     }
-
+    
+    return -1;
+    
 }

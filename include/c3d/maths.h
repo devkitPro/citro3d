@@ -62,6 +62,8 @@ static inline void Mtx_Copy(C3D_Mtx* out, const C3D_Mtx* in)
 void Mtx_Identity(C3D_Mtx* out);
 void Mtx_Multiply(C3D_Mtx* out, const C3D_Mtx* a, const C3D_Mtx* b);
 
+int Mtx_Inverse(C3D_Mtx* out);
+
 void Mtx_Translate(C3D_Mtx* mtx, float x, float y, float z);
 void Mtx_Scale(C3D_Mtx* mtx, float x, float y, float z);
 void Mtx_RotateX(C3D_Mtx* mtx, float angle, bool bRightSide);
