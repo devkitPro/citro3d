@@ -197,7 +197,7 @@ void persp_tilt_test()
   C3D_RenderTargetSetClear(top, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
   C3D_RenderTargetSetOutput(top, GFX_TOP, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
 
-  Mtx_PerspTilt(&projection, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f);
+  Mtx_PerspTilt(&projection, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, false);
 
   Mtx_Identity(&modelView);
   Mtx_Translate(&modelView, x, y, z, true);
@@ -286,7 +286,7 @@ void ortho_tilt_test()
   C3D_RenderTargetSetClear(top, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
   C3D_RenderTargetSetOutput(top, GFX_TOP, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
 
-  Mtx_OrthoTilt(&projection, 0.0f, 400.0f, 0.0f, 240.0f, 100.0f, -100.0f);
+  Mtx_OrthoTilt(&projection, 0.0f, 400.0f, 0.0f, 240.0f, 100.0f, -100.0f, false);
 
   Mtx_Identity(&texView);
 
@@ -380,8 +380,8 @@ void stereo_tilt_test()
   C3D_RenderTargetSetOutput(topLeft,  GFX_TOP, GFX_LEFT,  DISPLAY_TRANSFER_FLAGS);
   C3D_RenderTargetSetOutput(topRight, GFX_TOP, GFX_RIGHT, DISPLAY_TRANSFER_FLAGS);
 
-  Mtx_PerspStereoTilt(&projLeft,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, -iod, focLen);
-  Mtx_PerspStereoTilt(&projRight, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f,  iod, focLen);
+  Mtx_PerspStereoTilt(&projLeft,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, -iod, focLen, false);
+  Mtx_PerspStereoTilt(&projRight, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f,  iod, focLen, false);
 
   Mtx_Identity(&texView);
 
@@ -446,8 +446,8 @@ void stereo_tilt_test()
       std::printf("(Y/A)        focLen %.1f\n", focLen);
       std::printf("(3D Slider)  iod    %.1f\n", iod);
 
-      Mtx_PerspStereoTilt(&projLeft,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, -iod, focLen);
-      Mtx_PerspStereoTilt(&projRight, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f,  iod, focLen);
+      Mtx_PerspStereoTilt(&projLeft,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, -iod, focLen, false);
+      Mtx_PerspStereoTilt(&projRight, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f,  iod, focLen, false);
     }
 
     Mtx_Identity(&modelView);
@@ -499,12 +499,12 @@ void persp_test()
   C3D_RenderTargetSetClear(tex, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
   C3D_TexSetFilter(&tex->renderBuf.colorBuf, GPU_LINEAR, GPU_NEAREST);
 
-  Mtx_Persp(&projTex, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f);
+  Mtx_Persp(&projTex, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, false);
 
   Mtx_Identity(&modelView);
   Mtx_Translate(&modelView, x, y, z, true);
 
-  Mtx_OrthoTilt(&projTop, -0.5f, 0.5f, -0.5f, 0.5f, 100.0f, -100.0f);
+  Mtx_OrthoTilt(&projTop, -0.5f, 0.5f, -0.5f, 0.5f, 100.0f, -100.0f, false);
   Mtx_Identity(&texView);
 
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView,  &modelView);
@@ -553,7 +553,7 @@ void persp_test()
       std::printf("(UP/DOWN)    y %.1f\n", y);
       std::printf("(L/R)        z %.1f\n", z);
 
-      Mtx_Persp(&projTex,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f);
+      Mtx_Persp(&projTex,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, false);
     }
 
     Mtx_Identity(&modelView);
@@ -615,13 +615,13 @@ void stereo_test()
   C3D_TexSetFilter(&texLeft->renderBuf.colorBuf, GPU_LINEAR, GPU_NEAREST);
   C3D_TexSetFilter(&texRight->renderBuf.colorBuf, GPU_LINEAR, GPU_NEAREST);
 
-  Mtx_PerspStereo(&projLeft,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, -iod, focLen);
-  Mtx_PerspStereo(&projRight, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f,  iod, focLen);
+  Mtx_PerspStereo(&projLeft,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, -iod, focLen, false);
+  Mtx_PerspStereo(&projRight, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f,  iod, focLen, false);
 
   Mtx_Identity(&modelView);
   Mtx_Translate(&modelView, x, y, z, true);
 
-  Mtx_OrthoTilt(&proj, -0.5f, 0.5f, -0.5f, 0.5f, 100.0f, -100.0f);
+  Mtx_OrthoTilt(&proj, -0.5f, 0.5f, -0.5f, 0.5f, 100.0f, -100.0f, false);
   Mtx_Identity(&texView);
 
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView,  &modelView);
@@ -683,8 +683,8 @@ void stereo_test()
       std::printf("(Y/A)        focLen %.1f\n", focLen);
       std::printf("(3D Slider)  iod    %.1f\n", iod);
 
-      Mtx_PerspStereo(&projLeft,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, -iod, focLen);
-      Mtx_PerspStereo(&projRight, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f,  iod, focLen);
+      Mtx_PerspStereo(&projLeft,  60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f, -iod, focLen, false);
+      Mtx_PerspStereo(&projRight, 60.0f*M_TAU/360.0f, 400.0f/240.0f, 1.0f, 10.0f,  iod, focLen, false);
     }
 
     Mtx_Identity(&modelView);
@@ -753,12 +753,12 @@ void ortho_test()
   C3D_RenderTargetSetClear(tex, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
   C3D_TexSetFilter(&tex->renderBuf.colorBuf, GPU_LINEAR, GPU_NEAREST);
 
-  Mtx_Ortho(&projTex, 0.0f, 400.0f, 0.0f, 240.0f, 100.0f, -100.0f);
+  Mtx_Ortho(&projTex, 0.0f, 400.0f, 0.0f, 240.0f, 100.0f, -100.0f, false);
 
   Mtx_Identity(&modelView);
   Mtx_Translate(&modelView, x, y, z, true);
 
-  Mtx_OrthoTilt(&projTop, -0.5f, 0.5f, -0.5f, 0.5f, 100.0f, -100.0f);
+  Mtx_OrthoTilt(&projTop, -0.5f, 0.5f, -0.5f, 0.5f, 100.0f, -100.0f, false);
   Mtx_Identity(&texView);
 
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_modelView,  &modelView);

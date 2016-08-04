@@ -207,6 +207,7 @@ print(const glm::quat &q)
 static const glm::vec3 x_axis(1.0f, 0.0f, 0.0f);
 static const glm::vec3 y_axis(0.0f, 1.0f, 0.0f);
 static const glm::vec3 z_axis(0.0f, 0.0f, 1.0f);
+static const glm::vec3 z_flip(1.0f, 1.0f, -1.0f);
 
 static void
 check_matrix(generator_t &gen, distribution_t &dist)
@@ -223,6 +224,52 @@ check_matrix(generator_t &gen, distribution_t &dist)
     C3D_Mtx m;
     Mtx_Identity(&m);
     assert(m == glm::mat4());
+  }
+
+  // ortho nominal cases
+  {
+    C3D_Mtx  m;
+    C3D_FVec v;
+    float    l = 0.0f,
+             r = 400.0f,
+             b = 0.0f,
+             t = 320.0f,
+             n = 0.0f,
+             f = 100.0f;
+
+    Mtx_Ortho(&m, l, r, b, t, n, f, false);
+
+    // check near clip plane
+    v = Mtx_MultiplyFVecH(&m, FVec3_New((r-l)/2.0f, (t-b)/2.0f, -n));
+    v = FVec4_PerspDivide(v);
+    assert(v == FVec4_New(0.0f, 0.0f, -1.0f, 1.0f));
+
+    // check far clip plane
+    v = Mtx_MultiplyFVecH(&m, FVec3_New((r-l)/2.0f, (t-b)/2.0f, -f));
+    v = FVec4_PerspDivide(v);
+    assert(v == FVec4_New(0.0f, 0.0f, 0.0f, 1.0f));
+  }
+
+  // perspective nominal cases
+  {
+    C3D_Mtx  m;
+    C3D_FVec v;
+    float   fovy   = C3D_Angle(60.0f/360.0f),
+            aspect = C3D_AspectRatioTop,
+            near   = 0.1f,
+            far    = 10.0f;
+
+    Mtx_Persp(&m, fovy, aspect, near, far, false);
+
+    // check near clip plane
+    v = Mtx_MultiplyFVecH(&m, FVec3_New(0.0f, 0.0f, -near));
+    v = FVec4_PerspDivide(v);
+    assert(v == FVec4_New(0.0f, 0.0f, -1.0f, 1.0f));
+
+    // check far clip plane
+    v = Mtx_MultiplyFVecH(&m, FVec3_New(0.0f, 0.0f, -far));
+    v = FVec4_PerspDivide(v);
+    assert(v == FVec4_New(0.0f, 0.0f, 0.0f, 1.0f));
   }
 
   for(size_t x = 0; x < 10000; ++x)
@@ -270,11 +317,15 @@ check_matrix(generator_t &gen, distribution_t &dist)
       while(std::abs(far - near) < 0.1f)
         far = dist(gen);
 
-      Mtx_Persp(&m, fovy, aspect, near, far);
-
+      // RH
+      Mtx_Persp(&m, fovy, aspect, near, far, false);
       glm::mat4 g = glm::perspective(fovy, aspect, near, far);
-
       assert(m == fix_depth*g);
+
+      // LH
+      Mtx_Persp(&m, fovy, aspect, near, far, true);
+      g = glm::perspective(fovy, aspect, near, far);
+      assert(m == fix_depth*glm::scale(g, z_flip));
     }
 
     // check perspective tilt
@@ -300,11 +351,15 @@ check_matrix(generator_t &gen, distribution_t &dist)
       while(std::abs(far - near) < 0.1f)
         far = dist(gen);
 
-      Mtx_PerspTilt(&m, fovy, aspect, near, far);
-
+      // RH
+      Mtx_PerspTilt(&m, fovy, aspect, near, far, false);
       glm::mat4 g = glm::perspective(fovx, 1.0f / aspect, near, far);
-
       assert(m == fix_depth*g*tilt);
+
+      // LH
+      Mtx_PerspTilt(&m, fovy, aspect, near, far, true);
+      g = glm::perspective(fovx, 1.0f / aspect, near, far);
+      assert(m == fix_depth*glm::scale(g, z_flip)*tilt);
     }
 
     // check perspective stereo
@@ -336,9 +391,6 @@ check_matrix(generator_t &gen, distribution_t &dist)
       while(focLen < 0.25f)
         focLen = dist(gen);
 
-      Mtx_PerspStereo(&left, fovy, aspect, near, far, -iod, focLen);
-      Mtx_PerspStereo(&right, fovy, aspect, near, far, iod, focLen);
-
       glm::mat4 g = glm::perspective(fovy, aspect, near, far);
 
       fovy_tan = tanf(fovy/2.0f);
@@ -351,8 +403,17 @@ check_matrix(generator_t &gen, distribution_t &dist)
                           -iod/(focLen*2.0f), 0.0f, 1.0f, 0.0f,
                           -iod*fovy_tan*aspect/2.0f, 0.0f, 0.0f, 1.0f);
 
+      // RH
+      Mtx_PerspStereo(&left, fovy, aspect, near, far, -iod, focLen, false);
+      Mtx_PerspStereo(&right, fovy, aspect, near, far, iod, focLen, false);
       assert(left == fix_depth*g*left_eye);
       assert(right == fix_depth*g*right_eye);
+
+      // LH
+      Mtx_PerspStereo(&left, fovy, aspect, near, far, -iod, focLen, true);
+      Mtx_PerspStereo(&right, fovy, aspect, near, far, iod, focLen, true);
+      assert(left == fix_depth*glm::scale(g*left_eye, z_flip));
+      assert(right == fix_depth*glm::scale(g*right_eye, z_flip));
     }
 
     // check perspective stereo tilt
@@ -384,9 +445,6 @@ check_matrix(generator_t &gen, distribution_t &dist)
       while(focLen < 0.25f)
         focLen = dist(gen);
 
-      Mtx_PerspStereoTilt(&left, fovy, aspect, near, far, -iod, focLen);
-      Mtx_PerspStereoTilt(&right, fovy, aspect, near, far, iod, focLen);
-
       glm::mat4 g = glm::perspective(fovx, 1.0f / aspect, near, far);
 
       fovx_tan = tanf(fovx/2.0f);
@@ -399,8 +457,17 @@ check_matrix(generator_t &gen, distribution_t &dist)
                           0.0f, iod/(focLen*2.0f), 1.0f, 0.0f,
                           0.0f, iod*fovx_tan/2.0f, 0.0f, 1.0f);
 
+      // RH
+      Mtx_PerspStereoTilt(&left, fovy, aspect, near, far, -iod, focLen, false);
+      Mtx_PerspStereoTilt(&right, fovy, aspect, near, far, iod, focLen, false);
       assert(left == fix_depth*g*left_eye*tilt);
       assert(right == fix_depth*g*right_eye*tilt);
+
+      // LH
+      Mtx_PerspStereoTilt(&left, fovy, aspect, near, far, -iod, focLen, true);
+      Mtx_PerspStereoTilt(&right, fovy, aspect, near, far, iod, focLen, true);
+      assert(left == fix_depth*glm::scale(g*left_eye, z_flip)*tilt);
+      assert(right == fix_depth*glm::scale(g*right_eye, z_flip)*tilt);
     }
 
     // check ortho
@@ -422,11 +489,15 @@ check_matrix(generator_t &gen, distribution_t &dist)
       while(std::abs(f-n) < 0.1f)
         f = dist(gen);
 
-      Mtx_Ortho(&m, l, r, b, t, n, f);
-
+      // RH
+      Mtx_Ortho(&m, l, r, b, t, n, f, false);
       glm::mat4 g = glm::ortho(l, r, b, t, n, f);
-
       assert(m == fix_depth*g);
+
+      // LH
+      Mtx_Ortho(&m, l, r, b, t, n, f, true);
+      g = glm::ortho(l, r, b, t, n, f);
+      assert(m == fix_depth*glm::scale(g, z_flip));
     }
 
     // check ortho tilt
@@ -448,11 +519,15 @@ check_matrix(generator_t &gen, distribution_t &dist)
       while(std::abs(f-n) < 0.1f)
         f = dist(gen);
 
-      Mtx_OrthoTilt(&m, l, r, b, t, n, f);
-
+      // RH
+      Mtx_OrthoTilt(&m, l, r, b, t, n, f, false);
       glm::mat4 g = glm::ortho(l, r, b, t, n, f);
-
       assert(m == tilt*fix_depth*g);
+
+      // LH
+      Mtx_OrthoTilt(&m, l, r, b, t, n, f, true);
+      g = glm::ortho(l, r, b, t, n, f);
+      assert(m == tilt*fix_depth*glm::scale(g, z_flip));
     }
 
     // check multiply

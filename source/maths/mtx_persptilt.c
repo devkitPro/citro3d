@@ -1,6 +1,6 @@
 #include <c3d/maths.h>
 
-void Mtx_PerspTilt(C3D_Mtx* mtx, float fovx, float invaspect, float near, float far)
+void Mtx_PerspTilt(C3D_Mtx* mtx, float fovx, float invaspect, float near, float far, bool isLeftHanded)
 {
 	// Notes:
 	// We are passed "fovy" and the "aspect ratio". However, the 3DS screens are sideways,
@@ -31,7 +31,16 @@ void Mtx_PerspTilt(C3D_Mtx* mtx, float fovx, float invaspect, float near, float 
 
 	mtx->r[0].y = 1.0f / fovx_tan;
 	mtx->r[1].x = -1.0f / (fovx_tan*invaspect);
-	mtx->r[2].z = 0.5f*(far + near) / (near - far) + 0.5f;
 	mtx->r[2].w = far*near / (near - far);
-	mtx->r[3].z = -1.0f;
+
+	if (isLeftHanded)
+	{
+		mtx->r[2].z = 0.5f*(far + near) / (far - near) - 0.5f;
+		mtx->r[3].z = 1.0f;
+	}
+	else
+	{
+		mtx->r[2].z = 0.5f*(far + near) / (near - far) + 0.5f;
+		mtx->r[3].z = -1.0f;
+	}
 }

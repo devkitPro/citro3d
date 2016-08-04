@@ -1,6 +1,6 @@
 #include <c3d/maths.h>
 
-void Mtx_Persp(C3D_Mtx* mtx, float fovy, float aspect, float near, float far)
+void Mtx_Persp(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, bool isLeftHanded)
 {
 	float fovy_tan = tanf(fovy/2.0f);
 
@@ -11,7 +11,16 @@ void Mtx_Persp(C3D_Mtx* mtx, float fovy, float aspect, float near, float far)
 
 	mtx->r[0].x = 1.0f / (aspect * fovy_tan);
 	mtx->r[1].y = 1.0f / fovy_tan;
-	mtx->r[2].z = 0.5f*(far + near) / (near - far) + 0.5f;
 	mtx->r[2].w = far*near / (near - far);
-	mtx->r[3].z = -1.0f;
+
+	if (isLeftHanded)
+	{
+		mtx->r[2].z = 0.5f*(far + near) / (far - near) - 0.5f;
+		mtx->r[3].z = 1.0f;
+	}
+	else
+	{
+		mtx->r[2].z = 0.5f*(far + near) / (near - far) + 0.5f;
+		mtx->r[3].z = -1.0f;
+	}
 }
