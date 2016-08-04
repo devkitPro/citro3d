@@ -30,7 +30,8 @@ void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3
 		out->r[2].z = zaxis.z;
 		out->r[2].w = 0.0f;
 	}
-	else {
+	else 
+	{
 		//In RH matrix, the Z is in Row 2 of 4, and the Y is in Row 3 of 4.
 		out->r[1].x = xaxis.z;
 		out->r[1].y = yaxis.z;
