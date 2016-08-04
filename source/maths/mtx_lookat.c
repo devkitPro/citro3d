@@ -2,8 +2,9 @@
 
 void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3D_FVec cameraUpVector, bool isLeftHanded)
 {
-	//Left-handed Look-At matrix is a DirectX implementation.
-	//https://msdn.microsoft.com/en-us/library/windows/desktop/bb281710
+	//Left-handed and Right-handed Look-At matrix functions are DirectX implementations.
+	//Left-handed: https://msdn.microsoft.com/en-us/library/windows/desktop/bb281710
+	//Right-handed: https://msdn.microsoft.com/en-us/library/windows/desktop/bb281711
 	C3D_FVec xaxis, yaxis, zaxis;
 	
 	//Order of operations is crucial.
@@ -18,26 +19,24 @@ void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3
 	
 	if (isLeftHanded)
 	{
-		//Notice in LH matrix, the Y is in Row 2 of 4. In RH matrix, the Z is in Row 2 of 4. 
+		//In LH matrix, the Y is in Row 2 of 4 and the Z is in Row 3 of 4.
 		out->r[1].x = xaxis.y;
 		out->r[1].y = yaxis.y;
 		out->r[1].z = zaxis.y;
 		out->r[1].w = 0.0f;
 		
-		//Notice in LH matrix, the Z is in Row 3 of 4. In RH matrix, the Y is in Row 3 of 4.
 		out->r[2].x = xaxis.z;
 		out->r[2].y = yaxis.z;
 		out->r[2].z = zaxis.z;
 		out->r[2].w = 0.0f;
 	}
 	else {
-		//Notice in LH matrix, the Y is in Row 2 of 4. In RH matrix, the Z is in Row 2 of 4. 
+		//In RH matrix, the Z is in Row 2 of 4, and the Y is in Row 3 of 4.
 		out->r[1].x = xaxis.z;
 		out->r[1].y = yaxis.z;
 		out->r[1].z = zaxis.z;
 		out->r[1].w = 0.0f;
 		
-		//Notice in LH matrix, the Z is in Row 3 of 4. In RH matrix, the Y is in Row 3 of 4.
 		out->r[2].x = xaxis.y;
 		out->r[2].y = yaxis.y;
 		out->r[2].z = zaxis.y;
