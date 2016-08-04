@@ -2,20 +2,29 @@
 
 void Mtx_RotateZ(C3D_Mtx* mtx, float angle, bool bRightSide)
 {
-	C3D_Mtx rm, om;
+	float  a, b;
+	float  cosAngle = cosf(angle);
+	float  sinAngle = sinf(angle);
+	size_t i;
 
-	float cosAngle = cosf(angle);
-	float sinAngle = sinf(angle);
-
-	Mtx_Zeros(&rm);
-	rm.r[0].x = cosAngle;
-	rm.r[0].y = -sinAngle;
-	rm.r[1].x = sinAngle;
-	rm.r[1].y = cosAngle;
-	rm.r[2].z = 1.0f;
-	rm.r[3].w = 1.0f;
-
-	if (bRightSide) Mtx_Multiply(&om, mtx, &rm);
-	else            Mtx_Multiply(&om, &rm, mtx);
-	Mtx_Copy(mtx, &om);
+	if (bRightSide)
+	{
+		for (i = 0; i < 4; ++i)
+		{
+			a = mtx->r[i].x*cosAngle + mtx->r[i].y*sinAngle;
+			b = mtx->r[i].y*cosAngle - mtx->r[i].x*sinAngle;
+			mtx->r[i].x = a;
+			mtx->r[i].y = b;
+		}
+	}
+	else
+	{
+		for (i = 0; i < 4; ++i)
+		{
+			a = mtx->r[0].c[i]*cosAngle - mtx->r[1].c[i]*sinAngle;
+			b = mtx->r[1].c[i]*cosAngle + mtx->r[0].c[i]*sinAngle;
+			mtx->r[0].c[i] = a;
+			mtx->r[1].c[i] = b;
+		}
+	}
 }

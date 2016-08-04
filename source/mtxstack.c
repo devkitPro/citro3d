@@ -17,18 +17,19 @@ void MtxStack_Bind(C3D_MtxStack* stk, GPU_SHADER_TYPE unifType, int unifPos, int
 	stk->isDirty = true;
 }
 
-void MtxStack_Push(C3D_MtxStack* stk)
+C3D_Mtx* MtxStack_Push(C3D_MtxStack* stk)
 {
-	if (stk->pos == (C3D_MTXSTACK_SIZE-1)) return;
+	if (stk->pos == (C3D_MTXSTACK_SIZE-1)) return NULL;
 	stk->pos ++;
 	Mtx_Copy(&stk->m[stk->pos], &stk->m[stk->pos-1]);
+	return MtxStack_Cur(stk);
 }
 
-void MtxStack_Pop(C3D_MtxStack* stk)
+C3D_Mtx* MtxStack_Pop(C3D_MtxStack* stk)
 {
-	if (stk->pos == 0) return;
+	if (stk->pos == 0) return NULL;
 	stk->pos --;
-	stk->isDirty = true;
+	return MtxStack_Cur(stk);
 }
 
 void MtxStack_Update(C3D_MtxStack* stk)

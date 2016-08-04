@@ -122,8 +122,8 @@ static inline u16 floattofix2_11(float x)
 void C3D_LightSpotDir(C3D_Light* light, float x, float y, float z)
 {
 	C3Di_EnableCommon(light, true, GPU_LC1_SPOTBIT(light->id));
-	C3D_FVec vec = { { 0.0, -z, -y, -x } };
-	FVec_Norm4(&vec);
+	C3D_FVec vec = FVec3_New(-x, -y, -z);
+	vec = FVec3_Normalize(vec);
 	light->conf.spotDir[0] = floattofix2_11(vec.x);
 	light->conf.spotDir[1] = floattofix2_11(vec.y);
 	light->conf.spotDir[2] = floattofix2_11(vec.z);

@@ -1,3 +1,4 @@
+#include <float.h>
 #include <c3d/maths.h>
 
 bool Mtx_Inverse(C3D_Mtx* out)

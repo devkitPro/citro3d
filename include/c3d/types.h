@@ -1,13 +1,23 @@
 #pragma once
+#ifdef _3DS
 #include <3ds.h>
+#else
+#include <stdbool.h>
+#include <stdint.h>
+typedef uint8_t u8;
+typedef uint32_t u32;
+#endif
 
 typedef u32 C3D_IVec;
 
 typedef union
 {
 	struct { float w, z, y, x; };
+	struct { float r, k, j, i; };
 	float c[4];
 } C3D_FVec;
+
+typedef C3D_FVec C3D_FQuat;
 
 // Row-major 4x4 matrix
 typedef union

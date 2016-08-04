@@ -1,14 +1,21 @@
 #include <c3d/maths.h>
 
-void Mtx_Translate(C3D_Mtx* mtx, float x, float y, float z)
+void Mtx_Translate(C3D_Mtx* mtx, float x, float y, float z, bool bRightSide)
 {
-	C3D_Mtx tm, om;
 
-	Mtx_Identity(&tm);
-	tm.r[0].w = x;
-	tm.r[1].w = y;
-	tm.r[2].w = z;
+	C3D_FVec v = FVec4_New(x, y, z, 1.0f);
+	int i, j;
 
-	Mtx_Multiply(&om, mtx, &tm);
-	Mtx_Copy(mtx, &om);
+	if (bRightSide)
+	{
+		for (i = 0; i < 4; ++i)
+			mtx->r[i].w = FVec4_Dot(mtx->r[i], v);
+	}
+	else
+	{
+		for (j = 0; j < 3; ++j)
+			for (i = 0; i < 4; ++i)
+				mtx->r[j].c[i] += mtx->r[3].c[i] * v.c[3-j];
+	}
+
 }

@@ -2,30 +2,17 @@
 
 void Mtx_OrthoTilt(C3D_Mtx* mtx, float left, float right, float bottom, float top, float near, float far)
 {
-	C3D_Mtx mp;
-	Mtx_Zeros(&mp);
+	Mtx_Zeros(mtx);
 
-	// Build standard orthogonal projection matrix
-	mp.r[0].x = 2.0f / (right - left);
-	mp.r[0].w = (left + right) / (left - right);
-	mp.r[1].y = 2.0f / (top - bottom);
-	mp.r[1].w = (bottom + top) / (bottom - top);
-	mp.r[2].z = 2.0f / (far - near);
-	mp.r[2].w = (near + far) / (near - far);
-	mp.r[3].w = 1.0f;
+	// Standard orthogonal projection matrix, with a fixed depth range of [-1,0] (required by PICA) and rotated τ/4 radians counterclockwise around the Z axis (due to 3DS screen orientation)
+	// http://www.wolframalpha.com/input/?i={{0,1,0,0},{-1,0,0,0},{0,0,1,0},{0,0,0,1}}{{1,0,0,0},{0,1,0,0},{0,0,0.5,-0.5},{0,0,0,1}}
+	// http://www.wolframalpha.com/input/?i={{0,1,0,0},{-1,0,0,0},{0,0,0.5,-0.5},{0,0,0,1}}{{2/(r-l),0,0,(l%2Br)/(l-r)},{0,2/(t-b),0,(b%2Bt)/(b-t)},{0,0,2/(n-f),(n%2Bf)/(n-f)},{0,0,0,1}}
 
-	// Fix depth range to [-1, 0]
-	C3D_Mtx mp2, mp3;
-	Mtx_Identity(&mp2);
-	mp2.r[2].z = 0.5;
-	mp2.r[2].w = -0.5;
-	Mtx_Multiply(&mp3, &mp2, &mp);
-
-	// Fix the 3DS screens' orientation by swapping the X and Y axis
-	Mtx_Identity(&mp2);
-	mp2.r[0].x = 0.0;
-	mp2.r[0].y = 1.0;
-	mp2.r[1].x = -1.0; // flipped
-	mp2.r[1].y = 0.0;
-	Mtx_Multiply(mtx, &mp2, &mp3);
+	mtx->r[0].y = 2.0f / (top - bottom);
+	mtx->r[0].w = (bottom + top) / (bottom - top);
+	mtx->r[1].x = 2.0f / (left - right);
+	mtx->r[1].w = (left + right) / (right - left);
+	mtx->r[2].z = 1.0f / (near - far);
+	mtx->r[2].w = 0.5f*(far + near) / (near - far) - 0.5f;
+	mtx->r[3].w = 1.0f;
 }
