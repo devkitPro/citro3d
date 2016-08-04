@@ -9,11 +9,18 @@
 #define M_TAU (2*M_PI)
 
 /**
+ * @brief Convert an angle from revolutions to radians
+ * @param[in] _angle Proportion of a full revolution
+ * @return Angle in radians
+ */
+#define C3D_Angle(_angle) ((_angle)*M_TAU)
+
+/**
  * @brief Convert an angle from degrees to radians
  * @param[in] _angle Angle in degrees
  * @return Angle in radians
  */
-#define C3D_Angle(_angle) ((_angle)*M_TAU)
+#define C3D_AngleFromDegrees(_angle) ((_angle)*M_TAU/360.0f)
 
 #define C3D_AspectRatioTop (400.0f / 240.0f) ///< Aspect ratio for 3DS top screen
 #define C3D_AspectRatioBot (320.0f / 240.0f) ///< Aspect ratio for 3DS bottom screen
@@ -79,6 +86,17 @@ static inline C3D_FVec FVec4_Scale(C3D_FVec v, float s)
 {
 	// component-wise scaling
 	return FVec4_New(v.x*s, v.y*s, v.z*s, v.w*s);
+}
+
+/**
+ * @brief Perspective divide
+ * @param[in] v Vector to divide
+ * @return v/v.w
+ */
+static inline C3D_FVec FVec4_PerspDivide(C3D_FVec v)
+{
+	// divide by w
+	return FVec4_New(v.x/v.w, v.y/v.w, v.z/v.w, 1.0f);
 }
 
 /**
@@ -383,24 +401,26 @@ void Mtx_RotateZ(C3D_Mtx* mtx, float angle, bool bRightSide);
 /**
  * @brief Orthogonal projection
  * @param[out] mtx Output matrix
- * @param[in]  left    Left clip plane (X=left)
- * @param[in]  right   Right clip plane (X=right)
- * @param[in]  bottom  Bottom clip plane (Y=bottom)
- * @param[in]  top     Top clip plane (Y=top)
- * @param[in]  near    Near clip plane (Z=near)
- * @param[in]  far     Far clip plane (Z=far)
+ * @param[in]  left         Left clip plane (X=left)
+ * @param[in]  right        Right clip plane (X=right)
+ * @param[in]  bottom       Bottom clip plane (Y=bottom)
+ * @param[in]  top          Top clip plane (Y=top)
+ * @param[in]  near         Near clip plane (Z=near)
+ * @param[in]  far          Far clip plane (Z=far)
+ * @param[in]  isLeftHanded Whether to build a LH projection
  */
-void Mtx_Ortho(C3D_Mtx* mtx, float left, float right, float bottom, float top, float near, float far);
+void Mtx_Ortho(C3D_Mtx* mtx, float left, float right, float bottom, float top, float near, float far, bool isLeftHanded);
 
 /**
  * @brief Perspective projection
- * @param[out] mtx    Output matrix
- * @param[in]  fovy   Vertical field of view in radians
- * @param[in]  aspect Aspect ration of projection plane (width/height)
- * @param[in]  near   Near clip plane (Z=near)
- * @param[in]  far    Far clip plane (Z=far)
+ * @param[out] mtx          Output matrix
+ * @param[in]  fovy         Vertical field of view in radians
+ * @param[in]  aspect       Aspect ration of projection plane (width/height)
+ * @param[in]  near         Near clip plane (Z=near)
+ * @param[in]  far          Far clip plane (Z=far)
+ * @param[in]  isLeftHanded Whether to build a LH projection
  */
-void Mtx_Persp(C3D_Mtx* mtx, float fovy, float aspect, float near, float far);
+void Mtx_Persp(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, bool isLeftHanded);
 
 /**
  * @brief Stereo perspective projection
@@ -410,49 +430,53 @@ void Mtx_Persp(C3D_Mtx* mtx, float fovy, float aspect, float near, float far);
  *       they will appear to be inside the screen. If objects are closer than this,
  *       they will appear to pop out of the screen. Objects at this distance appear
  *       to be at the screen.
- * @param[out] mtx    Output matrix
- * @param[in]  fovy   Vertical field of view in radians
- * @param[in]  aspect Aspect ration of projection plane (width/height)
- * @param[in]  near   Near clip plane (Z=near)
- * @param[in]  far    Far clip plane (Z=far)
- * @param[in]  iod    Interocular distance
- * @param[in]  screen Focal length
+ * @param[out] mtx          Output matrix
+ * @param[in]  fovy         Vertical field of view in radians
+ * @param[in]  aspect       Aspect ration of projection plane (width/height)
+ * @param[in]  near         Near clip plane (Z=near)
+ * @param[in]  far          Far clip plane (Z=far)
+ * @param[in]  iod          Interocular distance
+ * @param[in]  screen       Focal length
+ * @param[in]  isLeftHanded Whether to build a LH projection
  */
-void Mtx_PerspStereo(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, float iod, float screen);
+void Mtx_PerspStereo(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, float iod, float screen, bool isLeftHanded);
 
 /**
  * @brief Orthogonal projection, tilted to account for the 3DS screen rotation
- * @param[in]  left    Left clip plane (X=left)
- * @param[in]  right   Right clip plane (X=right)
- * @param[in]  bottom  Bottom clip plane (Y=bottom)
- * @param[in]  top     Top clip plane (Y=top)
- * @param[in]  near    Near clip plane (Z=near)
- * @param[in]  far     Far clip plane (Z=far)
+ * @param[in]  left         Left clip plane (X=left)
+ * @param[in]  right        Right clip plane (X=right)
+ * @param[in]  bottom       Bottom clip plane (Y=bottom)
+ * @param[in]  top          Top clip plane (Y=top)
+ * @param[in]  near         Near clip plane (Z=near)
+ * @param[in]  far          Far clip plane (Z=far)
+ * @param[in]  isLeftHanded Whether to build a LH projection
  */
-void Mtx_OrthoTilt(C3D_Mtx* mtx, float left, float right, float bottom, float top, float near, float far);
+void Mtx_OrthoTilt(C3D_Mtx* mtx, float left, float right, float bottom, float top, float near, float far, bool isLeftHanded);
 
 /**
  * @brief Perspective projection, tilted to account for the 3DS screen rotation
- * @param[out] mtx    Output matrix
- * @param[in]  fovy   Vertical field of view in radians
- * @param[in]  aspect Aspect ration of projection plane (width/height)
- * @param[in]  near   Near clip plane (Z=near)
- * @param[in]  far    Far clip plane (Z=far)
+ * @param[out] mtx          Output matrix
+ * @param[in]  fovy         Vertical field of view in radians
+ * @param[in]  aspect       Aspect ration of projection plane (width/height)
+ * @param[in]  near         Near clip plane (Z=near)
+ * @param[in]  far          Far clip plane (Z=far)
+ * @param[in]  isLeftHanded Whether to build a LH projection
  */
-void Mtx_PerspTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far);
+void Mtx_PerspTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, bool isLeftHanded);
 
 /**
  * @brief Stereo perspective projection, tilted to account for the 3DS screen rotation
  * @note See the notes for Mtx_PerspStereo
- * @param[out] mtx    Output matrix
- * @param[in]  fovy   Vertical field of view in radians
- * @param[in]  aspect Aspect ration of projection plane (width/height)
- * @param[in]  near   Near clip plane (Z=near)
- * @param[in]  far    Far clip plane (Z=far)
- * @param[in]  iod    Interocular distance
- * @param[in]  screen Focal length
+ * @param[out] mtx          Output matrix
+ * @param[in]  fovy         Vertical field of view in radians
+ * @param[in]  aspect       Aspect ration of projection plane (width/height)
+ * @param[in]  near         Near clip plane (Z=near)
+ * @param[in]  far          Far clip plane (Z=far)
+ * @param[in]  iod          Interocular distance
+ * @param[in]  screen       Focal length
+ * @param[in]  isLeftHanded Whether to build a LH projection
  */
-void Mtx_PerspStereoTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, float iod, float screen);
+void Mtx_PerspStereoTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, float iod, float screen, bool isLeftHanded);
 
 /**
  * @brief Left-handed Look-At matrix, using DirectX implementation
