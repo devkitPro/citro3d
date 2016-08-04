@@ -8,7 +8,10 @@ void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3
 	C3D_FVec xaxis, yaxis, zaxis;
 	
 	//Order of operations is crucial.
-	zaxis = FVec3_Normalize(FVec3_New(cameraPosition.x - cameraTarget.x, cameraPosition.y - cameraTarget.y, cameraPosition.z - cameraTarget.z));
+	zaxis.x = cameraPosition.x - cameraTarget.x;
+	zaxis.y = cameraPosition.y - cameraTarget.y;
+	zaxis.z = cameraPosition.z - cameraTarget.z;
+	zaxis = FVec3_Normalize(zaxis);
 	xaxis = FVec3_Normalize(FVec3_Cross(cameraUpVector, zaxis));
 	yaxis = FVec3_Cross(zaxis, xaxis);
 	
