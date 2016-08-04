@@ -328,9 +328,10 @@ static inline C3D_FVec Mtx_MultiplyFVecH(const C3D_Mtx* mtx, C3D_FVec v)
 /**
  * @brief 3D translation
  * @param[in,out] mtx Matrix to translate
- * @param[in]     x   X component to translate
- * @param[in]     y   Y component to translate
- * @param[in]     z   Z component to translate
+ * @param[in]     x            X component to translate
+ * @param[in]     y            Y component to translate
+ * @param[in]     z            Z component to translate
+ * @param[in]     bRightSide   Whether to transform from the right side
  */
 void Mtx_Translate(C3D_Mtx* mtx, float x, float y, float z, bool bRightSide);
 
