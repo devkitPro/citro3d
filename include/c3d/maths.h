@@ -453,6 +453,17 @@ void Mtx_PerspTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far
  * @param[in]  screen Focal length
  */
 void Mtx_PerspStereoTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, float iod, float screen);
+
+/**
+ * @brief Left-handed Look-At matrix, using DirectX implementation
+ * @note See https://msdn.microsoft.com/en-us/library/windows/desktop/bb205342
+ * @param[out] out               Output matrix.
+ * @param[in]  cameraPosition    Position of the intended camera in 3D space.
+ * @param[in]  cameraTarget      Position of the intended target the camera is supposed to face in 3D space.
+ * @param[in]  cameraUpVector    The vector that points straight up depending on the camera's "Up" direction.
+ * @param[in]  isLeftHanded      If true, output matrix is left-handed. If false, output matrix is right-handed.
+ */
+void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3D_FVec cameraUpVector, bool isLeftHanded);
 ///@}
 
 ///@name Quaternion Math
