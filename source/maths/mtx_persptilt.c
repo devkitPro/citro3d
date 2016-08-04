@@ -9,6 +9,10 @@ void Mtx_PerspTilt(C3D_Mtx* mtx, float fovx, float invaspect, float near, float 
 	// had to be modified to be expressed in these terms instead.
 
 	// Notes:
+	// Includes adjusting depth range from [-1,1] to [-1,0]
+	// Includes rotation of the matrix one quarter of a turn clockwise in order to fix the 3DS screens' orientation
+
+	// Notes:
 	// fovx = 2 atan(tan(fovy/2)*w/h)
 	// fovy = 2 atan(tan(fovx/2)*h/w)
 	// invaspect = h/w
@@ -21,24 +25,13 @@ void Mtx_PerspTilt(C3D_Mtx* mtx, float fovx, float invaspect, float near, float 
 
 	// a1,1 = 1 / tan(fovy/2) = (...) = w / (h*tan(fovx/2))
 
-	float fovx_tan = tanf(fovx/2);
-	C3D_Mtx mp;
-	Mtx_Zeros(&mp);
+	float fovx_tan = tanf(fovx/2.0f);
 
-	// Build standard perspective projection matrix
-	mp.r[0].x = 1.0f / fovx_tan;
-	mp.r[1].y = 1.0f / (fovx_tan*invaspect);
-	mp.r[2].z = (near + far) / (near - far);
-	mp.r[2].w = (2 * near * far) / (near - far);
-	mp.r[3].z = -1.0f;
+	Mtx_Zeros(mtx);
 
-	// Fix depth range to [-1, 0]
-	C3D_Mtx mp2;
-	Mtx_Identity(&mp2);
-	mp2.r[2].z = 0.5;
-	mp2.r[2].w = -0.5;
-	Mtx_Multiply(mtx, &mp2, &mp);
-
-	// Rotate the matrix one quarter of a turn clockwise in order to fix the 3DS screens' orientation
-	Mtx_RotateZ(mtx, -M_TAU/4, true);
+	mtx->r[0].y = 1.0f / fovx_tan;
+	mtx->r[1].x = -1.0f / (fovx_tan*invaspect);
+	mtx->r[2].z = 0.5f*(far + near) / (near - far) + 0.5f;
+	mtx->r[2].w = far*near / (near - far);
+	mtx->r[3].z = -1.0f;
 }

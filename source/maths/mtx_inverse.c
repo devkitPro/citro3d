@@ -1,128 +1,134 @@
+#include <float.h>
 #include <c3d/maths.h>
 
 bool Mtx_Inverse(C3D_Mtx* out)
 {
-	float inv[16], det;
-	int i;
+	C3D_Mtx inv;
+	float   det;
+	int     i;
 
-	inv[0] = out->m[5]  * out->m[10] * out->m[15] - 
-	         out->m[5]  * out->m[11] * out->m[14] - 
-	         out->m[9]  * out->m[6]  * out->m[15] + 
-	         out->m[9]  * out->m[7]  * out->m[14] +
-	         out->m[13] * out->m[6]  * out->m[11] - 
-	         out->m[13] * out->m[7]  * out->m[10];
+	inv.r[0].x =  out->r[1].y * out->r[2].z * out->r[3].w -
+	              out->r[1].y * out->r[2].w * out->r[3].z -
+	              out->r[2].y * out->r[1].z * out->r[3].w +
+	              out->r[2].y * out->r[1].w * out->r[3].z +
+	              out->r[3].y * out->r[1].z * out->r[2].w -
+	              out->r[3].y * out->r[1].w * out->r[2].z;
 
-	inv[4] = -out->m[4]  * out->m[10] * out->m[15] + 
-	         out->m[4]   * out->m[11] * out->m[14] + 
-	         out->m[8]   * out->m[6]  * out->m[15] - 
-	         out->m[8]   * out->m[7]  * out->m[14] - 
-	         out->m[12]  * out->m[6]  * out->m[11] + 
-	         out->m[12]  * out->m[7]  * out->m[10];
+	inv.r[1].x = -out->r[1].x * out->r[2].z * out->r[3].w +
+	              out->r[1].x * out->r[2].w * out->r[3].z +
+	              out->r[2].x * out->r[1].z * out->r[3].w -
+	              out->r[2].x * out->r[1].w * out->r[3].z -
+	              out->r[3].x * out->r[1].z * out->r[2].w +
+	              out->r[3].x * out->r[1].w * out->r[2].z;
 
-	inv[8] = out->m[4]  * out->m[9]  * out->m[15] - 
-	         out->m[4]  * out->m[11] * out->m[13] - 
-	         out->m[8]  * out->m[5]  * out->m[15] + 
-	         out->m[8]  * out->m[7]  * out->m[13] + 
-	         out->m[12] * out->m[5]  * out->m[11] - 
-	         out->m[12] * out->m[7]  * out->m[9];
+	inv.r[2].x =  out->r[1].x * out->r[2].y * out->r[3].w -
+	              out->r[1].x * out->r[2].w * out->r[3].y -
+	              out->r[2].x * out->r[1].y * out->r[3].w +
+	              out->r[2].x * out->r[1].w * out->r[3].y +
+	              out->r[3].x * out->r[1].y * out->r[2].w -
+	              out->r[3].x * out->r[1].w * out->r[2].y;
 
-	inv[12] = -out->m[4]  * out->m[9]  * out->m[14] + 
-	         out->m[4]   * out->m[10] * out->m[13] +
-	         out->m[8]   * out->m[5]  * out->m[14] - 
-	         out->m[8]   * out->m[6]  * out->m[13] - 
-	         out->m[12]  * out->m[5]  * out->m[10] + 
-	         out->m[12]  * out->m[6]  * out->m[9];
+	inv.r[3].x = -out->r[1].x * out->r[2].y * out->r[3].z +
+	              out->r[1].x * out->r[2].z * out->r[3].y +
+	              out->r[2].x * out->r[1].y * out->r[3].z -
+	              out->r[2].x * out->r[1].z * out->r[3].y -
+	              out->r[3].x * out->r[1].y * out->r[2].z +
+	              out->r[3].x * out->r[1].z * out->r[2].y;
 
-	det = out->m[0] * inv[0] + out->m[1] * inv[4] + out->m[2] * inv[8] + out->m[3] * inv[12];
+	det = out->r[0].x * inv.r[0].x + out->r[0].y * inv.r[1].x +
+	      out->r[0].z * inv.r[2].x + out->r[0].w * inv.r[3].x;
+
 	if (fabsf(det) < FLT_EPSILON)
 		return false;
-	
-	inv[1] = -out->m[1]  * out->m[10] * out->m[15] + 
-	         out->m[1]   * out->m[11] * out->m[14] + 
-	         out->m[9]   * out->m[2]  * out->m[15] - 
-	         out->m[9]   * out->m[3]  * out->m[14] - 
-	         out->m[13]  * out->m[2]  * out->m[11] + 
-	         out->m[13]  * out->m[3]  * out->m[10];
 
-	inv[5] = out->m[0]  * out->m[10] * out->m[15] - 
-	         out->m[0]  * out->m[11] * out->m[14] - 
-	         out->m[8]  * out->m[2]  * out->m[15] + 
-	         out->m[8]  * out->m[3]  * out->m[14] + 
-	         out->m[12] * out->m[2]  * out->m[11] - 
-	         out->m[12] * out->m[3]  * out->m[10];
+	inv.r[0].y = -out->r[0].y * out->r[2].z * out->r[3].w +
+	              out->r[0].y * out->r[2].w * out->r[3].z +
+	              out->r[2].y * out->r[0].z * out->r[3].w -
+	              out->r[2].y * out->r[0].w * out->r[3].z -
+	              out->r[3].y * out->r[0].z * out->r[2].w +
+	              out->r[3].y * out->r[0].w * out->r[2].z;
 
-	inv[9] = -out->m[0]  * out->m[9]  * out->m[15] + 
-	         out->m[0]   * out->m[11] * out->m[13] + 
-	         out->m[8]   * out->m[1]  * out->m[15] - 
-	         out->m[8]   * out->m[3]  * out->m[13] - 
-	         out->m[12]  * out->m[1]  * out->m[11] + 
-	         out->m[12]  * out->m[3]  * out->m[9];
+	inv.r[1].y =  out->r[0].x * out->r[2].z * out->r[3].w -
+	              out->r[0].x * out->r[2].w * out->r[3].z -
+	              out->r[2].x * out->r[0].z * out->r[3].w +
+	              out->r[2].x * out->r[0].w * out->r[3].z +
+	              out->r[3].x * out->r[0].z * out->r[2].w -
+	              out->r[3].x * out->r[0].w * out->r[2].z;
 
-	inv[13] = out->m[0]  * out->m[9]  * out->m[14] - 
-	         out->m[0]  * out->m[10] * out->m[13] - 
-	         out->m[8]  * out->m[1]  * out->m[14] + 
-	         out->m[8]  * out->m[2]  * out->m[13] + 
-	         out->m[12] * out->m[1]  * out->m[10] - 
-	         out->m[12] * out->m[2]  * out->m[9];
+	inv.r[2].y = -out->r[0].x * out->r[2].y * out->r[3].w +
+	              out->r[0].x * out->r[2].w * out->r[3].y +
+	              out->r[2].x * out->r[0].y * out->r[3].w -
+	              out->r[2].x * out->r[0].w * out->r[3].y -
+	              out->r[3].x * out->r[0].y * out->r[2].w +
+	              out->r[3].x * out->r[0].w * out->r[2].y;
 
-	inv[2] = out->m[1]  * out->m[6] * out->m[15] - 
-	         out->m[1]  * out->m[7] * out->m[14] - 
-	         out->m[5]  * out->m[2] * out->m[15] + 
-	         out->m[5]  * out->m[3] * out->m[14] + 
-	         out->m[13] * out->m[2] * out->m[7]  - 
-	         out->m[13] * out->m[3] * out->m[6];
+	inv.r[3].y =  out->r[0].x * out->r[2].y * out->r[3].z -
+	              out->r[0].x * out->r[2].z * out->r[3].y -
+	              out->r[2].x * out->r[0].y * out->r[3].z +
+	              out->r[2].x * out->r[0].z * out->r[3].y +
+	              out->r[3].x * out->r[0].y * out->r[2].z -
+	              out->r[3].x * out->r[0].z * out->r[2].y;
 
-	inv[6] = -out->m[0]  * out->m[6] * out->m[15] + 
-	         out->m[0]   * out->m[7] * out->m[14] + 
-	         out->m[4]   * out->m[2] * out->m[15] - 
-	         out->m[4]   * out->m[3] * out->m[14] - 
-	         out->m[12]  * out->m[2] * out->m[7]  + 
-	         out->m[12]  * out->m[3] * out->m[6];
+	inv.r[0].z =  out->r[0].y * out->r[1].z * out->r[3].w -
+	              out->r[0].y * out->r[1].w * out->r[3].z -
+	              out->r[1].y * out->r[0].z * out->r[3].w +
+	              out->r[1].y * out->r[0].w * out->r[3].z +
+	              out->r[3].y * out->r[0].z * out->r[1].w -
+	              out->r[3].y * out->r[0].w * out->r[1].z;
 
-	inv[10] = out->m[0]  * out->m[5] * out->m[15] - 
-	         out->m[0]  * out->m[7] * out->m[13] - 
-	         out->m[4]  * out->m[1] * out->m[15] + 
-	         out->m[4]  * out->m[3] * out->m[13] + 
-	         out->m[12] * out->m[1] * out->m[7]  - 
-	         out->m[12] * out->m[3] * out->m[5];
+	inv.r[1].z = -out->r[0].x * out->r[1].z * out->r[3].w +
+	              out->r[0].x * out->r[1].w * out->r[3].z +
+	              out->r[1].x * out->r[0].z * out->r[3].w -
+	              out->r[1].x * out->r[0].w * out->r[3].z -
+	              out->r[3].x * out->r[0].z * out->r[1].w +
+	              out->r[3].x * out->r[0].w * out->r[1].z;
 
-	inv[14] = -out->m[0]  * out->m[5] * out->m[14] + 
-	         out->m[0]   * out->m[6] * out->m[13] + 
-	         out->m[4]   * out->m[1] * out->m[14] - 
-	         out->m[4]   * out->m[2] * out->m[13] - 
-	         out->m[12]  * out->m[1] * out->m[6]  + 
-	         out->m[12]  * out->m[2] * out->m[5];
+	inv.r[2].z =  out->r[0].x * out->r[1].y * out->r[3].w -
+	              out->r[0].x * out->r[1].w * out->r[3].y -
+	              out->r[1].x * out->r[0].y * out->r[3].w +
+	              out->r[1].x * out->r[0].w * out->r[3].y +
+	              out->r[3].x * out->r[0].y * out->r[1].w -
+	              out->r[3].x * out->r[0].w * out->r[1].y;
 
-	inv[3] = -out->m[1] * out->m[6] * out->m[11] + 
-	         out->m[1]  * out->m[7] * out->m[10] + 
-	         out->m[5]  * out->m[2] * out->m[11] - 
-	         out->m[5]  * out->m[3] * out->m[10] - 
-	         out->m[9]  * out->m[2] * out->m[7]  + 
-	         out->m[9]  * out->m[3] * out->m[6];
+	inv.r[3].z = -out->r[0].x * out->r[1].y * out->r[3].z +
+	              out->r[0].x * out->r[1].z * out->r[3].y +
+	              out->r[1].x * out->r[0].y * out->r[3].z -
+	              out->r[1].x * out->r[0].z * out->r[3].y -
+	              out->r[3].x * out->r[0].y * out->r[1].z +
+	              out->r[3].x * out->r[0].z * out->r[1].y;
 
-	inv[7] = out->m[0] * out->m[6] * out->m[11] - 
-	         out->m[0] * out->m[7] * out->m[10] - 
-	         out->m[4] * out->m[2] * out->m[11] + 
-	         out->m[4] * out->m[3] * out->m[10] + 
-	         out->m[8] * out->m[2] * out->m[7]  - 
-	         out->m[8] * out->m[3] * out->m[6];
+	inv.r[0].w = -out->r[0].y * out->r[1].z * out->r[2].w +
+	              out->r[0].y * out->r[1].w * out->r[2].z +
+	              out->r[1].y * out->r[0].z * out->r[2].w -
+	              out->r[1].y * out->r[0].w * out->r[2].z -
+	              out->r[2].y * out->r[0].z * out->r[1].w +
+	              out->r[2].y * out->r[0].w * out->r[1].z;
 
-	inv[11] = -out->m[0] * out->m[5] * out->m[11] + 
-	         out->m[0]  * out->m[7] * out->m[9]  + 
-	         out->m[4]  * out->m[1] * out->m[11] - 
-	         out->m[4]  * out->m[3] * out->m[9]  - 
-	         out->m[8]  * out->m[1] * out->m[7]  + 
-	         out->m[8]  * out->m[3] * out->m[5];
+	inv.r[1].w =  out->r[0].x * out->r[1].z * out->r[2].w -
+	              out->r[0].x * out->r[1].w * out->r[2].z -
+	              out->r[1].x * out->r[0].z * out->r[2].w +
+	              out->r[1].x * out->r[0].w * out->r[2].z +
+	              out->r[2].x * out->r[0].z * out->r[1].w -
+	              out->r[2].x * out->r[0].w * out->r[1].z;
 
-	inv[15] = out->m[0] * out->m[5] * out->m[10] - 
-	         out->m[0] * out->m[6] * out->m[9]  - 
-	         out->m[4] * out->m[1] * out->m[10] + 
-	         out->m[4] * out->m[2] * out->m[9]  + 
-	         out->m[8] * out->m[1] * out->m[6]  - 
-	         out->m[8] * out->m[2] * out->m[5];
+	inv.r[2].w = -out->r[0].x * out->r[1].y * out->r[2].w +
+	              out->r[0].x * out->r[1].w * out->r[2].y +
+	              out->r[1].x * out->r[0].y * out->r[2].w -
+	              out->r[1].x * out->r[0].w * out->r[2].y -
+	              out->r[2].x * out->r[0].y * out->r[1].w +
+	              out->r[2].x * out->r[0].w * out->r[1].y;
+
+	inv.r[3].w =  out->r[0].x * out->r[1].y * out->r[2].z -
+	              out->r[0].x * out->r[1].z * out->r[2].y -
+	              out->r[1].x * out->r[0].y * out->r[2].z +
+	              out->r[1].x * out->r[0].z * out->r[2].y +
+	              out->r[2].x * out->r[0].y * out->r[1].z -
+	              out->r[2].x * out->r[0].z * out->r[1].y;
 
 	det = 1.0 / det;
+
 	for (i = 0; i < 16; i++)
-		out->m[i] = inv[i] * det;
+		out->m[i] = inv.m[i] * det;
+
 	return true;
 }
