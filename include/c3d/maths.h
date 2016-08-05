@@ -303,7 +303,7 @@ void Mtx_Multiply(C3D_Mtx* out, const C3D_Mtx* a, const C3D_Mtx* b);
  * @retval true Matrix was inverted
  * @retval false Matrix is degenerate
  */
-bool Mtx_Inverse(C3D_Mtx* out);
+float Mtx_Inverse(C3D_Mtx* out);
 
 /**
  * @brief Multiply 3x3 matrix by a FVec3
