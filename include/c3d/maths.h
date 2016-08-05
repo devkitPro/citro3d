@@ -296,7 +296,7 @@ void Mtx_Identity(C3D_Mtx* out);
  * @param[in]  a   Multiplicand
  * @param[in]  b   Multiplier
  */
-void Mtx_Multiply(C3D_Mtx* __restrict out, const C3D_Mtx* a, const C3D_Mtx* b);
+void Mtx_Multiply(C3D_Mtx* out, const C3D_Mtx* a, const C3D_Mtx* b);
 
 /**
  * @brief Inverse a matrix
