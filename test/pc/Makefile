@@ -6,17 +6,22 @@ OFILES   := $(addprefix build/,$(CXXFILES:.cpp=.o)) \
             $(patsubst ../../source/maths/%,build/%,$(CFILES:.c=.o))
 DFILES   := $(wildcard build/*.d)
 
-CFLAGS   := -Wall -g -pipe -I../../include
+CFLAGS   := -Wall -g -pipe -I../../include --coverage
 CXXFLAGS := $(CFLAGS) -std=gnu++11 -DGLM_FORCE_RADIANS
-LDFLAGS  := $(ARCH) -pipe -lm
+LDFLAGS  := $(ARCH) -pipe -lm --coverage
 
-.PHONY: all clean
+.PHONY: all clean lcov
 
 all: $(TARGET)
 
 $(TARGET): $(OFILES)
 	@echo "Linking $@"
 	$(CXX) -o $@ $^ $(LDFLAGS)
+
+lcov: all
+	@./$(TARGET)
+	@lcov --capture --no-external --directory ../../include --directory ../../source --directory ../../test/pc --output-file coverage.info
+	@genhtml coverage.info --output-directory lcov
 
 $(OFILES): | build
 
@@ -32,6 +37,6 @@ build/%.o : ../../source/maths/%.c $(wildcard *.h)
 	@$(CC) -o $@ -c $< $(CFLAGS) -MMD -MP -MF build/$*.d
 
 clean:
-	$(RM) -r $(TARGET) build/
+	$(RM) -r $(TARGET) build/ coverage.info lcov/
 
 -include $(DFILES)
