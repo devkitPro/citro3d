@@ -1,6 +1,6 @@
 #include <c3d/maths.h>
 
-void Mtx_Multiply(C3D_Mtx* restrict out, const C3D_Mtx* a, const C3D_Mtx* b)
+void Mtx_Multiply(C3D_Mtx* __restrict out, const C3D_Mtx* a, const C3D_Mtx* b)
 {
 	// http://www.wolframalpha.com/input/?i={{a,b,c,d},{e,f,g,h},{i,j,k,l},{m,n,o,p}}{{α,β,γ,δ},{ε,θ,ι,κ},{λ,μ,ν,ξ},{ο,π,ρ,σ}}
 	int i, j;
