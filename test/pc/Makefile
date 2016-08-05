@@ -2,8 +2,9 @@ TARGET   := test
 
 CFILES   := $(wildcard *.c) $(wildcard ../../source/maths/*.c)
 CXXFILES := $(wildcard *.cpp)
-OFILES   := $(CXXFILES:.cpp=.o) $(CFILES:.c=.o)
-DFILES   := $(wildcard *.d) $(wildcard ../../source/maths/*.d)
+OFILES   := $(addprefix build/,$(CXXFILES:.cpp=.o)) \
+            $(patsubst ../../source/maths/%,build/%,$(CFILES:.c=.o))
+DFILES   := $(wildcard build/*.d)
 
 CFLAGS   := -Wall -g -pipe -I../../include
 CXXFLAGS := $(CFLAGS) -std=gnu++11 -DGLM_FORCE_RADIANS
@@ -17,15 +18,20 @@ $(TARGET): $(OFILES)
 	@echo "Linking $@"
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-%.o : %.cpp $(wildcard *.h)
-	@echo "Compiling $@"
-	@$(CXX) -o $@ -c $< $(CXXFLAGS) -MMD -MP -MF $*.d
+$(OFILES): | build
 
-%.o : %.c $(wildcard *.h)
+build:
+	@[ -d build ] || mkdir build
+
+build/%.o : %.cpp $(wildcard *.h)
 	@echo "Compiling $@"
-	@$(CC) -o $@ -c $< $(CFLAGS) -MMD -MP -MF $*.d
+	@$(CXX) -o $@ -c $< $(CXXFLAGS) -MMD -MP -MF build/$*.d
+
+build/%.o : ../../source/maths/%.c $(wildcard *.h)
+	@echo "Compiling $@"
+	@$(CC) -o $@ -c $< $(CFLAGS) -MMD -MP -MF build/$*.d
 
 clean:
-	$(RM) $(OFILES) $(DFILES) $(TARGET)
+	$(RM) -r $(TARGET) build/
 
 -include $(DFILES)
