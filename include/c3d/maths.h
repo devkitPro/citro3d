@@ -299,11 +299,11 @@ void Mtx_Multiply(C3D_Mtx* out, const C3D_Mtx* a, const C3D_Mtx* b);
 
 /**
  * @brief Inverse a matrix
+ * @note returns 0.0f if the matrix is degenerate; i.e. no inverse
  * @param[in,out] out Matrix to inverse
- * @retval true Matrix was inverted
- * @retval false Matrix is degenerate
+ * @return determinant
  */
-bool Mtx_Inverse(C3D_Mtx* out);
+float Mtx_Inverse(C3D_Mtx* out);
 
 /**
  * @brief Multiply 3x3 matrix by a FVec3
