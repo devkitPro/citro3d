@@ -99,7 +99,7 @@ operator==(const glm::mat4 &lhs, const C3D_Mtx &rhs)
     for(size_t j = 0; j < 4; ++j)
     {
       if(std::abs(lhs[i][j] - rhs.m[j*4+3-i]) > 0.001f)
-        return false;
+        return false; // LCOV_EXCL_LINE This would cause an assertion failure
     }
   }
 
@@ -115,12 +115,6 @@ operator==(const C3D_Mtx &lhs, const glm::mat4 &rhs)
 static inline bool
 operator==(const glm::quat &lhs, const C3D_FQuat &rhs)
 {
-  if((std::isnan(lhs.w) && std::isnan(rhs.r))
-  || (std::isnan(lhs.x) && std::isnan(rhs.i))
-  || (std::isnan(lhs.y) && std::isnan(rhs.j))
-  || (std::isnan(lhs.z) && std::isnan(rhs.k)))
-    return true;
-
   return std::abs(lhs.w - rhs.r) < 0.01f
       && std::abs(lhs.x - rhs.i) < 0.01f
       && std::abs(lhs.y - rhs.j) < 0.01f
@@ -136,12 +130,6 @@ operator==(const C3D_FQuat &lhs, const glm::quat &rhs)
 static inline bool
 operator==(const C3D_FQuat &lhs, const C3D_FQuat &rhs)
 {
-  if((std::isnan(lhs.r) && std::isnan(rhs.r))
-  || (std::isnan(lhs.i) && std::isnan(rhs.i))
-  || (std::isnan(lhs.j) && std::isnan(rhs.j))
-  || (std::isnan(lhs.k) && std::isnan(rhs.k)))
-    return true;
-
   return std::abs(lhs.r - rhs.r) < 0.01f
       && std::abs(lhs.i - rhs.i) < 0.01f
       && std::abs(lhs.j - rhs.j) < 0.01f
@@ -528,6 +516,36 @@ check_matrix(generator_t &gen, distribution_t &dist)
       Mtx_OrthoTilt(&m, l, r, b, t, n, f, true);
       g = glm::ortho(l, r, b, t, n, f);
       assert(m == tilt*fix_depth*glm::scale(g, z_flip));
+    }
+
+    // check lookAt
+    {
+      C3D_Mtx m;
+      C3D_FVec camera, target, diff, up;
+
+      // avoid very small distances and 'up' pointing near the target
+      do
+      {
+        camera = FVec3_New(dist(gen), dist(gen), dist(gen));
+        target = FVec3_New(dist(gen), dist(gen), dist(gen));
+        up     = FVec3_New(dist(gen), dist(gen), dist(gen));
+        diff   = FVec3_Subtract(target, camera);
+      } while(FVec3_Magnitude(diff) < 0.25f
+           || FVec3_Magnitude(up) < 0.25f
+           || FVec3_Dot(up, diff) / FVec3_Magnitude(up) / FVec3_Magnitude(diff) < cosf(30.0f*M_TAU/360.0f));
+
+      glm::mat4 g = glm::lookAt(glm::vec3(camera.x, camera.y, camera.z),
+                                glm::vec3(target.x, target.y, target.z),
+                                glm::vec3(up.x,     up.y,     up.z));
+
+      // RH
+      Mtx_LookAt(&m, camera, target, up, false);
+      assert(m == g);
+
+      // LH
+      Mtx_LookAt(&m, camera, target, up, true);
+      // I can't say for certain that this is the correct test
+      assert(m == glm::scale(glm::mat4(), glm::vec3(-1.0f, 1.0f, -1.0f))*g);
     }
 
     // check multiply
