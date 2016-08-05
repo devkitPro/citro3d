@@ -291,7 +291,6 @@ void Mtx_Identity(C3D_Mtx* out);
 
 /**
  * @brief Multiply two matrices
- * @note Undefined behavior if argument, out, is passed in as either a or b.
  * @param[out] out Output matrix
  * @param[in]  a   Multiplicand
  * @param[in]  b   Multiplier
