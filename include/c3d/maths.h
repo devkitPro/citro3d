@@ -627,7 +627,7 @@ void Mtx_FromQuat(C3D_Mtx* m, C3D_FQuat q);
  * @param[in]   m Input  Matrix
  * @return      Generated Quaternion
  */
-C3D_FQuat Quat_FromMtx(C3D_Mtx m);
+C3D_FQuat Quat_FromMtx(C3D_Mtx* m);
 
 /**
  * @brief Identity Quaternion
