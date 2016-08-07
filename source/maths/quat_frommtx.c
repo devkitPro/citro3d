@@ -1,6 +1,6 @@
 #include <c3d/maths.h>
 
-C3D_FQuat Quat_FromMtx(C3D_Mtx* m)
+C3D_FQuat Quat_FromMtx(const C3D_Mtx* m)
 {
 	//Taken from Gamasutra:
 	//http://www.gamasutra.com/view/feature/131686/rotating_objects_using_quaternions.php
