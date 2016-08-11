@@ -573,7 +573,7 @@ C3D_FQuat Quat_Pow(C3D_FQuat q, float p);
  * @brief Cross product of Quaternion and FVec3
  * @param[in] lhs Left-side Quaternion
  * @param[in] rhs Right-side FVec3
- * @return qÃ—v
+ * @return q × v
  */
 C3D_FVec Quat_CrossFVec3(C3D_FQuat q, C3D_FVec v);
 
@@ -651,7 +651,7 @@ static inline C3D_FQuat Quat_Conjugate(C3D_FQuat q)
 static inline C3D_FQuat Quat_Inverse(C3D_FQuat q)
 {
 	// q^-1 = (q.r - q.i - q.j - q.k) / (q.r^2 + q.i^2 + q.j^2 + q.k^2)
-	//      = q* / (qâˆ™q)
+	//      = q* / (q · q)
 	C3D_FQuat c = Quat_Conjugate(q);
 	float     d = Quat_Dot(q, q);
 	return Quat_New(c.i/d, c.j/d, c.k/d, c.r/d);
@@ -661,11 +661,29 @@ static inline C3D_FQuat Quat_Inverse(C3D_FQuat q)
  * @brief Cross product of FVec3 and Quaternion
  * @param[in] lhs Left-side FVec3
  * @param[in] rhs Right-side Quaternion
- * @return vÃ—q
+ * @return v × q
  */
 static inline C3D_FVec FVec3_CrossQuat(C3D_FVec v, C3D_FQuat q)
 {
-	// vÃ—q = q^-1Ã—v
+	// v × q = q^-1 × v
 	return Quat_CrossFVec3(Quat_Inverse(q), v);
 }
+
+/**
+ * @brief Quaternion Look At 
+ * @param[in] source   C3D_FVec Starting position. Origin of rotation.
+ * @param[in] target   C3D_FVec Target position to orient towards.
+ * @param[in] forwardVector C3D_FVec The Up vector.
+ * @param[in] upVector C3D_FVec The Up vector.
+ * @return Quaternion rotation.
+ */
+C3D_FQuat Quat_LookAt(C3D_FVec source, C3D_FVec target, C3D_FVec forwardVector, C3D_FVec upVector);
+
+/**
+ * @brief Quaternion, created from a given axis and angle in radians.
+ * @param[in] axis  C3D_FVec The axis to rotate around at.
+ * @param[in] angle float The angle to rotate. Unit: Radians
+ * @return Quaternion rotation based on the axis and angle. Axis doesn't have to be orthogonal.
+ */ 
+C3D_FQuat Quat_FromAxisAngle(C3D_FVec axis, float angle);
 ///@}
