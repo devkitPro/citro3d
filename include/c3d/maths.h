@@ -489,6 +489,12 @@ void Mtx_PerspStereoTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, flo
  * @param[in]  isLeftHanded      If true, output matrix is left-handed. If false, output matrix is right-handed.
  */
 void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3D_FVec cameraUpVector, bool isLeftHanded);
+
+/**
+ *@brief Transposes the matrix. Row => Column, and vice versa. 
+ *@param[in,out] out     Output matrix.
+ */
+void Mtx_Transpose(C3D_Mtx* out);
 ///@}
 
 ///@name Quaternion Math
