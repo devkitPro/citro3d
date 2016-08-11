@@ -10,6 +10,6 @@ C3D_FQuat Quat_LookAt(C3D_FVec source, C3D_FVec target, C3D_FVec forwardVector, 
 	if (dot - 1.0f < -FLT_EPSILON)
 		return Quat_Identity();
 	float rotationAngle = acosf(dot);
-	C3D_FVec rotationAxis = FVec3_Normalize(FVec3_Cross(forwardVector, forward));
+	C3D_FVec rotationAxis = FVec3_Cross(forwardVector, forward);
 	return Quat_FromAxisAngle(rotationAxis, rotationAngle);
 }
