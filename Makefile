@@ -21,7 +21,7 @@ VERSION	:=	$(CITRO3D_MAJOR).$(CITRO3D_MINOR).$(CITRO3D_PATCH)
 # DATA is a list of directories containing data files
 # INCLUDES is a list of directories containing header files
 #---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
+TARGET		:=	citro3d
 BUILD		:=	build
 SOURCES		:=	source \
 				source/maths

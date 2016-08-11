@@ -489,6 +489,12 @@ void Mtx_PerspStereoTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, flo
  * @param[in]  isLeftHanded      If true, output matrix is left-handed. If false, output matrix is right-handed.
  */
 void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3D_FVec cameraUpVector, bool isLeftHanded);
+
+/**
+ *@brief Transposes the matrix. Row => Column, and vice versa. 
+ *@param[in,out] out     Output matrix.
+ */
+void Mtx_Transpose(C3D_Mtx* out);
 ///@}
 
 ///@name Quaternion Math
@@ -622,6 +628,14 @@ C3D_FQuat Quat_RotateZ(C3D_FQuat q, float r, bool bRightSide);
 void Mtx_FromQuat(C3D_Mtx* m, C3D_FQuat q);
 
 /**
+ * @brief Get Quaternion equivalent to 4x4 matrix
+ * @note If the matrix is orthogonal or special orthogonal, where determinant(matrix) = +1.0f, then the matrix can be converted. 
+ * @param[in]   m Input  Matrix
+ * @return      Generated Quaternion
+ */
+C3D_FQuat Quat_FromMtx(const C3D_Mtx* m);
+
+/**
  * @brief Identity Quaternion
  * @return Identity Quaternion
  */
@@ -677,4 +691,22 @@ static inline C3D_FVec FVec3_CrossQuat(C3D_FVec v, C3D_FQuat q)
  * @return    C3D_FQuat  The Quaternion equivalent with the pitch, yaw, and roll orientations applied.
  */
 C3D_FQuat Quat_FromPitchYawRoll(float pitch, float yaw, float roll, bool bRightSide);
+
+/**
+ * @brief Quaternion Look At 
+ * @param[in] source   C3D_FVec Starting position. Origin of rotation.
+ * @param[in] target   C3D_FVec Target position to orient towards.
+ * @param[in] forwardVector C3D_FVec The Up vector.
+ * @param[in] upVector C3D_FVec The Up vector.
+ * @return Quaternion rotation.
+ */
+C3D_FQuat Quat_LookAt(C3D_FVec source, C3D_FVec target, C3D_FVec forwardVector, C3D_FVec upVector);
+
+/**
+ * @brief Quaternion, created from a given axis and angle in radians.
+ * @param[in] axis  C3D_FVec The axis to rotate around at.
+ * @param[in] angle float The angle to rotate. Unit: Radians
+ * @return Quaternion rotation based on the axis and angle. Axis doesn't have to be orthogonal.
+ */ 
+C3D_FQuat Quat_FromAxisAngle(C3D_FVec axis, float angle);
 ///@}
