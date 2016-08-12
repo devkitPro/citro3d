@@ -3,13 +3,13 @@
 void Mtx_Transpose(C3D_Mtx* out)
 {
 	float swap;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i <= 2; i++)
 	{
-		for (int j = i+1; j < 4; j++)
+		for (int j = 2-i; j >= 0; j--)
 		{
-			swap = out->r[j].c[i];
-			out->r[j].c[i] = out->r[i].c[j];
-			out->r[i].c[j] = swap;
+			swap = out->r[i].c[j];
+			out->r[i].c[j] = out->r[3-j].c[3-i];
+			out->r[3-j].c[3-i] = swap;
 		}
 	}
 }

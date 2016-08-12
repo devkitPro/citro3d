@@ -840,6 +840,57 @@ void ortho_test()
   C3D_RenderTargetDelete(tex);
 }
 
+void transpose_test()
+{
+  C3D_Mtx          modelView;
+  
+  std::printf("\n");
+  
+  Mtx_Identity(&modelView);
+  Mtx_Translate(&modelView, (rand() % 5) + 5.0f, (rand() % 5) + 5.0f, (rand() % 5) + 5.0f, true);
+  
+  std::printf("Random Translation:\n");
+  for (int i = 0; i < 16; i++)
+  {
+	  std::printf("%.2f  ", modelView.m[i]);
+	  if (i % 4 == 3)
+		  std::printf("\n");
+  }
+  
+  Mtx_Transpose(&modelView);
+  
+  std::printf("Random Translation Transposed:\n");
+  for (int i = 0; i < 16; i++)
+  {
+	  std::printf("%.2f  ", modelView.m[i]);
+	  if (i % 4 == 3)
+		  std::printf("\n");
+  }
+  
+  Mtx_Transpose(&modelView);
+  
+  std::printf("Rand-Trans Transposed Transposed:\n");
+  for (int i = 0; i < 16; i++)
+  {
+	  std::printf("%.2f  ", modelView.m[i]);
+	  if (i % 4 == 3)
+		  std::printf("\n");
+  }
+  
+
+  while(aptMainLoop())
+  {
+    gspWaitForVBlank();
+
+    hidScanInput();
+    u32 down = hidKeysDown();
+    if(down & (KEY_START|KEY_SELECT))
+      break;
+  }
+}
+
+
+
 typedef struct
 {
   const char *name;
@@ -854,6 +905,7 @@ test_t tests[] =
   { "Mtx_Persp",           persp_test,       },
   { "Mtx_PerspStereo",     stereo_test,      },
   { "Mtx_Ortho",           ortho_test,       },
+  { "Mtx_Transpose",       transpose_test,   },
 };
 
 const size_t num_tests = sizeof(tests)/sizeof(tests[0]);
