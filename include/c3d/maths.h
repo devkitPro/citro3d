@@ -676,8 +676,5 @@ static inline C3D_FVec FVec3_CrossQuat(C3D_FVec v, C3D_FQuat q)
  * @param[in] roll       The roll angle in radians.
  * @return    C3D_FQuat  The Quaternion equivalent with the pitch, yaw, and roll orientations applied.
  */
-static inline C3D_FQuat Quat_FromPitchYawRoll(float pitch, float yaw, float roll)
-{
-	return Quat_RotateZ(Quat_RotateY(Quat_RotateX(Quat_Identity(), pitch, false), yaw, false), roll, false);
-}
+C3D_FQuat Quat_FromPitchYawRoll(float pitch, float yaw, float roll, bool bRightSide);
 ///@}
