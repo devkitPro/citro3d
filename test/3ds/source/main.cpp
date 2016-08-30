@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <3ds.h>
 #include <citro3d.h>
+#include <float.h>
 
 #include "vshader_shbin.h"
 
@@ -840,6 +841,104 @@ void ortho_test()
   C3D_RenderTargetDelete(tex);
 }
 
+void transpose_test()
+{
+  consoleClear();
+  C3D_Mtx modelView, check;
+  
+  Mtx_Identity(&modelView);
+  Mtx_Translate(&modelView, ((float)(rand() % 100)) + 5.0f, ((float)(rand() % 100)) + 5.0f, ((float)(rand() % 100)) + 5.0f, true);
+  Mtx_RotateX(&modelView, (float)(rand() % 180) * (acos(-1)/180.0f), true);
+  Mtx_RotateY(&modelView, (float)(rand() % 180) * (acos(-1)/180.0f), true);
+  Mtx_RotateZ(&modelView, (float)(rand() % 180) * (acos(-1)/180.0f), true);
+  Mtx_Copy(&check, &modelView);
+  
+  std::printf("Random Translation:\n");
+  for (int i = 0; i < 16; i++)
+  {
+	  std::printf("%2.2f  ", modelView.m[i]);
+	  if (i % 4 == 3)
+		  std::printf("\n");
+  }
+  
+  Mtx_Transpose(&modelView);
+  
+  std::printf("Random Translation Transposed:\n");
+  for (int i = 0; i < 16; i++)
+  {
+	  std::printf("%2.2f  ", modelView.m[i]);
+	  if (i % 4 == 3)
+		  std::printf("\n");
+  }
+  
+  Mtx_Transpose(&modelView);
+  
+  std::printf("Rand-Trans Transposed Transposed:\n");
+  for (int i = 0; i < 16; i++)
+  {
+	  std::printf("%2.2f  ", modelView.m[i]);
+	  if (i % 4 == 3)
+		  std::printf("\n");
+  }
+  
+  bool transposeFailCheck = false;
+  for (int i = 0; i < 16; i++)
+  {
+	  if (modelView.m[i] != check.m[i])
+	  {
+		  transposeFailCheck = true;
+		  break;
+	  }
+  }
+  
+  bool transInvFailCheck = false;
+  Mtx_Inverse(&modelView);
+  Mtx_Transpose(&modelView);
+  Mtx_Transpose(&check);
+  Mtx_Inverse(&check);
+  for (int i = 0; i < 16; i++)
+  {
+	  if (fabsf(modelView.m[i] - check.m[i]) > 0.001f)
+	  {
+		  std::printf("%f != %f\n", modelView.m[i], check.m[i]);
+		  transInvFailCheck = true;
+		  break;
+	  }
+  }
+  
+  std::printf("Transposed Inverse of RandMatrix:\n");
+  for (int i = 0; i < 16; i++)
+  {
+	  std::printf("%2.2f  ", modelView.m[i]);
+	  if (i % 4 == 3)
+		  std::printf("\n");
+  }
+  
+  std::printf("Inverse Transposed of RandMatrix:\n");
+  for (int i = 0; i < 16; i++)
+  {
+	  std::printf("%2.2f  ", check.m[i]);
+	  if (i % 4 == 3)
+		  std::printf("\n");
+  }
+  
+  std::printf("\n");
+  std::printf("Transpose(Transpose(A)) = A? %s\n", (transposeFailCheck ? "False" : "True"));
+  std::printf("Inv(Trans(A))=Trans(Inv(A))? %s\n", (transInvFailCheck ? "False" : "True"));
+  
+  while(aptMainLoop())
+  {
+    gspWaitForVBlank();
+
+    hidScanInput();
+    u32 down = hidKeysDown();
+    if(down & (KEY_START|KEY_SELECT))
+      break;
+  }
+}
+
+
+
 typedef struct
 {
   const char *name;
@@ -854,6 +953,7 @@ test_t tests[] =
   { "Mtx_Persp",           persp_test,       },
   { "Mtx_PerspStereo",     stereo_test,      },
   { "Mtx_Ortho",           ortho_test,       },
+  { "Mtx_Transpose",       transpose_test,   },
 };
 
 const size_t num_tests = sizeof(tests)/sizeof(tests[0]);
