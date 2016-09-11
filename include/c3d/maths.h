@@ -495,6 +495,16 @@ void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3
  *@param[in,out] out     Output matrix.
  */
 void Mtx_Transpose(C3D_Mtx* out);
+
+/**
+ * @brief Creates a matrix with the diagonal using the given parameters.
+ * @param[out]  out    Output matrix.
+ * @param[in]   x      The X component.
+ * @param[in]   y      The Y component.
+ * @param[in]   z      The Z component.
+ * @param[in]   w      The W component.
+ */
+void Mtx_Diagonal(C3D_Mtx* out, float x, float y, float z, float w);
 ///@}
 
 ///@name Quaternion Math
