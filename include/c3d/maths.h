@@ -284,19 +284,6 @@ static inline void Mtx_Copy(C3D_Mtx* out, const C3D_Mtx* in)
 }
 
 /**
- * @brief Identity matrix
- * @param[out] out Matrix to fill
- */
-static inline void Mtx_Identity(C3D_Mtx* out)
-{
-	// http://www.wolframalpha.com/input/?i={{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}
-	int i;
-	for (i = 0; i < 16; ++i)
-		out->m[i] = 0.0f;
-	out->r[0].x = out->r[1].y = out->r[2].z = out->r[3].w = 1.0f;
-}
-
-/**
  * @brief Multiply two matrices
  * @param[out] out Output matrix
  * @param[in]  a   Multiplicand
@@ -520,6 +507,14 @@ static inline void Mtx_Diagonal(C3D_Mtx* out, float x, float y, float z, float w
 	out->r[3].w = w;
 }
 
+/**
+ * @brief Identity matrix
+ * @param[out] out Matrix to fill
+ */
+static inline void Mtx_Identity(C3D_Mtx* out)
+{
+	Mtx_Diagonal(out, 1.0f, 1.0f, 1.0f, 1.0f);
+}
 ///@}
 
 ///@name Quaternion Math
