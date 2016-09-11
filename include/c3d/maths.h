@@ -515,6 +515,30 @@ static inline void Mtx_Identity(C3D_Mtx* out)
 {
 	Mtx_Diagonal(out, 1.0f, 1.0f, 1.0f, 1.0f);
 }
+
+/**
+ * @brief Matrix addition
+ * @param[out]   out    Output matrix.
+ * @param[in]    lhs    Left matrix.
+ * @param[in]    rhs    Right matrix.
+ */
+static inline void Mtx_Add(C3D_Mtx* out, const C3D_Mtx* lhs, const C3D_Mtx* rhs)
+{
+	for (int i = 0; i < 16; i++)
+		out->m[i] = lhs->m[i] + rhs->m[i];
+}
+
+/**
+ * @brief Matrix subtraction
+ * @param[out]   out    Output matrix.
+ * @param[in]    lhs    Left matrix.
+ * @param[in]    rhs    Right matrix.
+ */
+static inline void Mtx_Subtract(C3D_Mtx* out, const C3D_Mtx* lhs, const C3D_Mtx* rhs)
+{
+	for (int i = 0; i < 16; i++)
+		out->m[i] = lhs->m[i] - rhs->m[i];
+}
 ///@}
 
 ///@name Quaternion Math
