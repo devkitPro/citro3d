@@ -284,12 +284,6 @@ static inline void Mtx_Copy(C3D_Mtx* out, const C3D_Mtx* in)
 }
 
 /**
- * @brief Identity matrix
- * @param[out] out Matrix to fill
- */
-void Mtx_Identity(C3D_Mtx* out);
-
-/**
  * @brief Multiply two matrices
  * @param[out] out Output matrix
  * @param[in]  a   Multiplicand
@@ -495,6 +489,32 @@ void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3
  *@param[in,out] out     Output matrix.
  */
 void Mtx_Transpose(C3D_Mtx* out);
+
+/**
+ * @brief Creates a matrix with the diagonal using the given parameters.
+ * @param[out]  out    Output matrix.
+ * @param[in]   x      The X component.
+ * @param[in]   y      The Y component.
+ * @param[in]   z      The Z component.
+ * @param[in]   w      The W component.
+ */
+static inline void Mtx_Diagonal(C3D_Mtx* out, float x, float y, float z, float w)
+{
+	Mtx_Zeros(out);
+	out->r[0].x = x;
+	out->r[1].y = y;
+	out->r[2].z = z;
+	out->r[3].w = w;
+}
+
+/**
+ * @brief Identity matrix
+ * @param[out] out Matrix to fill
+ */
+static inline void Mtx_Identity(C3D_Mtx* out)
+{
+	Mtx_Diagonal(out, 1.0f, 1.0f, 1.0f, 1.0f);
+}
 ///@}
 
 ///@name Quaternion Math
