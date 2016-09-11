@@ -522,7 +522,7 @@ static inline void Mtx_Identity(C3D_Mtx* out)
  * @param[in]    lhs    Left matrix.
  * @param[in]    rhs    Right matrix.
  */
-static inline void Mtx_Add(C3D_Mtx* out, C3D_Mtx* lhs, C3D_Mtx* rhs)
+static inline void Mtx_Add(C3D_Mtx* out, const C3D_Mtx* lhs, const C3D_Mtx* rhs)
 {
 	for (int i = 0; i < 16; i++)
 		out->m[i] = lhs->m[i] + rhs->m[i];
@@ -534,7 +534,7 @@ static inline void Mtx_Add(C3D_Mtx* out, C3D_Mtx* lhs, C3D_Mtx* rhs)
  * @param[in]    lhs    Left matrix.
  * @param[in]    rhs    Right matrix.
  */
-static inline void Mtx_Subtract(C3D_Mtx* out, C3D_Mtx* lhs, C3D_Mtx* rhs)
+static inline void Mtx_Subtract(C3D_Mtx* out, const C3D_Mtx* lhs, const C3D_Mtx* rhs)
 {
 	for (int i = 0; i < 16; i++)
 		out->m[i] = lhs->m[i] - rhs->m[i];
