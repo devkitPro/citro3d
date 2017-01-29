@@ -10,7 +10,7 @@ void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void
 	C3Di_UpdateContext();
 
 	// Set primitive type
-	GPUCMD_AddMaskedWrite(GPUREG_PRIMITIVE_CONFIG, 2, primitive);
+	GPUCMD_AddMaskedWrite(GPUREG_PRIMITIVE_CONFIG, 2, primitive != GPU_TRIANGLES ? primitive : GPU_GEOMETRY_PRIM);
 	// Start a new primitive (breaks off a triangle strip/fan)
 	GPUCMD_AddWrite(GPUREG_RESTART_PRIMITIVE, 1);
 	// Configure the index buffer
