@@ -1,6 +1,5 @@
-#include "context.h"
+#include "internal.h"
 #include <c3d/renderqueue.h>
-#include <string.h>
 #include <stdlib.h>
 
 static C3D_RenderTarget *firstTarget, *lastTarget;
@@ -94,7 +93,7 @@ static void clearTarget(C3D_RenderTarget* target)
 	a->link = target;
 }
 
-static void onVBlank0(void* unused)
+static void onVBlank0(C3D_UNUSED void* unused)
 {
 	if (!linkedTarget[0]) return;
 
@@ -116,13 +115,13 @@ static void onVBlank0(void* unused)
 		transferTarget(linkedTarget[0]);
 }
 
-static void onVBlank1(void* unused)
+static void onVBlank1(C3D_UNUSED void* unused)
 {
 	if (linkedTarget[2] && linkedTarget[2]->transferOk)
 		transferTarget(linkedTarget[2]);
 }
 
-void onRenderFinish(void* unused)
+void onRenderFinish(C3D_UNUSED void* unused)
 {
 	C3D_RenderTarget *a, *next;
 
@@ -152,7 +151,7 @@ void onRenderFinish(void* unused)
 		updateFrameQueue();
 }
 
-void onTransferFinish(void* unused)
+void onTransferFinish(C3D_UNUSED void* unused)
 {
 	C3D_RenderTarget* target = transferQueue;
 	if (inSafeTransfer)
@@ -174,7 +173,7 @@ void onTransferFinish(void* unused)
 		updateFrameQueue();
 }
 
-void onClearDone(void* unused)
+void onClearDone(C3D_UNUSED void* unused)
 {
 	C3D_RenderTarget* target = clearQueue;
 	if (inSafeClear)
@@ -228,7 +227,7 @@ static void C3Di_RenderQueueWaitDone(void)
 		gspWaitForAnyEvent();
 }
 
-bool checkRenderQueueInit(void)
+static bool checkRenderQueueInit(void)
 {
 	C3D_Context* ctx = C3Di_GetContext();
 

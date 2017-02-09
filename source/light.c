@@ -1,6 +1,4 @@
-#include <string.h>
-#include "context.h"
-#include <c3d/maths.h>
+#include "internal.h"
 
 void C3Di_LightMtlBlend(C3D_Light* light)
 {
@@ -81,7 +79,7 @@ void C3D_LightPosition(C3D_Light* light, C3D_FVec* pos)
 {
 	// Enable/disable positional light depending on W coordinate
 	light->conf.config &= ~BIT(0);
-	light->conf.config |= (pos->w == 0.0);
+	light->conf.config |= (pos->w == 0.0f);
 	light->conf.position[0] = f32tof16(pos->x);
 	light->conf.position[1] = f32tof16(pos->y);
 	light->conf.position[2] = f32tof16(pos->z);

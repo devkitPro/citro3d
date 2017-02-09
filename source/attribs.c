@@ -1,6 +1,5 @@
+#include "internal.h"
 #include <c3d/attribs.h>
-#include <string.h>
-#include "context.h"
 
 void AttrInfo_Init(C3D_AttrInfo* info)
 {

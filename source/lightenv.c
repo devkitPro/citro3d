@@ -1,5 +1,4 @@
-#include <string.h>
-#include "context.h"
+#include "internal.h"
 
 static void C3Di_LightEnvMtlBlend(C3D_LightEnv* env)
 {

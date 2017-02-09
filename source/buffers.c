@@ -1,6 +1,4 @@
-#include <c3d/buffers.h>
-#include <string.h>
-#include "context.h"
+#include "internal.h"
 
 #define BUFFER_BASE_PADDR 0x18000000
 

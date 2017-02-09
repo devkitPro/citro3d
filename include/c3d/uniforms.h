@@ -1,5 +1,6 @@
 #pragma once
-#include "types.h"
+#include "maths.h"
+
 #define C3D_FVUNIF_COUNT 96
 #define C3D_IVUNIF_COUNT 4
 

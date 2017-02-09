@@ -1,5 +1,5 @@
-#include "context.h"
-#include <string.h>
+#include "internal.h"
+#include <c3d/base.h>
 
 static const u8 colorFmtSizes[] = {2,1,0,0,0};
 static const u8 depthFmtSizes[] = {0,0,1,2};

@@ -1,6 +1,4 @@
-#include <c3d/texenv.h>
-#include <string.h>
-#include "context.h"
+#include "internal.h"
 
 void TexEnv_Init(C3D_TexEnv* env)
 {

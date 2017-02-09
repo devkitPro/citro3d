@@ -33,7 +33,7 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-g -Wall -Werror -O2 -mword-relocations \
+CFLAGS	:=	-g -Wall -Wextra -Werror -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
 
@@ -89,10 +89,13 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 			-I$(CURDIR)/$(BUILD)
 
-.PHONY: $(BUILD) clean all
+.PHONY: $(BUILD) clean all doc
 
 #---------------------------------------------------------------------------------
 all: $(BUILD)
+
+doc:
+	@doxygen Doxyfile
 
 dist-bin: all
 	@tar --exclude=*~ -cjf citro3d-$(VERSION).tar.bz2 include lib

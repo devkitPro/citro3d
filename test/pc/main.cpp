@@ -737,27 +737,27 @@ check_matrix(generator_t &gen, distribution_t &dist)
 
       assert(Mtx_MultiplyFVecH(&m, FVec3_New(v.x, v.y, v.z)) == glm::mat4x3(g)*v);
     }
-    
+
     // check matrix transpose
     {
       C3D_Mtx m;
       glm::mat4 check;
-      
+
       randomMatrix(m, gen, dist);
-      
+
       //Reducing rounding errors, and copying the values over to the check matrix.
       for(size_t i = 0; i < 16; ++i)
       {
         m.m[i] = static_cast<int>(m.m[i]);
       }
-      
+
       check = loadMatrix(m);
 
       Mtx_Transpose(&m);
       Mtx_Transpose(&m);
       assert(m == glm::transpose(glm::transpose(check)));
 
-      //Comparing inverse(transpose(m)) == transpose(inverse(m)) 
+      //Comparing inverse(transpose(m)) == transpose(inverse(m))
       Mtx_Transpose(&m);
       Mtx_Inverse(&m);
       assert(m == glm::transpose(glm::inverse(check)));

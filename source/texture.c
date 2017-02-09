@@ -1,5 +1,4 @@
-#include "context.h"
-#include <string.h>
+#include "internal.h"
 
 // Return bits per pixel
 static inline size_t fmtSize(GPU_TEXCOLOR fmt)

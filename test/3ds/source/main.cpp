@@ -105,7 +105,7 @@ struct
 };
 
 #define num_textures (sizeof(texture)/sizeof(texture[0]))
-  
+
 void *vbo_data;
 
 void sceneInit(shaderProgram_s *program)
@@ -133,7 +133,7 @@ void sceneInit(shaderProgram_s *program)
   C3D_BufInfo* bufInfo = C3D_GetBufInfo();
   BufInfo_Init(bufInfo);
   BufInfo_Add(bufInfo, vbo_data, sizeof(attribute_t), 3, 0x210);
-  
+
   // Load the texture and bind it to the first texture unit
   for(size_t i = 0; i < num_textures; ++i)
   {
@@ -145,7 +145,7 @@ void sceneInit(shaderProgram_s *program)
 
     void *buffer = std::malloc(size);
     void *p      = buffer;
-  
+
     while(size > 0)
     {
       ssize_t rc = ::read(fd, p, size);
@@ -845,14 +845,14 @@ void transpose_test()
 {
   consoleClear();
   C3D_Mtx modelView, check;
-  
+
   Mtx_Identity(&modelView);
   Mtx_Translate(&modelView, ((float)(rand() % 100)) + 5.0f, ((float)(rand() % 100)) + 5.0f, ((float)(rand() % 100)) + 5.0f, true);
   Mtx_RotateX(&modelView, (float)(rand() % 180) * (acos(-1)/180.0f), true);
   Mtx_RotateY(&modelView, (float)(rand() % 180) * (acos(-1)/180.0f), true);
   Mtx_RotateZ(&modelView, (float)(rand() % 180) * (acos(-1)/180.0f), true);
   Mtx_Copy(&check, &modelView);
-  
+
   std::printf("Random Translation:\n");
   for (int i = 0; i < 16; i++)
   {
@@ -860,9 +860,9 @@ void transpose_test()
 	  if (i % 4 == 3)
 		  std::printf("\n");
   }
-  
+
   Mtx_Transpose(&modelView);
-  
+
   std::printf("Random Translation Transposed:\n");
   for (int i = 0; i < 16; i++)
   {
@@ -870,9 +870,9 @@ void transpose_test()
 	  if (i % 4 == 3)
 		  std::printf("\n");
   }
-  
+
   Mtx_Transpose(&modelView);
-  
+
   std::printf("Rand-Trans Transposed Transposed:\n");
   for (int i = 0; i < 16; i++)
   {
@@ -880,7 +880,7 @@ void transpose_test()
 	  if (i % 4 == 3)
 		  std::printf("\n");
   }
-  
+
   bool transposeFailCheck = false;
   for (int i = 0; i < 16; i++)
   {
@@ -890,7 +890,7 @@ void transpose_test()
 		  break;
 	  }
   }
-  
+
   bool transInvFailCheck = false;
   Mtx_Inverse(&modelView);
   Mtx_Transpose(&modelView);
@@ -905,7 +905,7 @@ void transpose_test()
 		  break;
 	  }
   }
-  
+
   std::printf("Transposed Inverse of RandMatrix:\n");
   for (int i = 0; i < 16; i++)
   {
@@ -913,7 +913,7 @@ void transpose_test()
 	  if (i % 4 == 3)
 		  std::printf("\n");
   }
-  
+
   std::printf("Inverse Transposed of RandMatrix:\n");
   for (int i = 0; i < 16; i++)
   {
@@ -921,11 +921,11 @@ void transpose_test()
 	  if (i % 4 == 3)
 		  std::printf("\n");
   }
-  
+
   std::printf("\n");
   std::printf("Transpose(Transpose(A)) = A? %s\n", (transposeFailCheck ? "False" : "True"));
   std::printf("Inv(Trans(A))=Trans(Inv(A))? %s\n", (transInvFailCheck ? "False" : "True"));
-  
+
   while(aptMainLoop())
   {
     gspWaitForVBlank();
@@ -988,7 +988,7 @@ int main(int argc, char *argv[])
 
   print_choices(choice);
   while(aptMainLoop())
-  { 
+  {
     gfxFlushBuffers();
     gspWaitForVBlank();
     gfxSwapBuffers();

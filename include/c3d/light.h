@@ -1,6 +1,6 @@
 #pragma once
-#include "types.h"
 #include "lightlut.h"
+#include "maths.h"
 
 //-----------------------------------------------------------------------------
 // Material

@@ -1,5 +1,4 @@
-#include <string.h>
-#include "context.h"
+#include "internal.h"
 
 void LightLut_FromArray(C3D_LightLut* lut, float* data)
 {
@@ -9,14 +8,14 @@ void LightLut_FromArray(C3D_LightLut* lut, float* data)
 		float in = data[i], diff = data[i+256];
 
 		u32 val = 0;
-		if (in > 0.0)
+		if (in > 0.0f)
 		{
 			in *= 0x1000;
 			val = (in < 0x1000) ? (u32)in : 0xFFF;
 		}
 
 		u32 val2 = 0;
-		if (diff != 0.0)
+		if (diff != 0.0f)
 		{
 			if (diff < 0)
 			{

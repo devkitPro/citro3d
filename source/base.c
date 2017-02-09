@@ -1,4 +1,7 @@
-#include "context.h"
+#include "internal.h"
+#include <c3d/base.h>
+#include <c3d/effect.h>
+#include <c3d/uniforms.h>
 
 C3D_Context __C3D_Context;
 
@@ -35,7 +38,7 @@ static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 
 static aptHookCookie hookCookie;
 
-static void C3Di_AptEventHook(APT_HookType hookType, void* param)
+static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 {
 	C3D_Context* ctx = C3Di_GetContext();
 

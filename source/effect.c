@@ -1,4 +1,4 @@
-#include "context.h"
+#include "internal.h"
 
 static inline C3D_Effect* getEffect()
 {

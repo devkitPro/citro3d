@@ -1,6 +1,7 @@
 #pragma once
-#include "types.h"
 #include "buffers.h"
+#include "maths.h"
+
 #define C3D_DEFAULT_CMDBUF_SIZE 0x40000
 
 enum

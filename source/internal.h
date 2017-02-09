@@ -1,13 +1,11 @@
 #pragma once
-#include <c3d/base.h>
-#include <c3d/uniforms.h>
 #include <c3d/attribs.h>
 #include <c3d/buffers.h>
-#include <c3d/texenv.h>
-#include <c3d/effect.h>
-#include <c3d/texture.h>
 #include <c3d/light.h>
 #include <c3d/renderbuffer.h>
+#include <c3d/texenv.h>
+
+#define C3D_UNUSED __attribute__((unused))
 
 typedef struct
 {

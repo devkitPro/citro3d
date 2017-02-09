@@ -1,5 +1,6 @@
 #pragma once
 #include "maths.h"
+
 #define C3D_MTXSTACK_SIZE 8
 
 typedef struct

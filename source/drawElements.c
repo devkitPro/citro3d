@@ -1,4 +1,4 @@
-#include "context.h"
+#include "internal.h"
 
 void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void* indices)
 {

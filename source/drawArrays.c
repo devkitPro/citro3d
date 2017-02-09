@@ -1,4 +1,4 @@
-#include "context.h"
+#include "internal.h"
 
 void C3D_DrawArrays(GPU_Primitive_t primitive, int first, int size)
 {

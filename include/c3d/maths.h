@@ -3,9 +3,16 @@
 #include <math.h>
 #include <string.h>
 
-// See http://tauday.com/tau-manifesto
-//#define M_TAU 6.28318530717958647693
-/// The one true circumference-to-radius ratio
+/**
+ * @addtogroup math_support
+ * @brief Implementations of matrix, vector, and quaternion operations.
+ * @{
+ */
+
+/**
+ * The one true circumference-to-radius ratio.
+ * See http://tauday.com/tau-manifesto
+ */
 #define M_TAU (2*M_PI)
 
 /**
@@ -25,8 +32,11 @@
 #define C3D_AspectRatioTop (400.0f / 240.0f) ///< Aspect ratio for 3DS top screen
 #define C3D_AspectRatioBot (320.0f / 240.0f) ///< Aspect ratio for 3DS bottom screen
 
-///@name Vector Math
-///@{
+/**
+ * @name Vector Math
+ * @{
+ */
+
 /**
  * @brief Create a new FVec4
  * @param[in] x X-component
@@ -66,7 +76,7 @@ static inline C3D_FVec FVec4_Subtract(C3D_FVec lhs, C3D_FVec rhs)
 
 /**
  * @brief Negate a FVec4
- * @note This is the same as scaling by -1
+ * @note This is equivalent to `FVec4_Scale(v, -1)`
  * @param[in] v Vector to negate
  * @return -v
  */
@@ -222,7 +232,7 @@ static inline float FVec3_Distance(C3D_FVec lhs, C3D_FVec rhs)
 }
 
 /**
- * @brief Scale a FVec4
+ * @brief Scale a FVec3
  * @param[in] v Vector to scale
  * @param[in] s Scale factor
  * @return v*s
@@ -234,8 +244,8 @@ static inline C3D_FVec FVec3_Scale(C3D_FVec v, float s)
 }
 
 /**
- * @brief Negate a FVec4
- * @note This is the same as scaling by -1
+ * @brief Negate a FVec3
+ * @note This is equivalent to `FVec3_Scale(v, -1)`
  * @param[in] v Vector to negate
  * @return -v
  */
@@ -258,11 +268,13 @@ static inline C3D_FVec FVec3_Cross(C3D_FVec lhs, C3D_FVec rhs)
 	// A×B = (AyBz - AzBy, AzBx - AxBz, AxBy - AyBx)
 	return FVec3_New(lhs.y*rhs.z - lhs.z*rhs.y, lhs.z*rhs.x - lhs.x*rhs.z, lhs.x*rhs.y - lhs.y*rhs.x);
 }
-///@}
+/** @} */
 
-///@name Matrix Math
-///@note All matrices are 4x4 unless otherwise noted
-///@{
+/**
+ * @name Matrix Math
+ * @note All matrices are 4x4 unless otherwise noted.
+ * @{
+ */
 
 /**
  * @brief Zero matrix
@@ -284,6 +296,64 @@ static inline void Mtx_Copy(C3D_Mtx* out, const C3D_Mtx* in)
 }
 
 /**
+ * @brief Creates a matrix with the diagonal using the given parameters.
+ * @param[out]  out    Output matrix.
+ * @param[in]   x      The X component.
+ * @param[in]   y      The Y component.
+ * @param[in]   z      The Z component.
+ * @param[in]   w      The W component.
+ */
+static inline void Mtx_Diagonal(C3D_Mtx* out, float x, float y, float z, float w)
+{
+	Mtx_Zeros(out);
+	out->r[0].x = x;
+	out->r[1].y = y;
+	out->r[2].z = z;
+	out->r[3].w = w;
+}
+
+/**
+ * @brief Identity matrix
+ * @param[out] out Matrix to fill
+ */
+static inline void Mtx_Identity(C3D_Mtx* out)
+{
+	Mtx_Diagonal(out, 1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+/**
+ *@brief Transposes the matrix. Row => Column, and vice versa.
+ *@param[in,out] out     Output matrix.
+ */
+void Mtx_Transpose(C3D_Mtx* out);
+
+/**
+ * @brief Matrix addition
+ * @param[out]   out    Output matrix.
+ * @param[in]    lhs    Left matrix.
+ * @param[in]    rhs    Right matrix.
+ * @return lhs+rhs (sum)
+ */
+static inline void Mtx_Add(C3D_Mtx* out, const C3D_Mtx* lhs, const C3D_Mtx* rhs)
+{
+	for (int i = 0; i < 16; i++)
+		out->m[i] = lhs->m[i] + rhs->m[i];
+}
+
+/**
+ * @brief Matrix subtraction
+ * @param[out]   out    Output matrix.
+ * @param[in]    lhs    Left matrix.
+ * @param[in]    rhs    Right matrix.
+ * @return lhs-rhs (difference)
+ */
+static inline void Mtx_Subtract(C3D_Mtx* out, const C3D_Mtx* lhs, const C3D_Mtx* rhs)
+{
+	for (int i = 0; i < 16; i++)
+		out->m[i] = lhs->m[i] - rhs->m[i];
+}
+
+/**
  * @brief Multiply two matrices
  * @param[out] out Output matrix
  * @param[in]  a   Multiplicand
@@ -293,8 +363,8 @@ void Mtx_Multiply(C3D_Mtx* out, const C3D_Mtx* a, const C3D_Mtx* b);
 
 /**
  * @brief Inverse a matrix
- * @note returns 0.0f if the matrix is degenerate; i.e. no inverse
  * @param[in,out] out Matrix to inverse
+ * @retval 0.0f Degenerate matrix (no inverse)
  * @return determinant
  */
 float Mtx_Inverse(C3D_Mtx* out);
@@ -303,7 +373,7 @@ float Mtx_Inverse(C3D_Mtx* out);
  * @brief Multiply 3x3 matrix by a FVec3
  * @param[in] mtx Matrix
  * @param[in] v   Vector
- * @return Product of mtx and v
+ * @return mtx*v (product)
  */
 C3D_FVec Mtx_MultiplyFVec3(const C3D_Mtx* mtx, C3D_FVec v);
 
@@ -311,7 +381,7 @@ C3D_FVec Mtx_MultiplyFVec3(const C3D_Mtx* mtx, C3D_FVec v);
  * @brief Multiply 4x4 matrix by a FVec4
  * @param[in] mtx Matrix
  * @param[in] v   Vector
- * @return Product of mtx and v
+ * @return mtx*v (product)
  */
 C3D_FVec Mtx_MultiplyFVec4(const C3D_Mtx* mtx, C3D_FVec v);
 
@@ -319,7 +389,7 @@ C3D_FVec Mtx_MultiplyFVec4(const C3D_Mtx* mtx, C3D_FVec v);
  * @brief Multiply 4x3 matrix by a FVec3
  * @param[in] mtx Matrix
  * @param[in] v   Vector
- * @return Product of mtx and v
+ * @return mtx*v (product)
  */
 static inline C3D_FVec Mtx_MultiplyFVecH(const C3D_Mtx* mtx, C3D_FVec v)
 {
@@ -327,15 +397,22 @@ static inline C3D_FVec Mtx_MultiplyFVecH(const C3D_Mtx* mtx, C3D_FVec v)
 
 	return Mtx_MultiplyFVec4(mtx, v);
 }
-///@}
+
+/**
+ * @brief Get 4x4 matrix equivalent to Quaternion
+ * @param[out] m Output matrix
+ * @param[in]  q Input Quaternion
+ */
+void Mtx_FromQuat(C3D_Mtx* m, C3D_FQuat q);
+/** @} */
 
 /**
  * @name 3D Transformation Matrix Math
  * @note bRightSide is used to determine which side to perform the transformation.
  *       With an input matrix A and a transformation matrix B, bRightSide being
  *       true yields AB, while being false yield BA.
+ * @{
  */
-///@{
 
 /**
  * @brief 3D translation
@@ -388,10 +465,12 @@ void Mtx_RotateY(C3D_Mtx* mtx, float angle, bool bRightSide);
  * @param[in]     bRightSide Whether to transform from the right side
  */
 void Mtx_RotateZ(C3D_Mtx* mtx, float angle, bool bRightSide);
-///@}
+/** @} */
 
-///@name 3D Projection Matrix Math
-///@{
+/**
+ * @name 3D Projection Matrix Math
+ * @{
+ */
 
 /**
  * @brief Orthogonal projection
@@ -403,6 +482,7 @@ void Mtx_RotateZ(C3D_Mtx* mtx, float angle, bool bRightSide);
  * @param[in]  near         Near clip plane (Z=near)
  * @param[in]  far          Far clip plane (Z=far)
  * @param[in]  isLeftHanded Whether to build a LH projection
+ * @sa Mtx_OrthoTilt
  */
 void Mtx_Ortho(C3D_Mtx* mtx, float left, float right, float bottom, float top, float near, float far, bool isLeftHanded);
 
@@ -414,6 +494,9 @@ void Mtx_Ortho(C3D_Mtx* mtx, float left, float right, float bottom, float top, f
  * @param[in]  near         Near clip plane (Z=near)
  * @param[in]  far          Far clip plane (Z=far)
  * @param[in]  isLeftHanded Whether to build a LH projection
+ * @sa Mtx_PerspTilt
+ * @sa Mtx_PerspStereo
+ * @sa Mtx_PerspStereoTilt
  */
 void Mtx_Persp(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, bool isLeftHanded);
 
@@ -433,11 +516,15 @@ void Mtx_Persp(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, bo
  * @param[in]  iod          Interocular distance
  * @param[in]  screen       Focal length
  * @param[in]  isLeftHanded Whether to build a LH projection
+ * @sa Mtx_Persp
+ * @sa Mtx_PerspTilt
+ * @sa Mtx_PerspStereoTilt
  */
 void Mtx_PerspStereo(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, float iod, float screen, bool isLeftHanded);
 
 /**
  * @brief Orthogonal projection, tilted to account for the 3DS screen rotation
+ * @param[out] mtx          Output matrix
  * @param[in]  left         Left clip plane (X=left)
  * @param[in]  right        Right clip plane (X=right)
  * @param[in]  bottom       Bottom clip plane (Y=bottom)
@@ -445,6 +532,7 @@ void Mtx_PerspStereo(C3D_Mtx* mtx, float fovy, float aspect, float near, float f
  * @param[in]  near         Near clip plane (Z=near)
  * @param[in]  far          Far clip plane (Z=far)
  * @param[in]  isLeftHanded Whether to build a LH projection
+ * @sa Mtx_Ortho
  */
 void Mtx_OrthoTilt(C3D_Mtx* mtx, float left, float right, float bottom, float top, float near, float far, bool isLeftHanded);
 
@@ -456,12 +544,15 @@ void Mtx_OrthoTilt(C3D_Mtx* mtx, float left, float right, float bottom, float to
  * @param[in]  near         Near clip plane (Z=near)
  * @param[in]  far          Far clip plane (Z=far)
  * @param[in]  isLeftHanded Whether to build a LH projection
+ * @sa Mtx_Persp
+ * @sa Mtx_PerspStereo
+ * @sa Mtx_PerspStereoTilt
  */
 void Mtx_PerspTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, bool isLeftHanded);
 
 /**
  * @brief Stereo perspective projection, tilted to account for the 3DS screen rotation
- * @note See the notes for Mtx_PerspStereo
+ * @note See the notes for @ref Mtx_PerspStereo
  * @param[out] mtx          Output matrix
  * @param[in]  fovy         Vertical field of view in radians
  * @param[in]  aspect       Aspect ration of projection plane (width/height)
@@ -470,93 +561,42 @@ void Mtx_PerspTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far
  * @param[in]  iod          Interocular distance
  * @param[in]  screen       Focal length
  * @param[in]  isLeftHanded Whether to build a LH projection
+ * @sa Mtx_Persp
+ * @sa Mtx_PerspTilt
+ * @sa Mtx_PerspStereo
  */
 void Mtx_PerspStereoTilt(C3D_Mtx* mtx, float fovy, float aspect, float near, float far, float iod, float screen, bool isLeftHanded);
 
 /**
- * @brief Left-handed Look-At matrix, using DirectX implementation
+ * @brief Look-At matrix, based on DirectX implementation
  * @note See https://msdn.microsoft.com/en-us/library/windows/desktop/bb205342
- * @param[out] out               Output matrix.
- * @param[in]  cameraPosition    Position of the intended camera in 3D space.
- * @param[in]  cameraTarget      Position of the intended target the camera is supposed to face in 3D space.
- * @param[in]  cameraUpVector    The vector that points straight up depending on the camera's "Up" direction.
- * @param[in]  isLeftHanded      If true, output matrix is left-handed. If false, output matrix is right-handed.
+ * @param[out] out            Output matrix.
+ * @param[in]  cameraPosition Position of the intended camera in 3D space.
+ * @param[in]  cameraTarget   Position of the intended target the camera is supposed to face in 3D space.
+ * @param[in]  cameraUpVector The vector that points straight up depending on the camera's "Up" direction.
+ * @param[in]  isLeftHanded   Whether to build a LH projection
  */
 void Mtx_LookAt(C3D_Mtx* out, C3D_FVec cameraPosition, C3D_FVec cameraTarget, C3D_FVec cameraUpVector, bool isLeftHanded);
+/** @} */
 
 /**
- *@brief Transposes the matrix. Row => Column, and vice versa. 
- *@param[in,out] out     Output matrix.
+ * @name Quaternion Math
+ * @{
  */
-void Mtx_Transpose(C3D_Mtx* out);
 
-/**
- * @brief Creates a matrix with the diagonal using the given parameters.
- * @param[out]  out    Output matrix.
- * @param[in]   x      The X component.
- * @param[in]   y      The Y component.
- * @param[in]   z      The Z component.
- * @param[in]   w      The W component.
- */
-static inline void Mtx_Diagonal(C3D_Mtx* out, float x, float y, float z, float w)
-{
-	Mtx_Zeros(out);
-	out->r[0].x = x;
-	out->r[1].y = y;
-	out->r[2].z = z;
-	out->r[3].w = w;
-}
-
-/**
- * @brief Identity matrix
- * @param[out] out Matrix to fill
- */
-static inline void Mtx_Identity(C3D_Mtx* out)
-{
-	Mtx_Diagonal(out, 1.0f, 1.0f, 1.0f, 1.0f);
-}
-
-/**
- * @brief Matrix addition
- * @param[out]   out    Output matrix.
- * @param[in]    lhs    Left matrix.
- * @param[in]    rhs    Right matrix.
- */
-static inline void Mtx_Add(C3D_Mtx* out, const C3D_Mtx* lhs, const C3D_Mtx* rhs)
-{
-	for (int i = 0; i < 16; i++)
-		out->m[i] = lhs->m[i] + rhs->m[i];
-}
-
-/**
- * @brief Matrix subtraction
- * @param[out]   out    Output matrix.
- * @param[in]    lhs    Left matrix.
- * @param[in]    rhs    Right matrix.
- */
-static inline void Mtx_Subtract(C3D_Mtx* out, const C3D_Mtx* lhs, const C3D_Mtx* rhs)
-{
-	for (int i = 0; i < 16; i++)
-		out->m[i] = lhs->m[i] - rhs->m[i];
-}
-///@}
-
-///@name Quaternion Math
-///@{
-//
 /**
  * @brief Create a new Quaternion
  * @param[in] i I-component
  * @param[in] j J-component
  * @param[in] k K-component
- * @param[in] r R-component
+ * @param[in] r Real component
  * @return New Quaternion
  */
 #define Quat_New(i,j,k,r) FVec4_New(i,j,k,r)
 
 /**
  * @brief Negate a Quaternion
- * @note This is the same as scaling by -1
+ * @note This is equivalent to `Quat_Scale(v, -1)`
  * @param[in] q Quaternion to negate
  * @return -q
  */
@@ -615,14 +655,14 @@ C3D_FQuat Quat_Multiply(C3D_FQuat lhs, C3D_FQuat rhs);
  *       If p is 1, this returns q.
  * @param[in] q Base Quaternion
  * @param[in] p Power
- * @return q^p
+ * @return q<sup>p</sup>
  */
 C3D_FQuat Quat_Pow(C3D_FQuat q, float p);
 
 /**
  * @brief Cross product of Quaternion and FVec3
- * @param[in] lhs Left-side Quaternion
- * @param[in] rhs Right-side FVec3
+ * @param[in] q Base Quaternion
+ * @param[in] v Vector to cross
  * @return q×v
  */
 C3D_FVec Quat_CrossFVec3(C3D_FQuat q, C3D_FVec v);
@@ -665,15 +705,8 @@ C3D_FQuat Quat_RotateY(C3D_FQuat q, float r, bool bRightSide);
 C3D_FQuat Quat_RotateZ(C3D_FQuat q, float r, bool bRightSide);
 
 /**
- * @brief Get 4x4 matrix equivalent to Quaternion
- * @param[out] m Output matrix
- * @param[in]  q Input Quaternion
- */
-void Mtx_FromQuat(C3D_Mtx* m, C3D_FQuat q);
-
-/**
  * @brief Get Quaternion equivalent to 4x4 matrix
- * @note If the matrix is orthogonal or special orthogonal, where determinant(matrix) = +1.0f, then the matrix can be converted. 
+ * @note If the matrix is orthogonal or special orthogonal, where determinant(matrix) = +1.0f, then the matrix can be converted.
  * @param[in]   m Input  Matrix
  * @return      Generated Quaternion
  */
@@ -692,7 +725,7 @@ static inline C3D_FQuat Quat_Identity(void)
 /**
  * @brief Quaternion conjugate
  * @param[in] q Quaternion of which to get conjugate
- * @return Conjugate of q
+ * @return q*
  */
 static inline C3D_FQuat Quat_Conjugate(C3D_FQuat q)
 {
@@ -702,9 +735,9 @@ static inline C3D_FQuat Quat_Conjugate(C3D_FQuat q)
 
 /**
  * @brief Quaternion inverse
- * @note This is the same as raising to the power of -1
+ * @note This is equivalent to `Quat_Pow(v, -1)`
  * @param[in] q Quaternion of which to get inverse
- * @return Inverse of q
+ * @return q<sup>-1</sup>
  */
 static inline C3D_FQuat Quat_Inverse(C3D_FQuat q)
 {
@@ -717,13 +750,13 @@ static inline C3D_FQuat Quat_Inverse(C3D_FQuat q)
 
 /**
  * @brief Cross product of FVec3 and Quaternion
- * @param[in] lhs Left-side FVec3
- * @param[in] rhs Right-side Quaternion
+ * @param[in] v Base FVec3
+ * @param[in] q Quaternion to cross
  * @return v×q
  */
 static inline C3D_FVec FVec3_CrossQuat(C3D_FVec v, C3D_FQuat q)
 {
-	// v×q = q^-1×v
+	// v×q = (q^-1)×v
 	return Quat_CrossFVec3(Quat_Inverse(q), v);
 }
 
@@ -732,12 +765,13 @@ static inline C3D_FVec FVec3_CrossQuat(C3D_FVec v, C3D_FQuat q)
  * @param[in] pitch      The pitch angle in radians.
  * @param[in] yaw        The yaw angle in radians.
  * @param[in] roll       The roll angle in radians.
- * @return    C3D_FQuat  The Quaternion equivalent with the pitch, yaw, and roll orientations applied.
+ * @param[in] bRightSide Whether to transform from the right side
+ * @return    C3D_FQuat  The Quaternion equivalent with the pitch, yaw, and roll (in that order) orientations applied.
  */
 C3D_FQuat Quat_FromPitchYawRoll(float pitch, float yaw, float roll, bool bRightSide);
 
 /**
- * @brief Quaternion Look At 
+ * @brief Quaternion Look-At
  * @param[in] source   C3D_FVec Starting position. Origin of rotation.
  * @param[in] target   C3D_FVec Target position to orient towards.
  * @param[in] forwardVector C3D_FVec The Up vector.
@@ -751,6 +785,7 @@ C3D_FQuat Quat_LookAt(C3D_FVec source, C3D_FVec target, C3D_FVec forwardVector, 
  * @param[in] axis  C3D_FVec The axis to rotate around at.
  * @param[in] angle float The angle to rotate. Unit: Radians
  * @return Quaternion rotation based on the axis and angle. Axis doesn't have to be orthogonal.
- */ 
+ */
 C3D_FQuat Quat_FromAxisAngle(C3D_FVec axis, float angle);
-///@}
+/** @} */
+/** @} */
