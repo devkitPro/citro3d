@@ -73,6 +73,12 @@ void C3D_FragOpMode(GPU_FRAGOPMODE mode)
 	e->fragOpMode |= 0xE40000 | mode;
 }
 
+void C3D_FragOpShadow(float scale, float bias)
+{
+	C3D_Effect* e = getEffect();
+	e->fragOpShadow = f32tof16(scale+bias) | (f32tof16(-scale)<<16);
+}
+
 void C3Di_EffectBind(C3D_Effect* e)
 {
 	GPUCMD_AddWrite(GPUREG_DEPTHMAP_ENABLE, e->zBuffer ? 1 : 0);
@@ -83,6 +89,7 @@ void C3Di_EffectBind(C3D_Effect* e)
 	GPUCMD_AddWrite(GPUREG_BLEND_FUNC, e->alphaBlend);
 	GPUCMD_AddWrite(GPUREG_LOGIC_OP, e->clrLogicOp);
 	GPUCMD_AddMaskedWrite(GPUREG_COLOR_OPERATION, 7, e->fragOpMode);
+	GPUCMD_AddWrite(GPUREG_FRAGOP_SHADOW, e->fragOpShadow);
 
 	// Disable early depth test?
 	GPUCMD_AddMaskedWrite(GPUREG_EARLYDEPTH_TEST1, 1, 0);

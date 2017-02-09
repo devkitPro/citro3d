@@ -10,6 +10,7 @@
 typedef struct
 {
 	u32 fragOpMode;
+	u32 fragOpShadow;
 	u32 zScale, zOffset;
 	GPU_CULLMODE cullMode;
 	bool zBuffer;
