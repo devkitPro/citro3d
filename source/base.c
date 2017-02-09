@@ -332,7 +332,7 @@ void C3D_BindProgram(shaderProgram_s* program)
 	if (oldProg != program)
 	{
 		ctx->program = program;
-		ctx->flags |= C3DiF_Program;
+		ctx->flags |= C3DiF_Program | C3DiF_AttrInfo;
 
 		if (oldProg)
 		{
