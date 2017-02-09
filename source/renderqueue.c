@@ -16,6 +16,8 @@ static struct
 static u8 queueSwap, queuedCount, queuedState;
 
 static bool inFrame, inSafeTransfer, inSafeClear;
+static float framerate = 60.0f;
+static float framerateCounter[2] = { 60.0f, 60.0f };
 
 static void onRenderFinish(void* unused);
 static void onTransferFinish(void* unused);
@@ -45,6 +47,17 @@ static void performClear(void)
 	// TODO: obey renderBuf->clearBits
 	gspSetEventCallback(renderBuf->colorBuf.data ? GSPGPU_EVENT_PSC0 : GSPGPU_EVENT_PSC1, onClearDone, NULL, true);
 	C3D_RenderBufClearAsync(renderBuf);
+}
+
+static bool framerateLimit(int id)
+{
+	framerateCounter[id] -= framerate;
+	if (framerateCounter[id] <= 0.0f)
+	{
+		framerateCounter[id] += 60.0f;
+		return true;
+	}
+	return false;
 }
 
 static void updateFrameQueue(void)
@@ -95,7 +108,7 @@ static void clearTarget(C3D_RenderTarget* target)
 
 static void onVBlank0(C3D_UNUSED void* unused)
 {
-	if (!linkedTarget[0]) return;
+	if (!linkedTarget[0] || !framerateLimit(0)) return;
 
 	if (gfxIs3D())
 	{
@@ -117,7 +130,7 @@ static void onVBlank0(C3D_UNUSED void* unused)
 
 static void onVBlank1(C3D_UNUSED void* unused)
 {
-	if (linkedTarget[2] && linkedTarget[2]->transferOk)
+	if (linkedTarget[2] && framerateLimit(1) && linkedTarget[2]->transferOk)
 		transferTarget(linkedTarget[2]);
 }
 
@@ -242,6 +255,18 @@ static bool checkRenderQueueInit(void)
 	}
 
 	return true;
+}
+
+float C3D_FrameRate(float fps)
+{
+	float old = framerate;
+	if (fps > 0.0f && fps <= 60.0f)
+	{
+		framerate = fps;
+		framerateCounter[0] = fps;
+		framerateCounter[1] = fps;
+	}
+	return old;
 }
 
 bool C3D_FrameBegin(u8 flags)

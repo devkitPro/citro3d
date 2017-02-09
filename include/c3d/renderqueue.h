@@ -24,6 +24,7 @@ enum
 	C3D_FRAME_NONBLOCK = BIT(1), // Return false instead of waiting for the GPU to finish rendering
 };
 
+float C3D_FrameRate(float fps);
 bool C3D_FrameBegin(u8 flags);
 bool C3D_FrameDrawOn(C3D_RenderTarget* target);
 void C3D_FrameEnd(u8 flags);
