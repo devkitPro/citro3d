@@ -7,31 +7,26 @@ C3D_Context __C3D_Context;
 
 static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 {
-	u32 reg[4];
-	reg[0] = tex->fmt;
-	reg[1] = osConvertVirtToPhys(tex->data) >> 3;
-	reg[2] = (u32)tex->height | ((u32)tex->width << 16);
-	reg[3] = tex->param;
+	u32 reg[5];
+	reg[0] = tex->border;
+	reg[1] = (u32)tex->height | ((u32)tex->width << 16);
+	reg[2] = tex->param;
+	reg[3] = tex->lodParam;
+	reg[4] = osConvertVirtToPhys(tex->data) >> 3;
 
 	switch (unit)
 	{
 		case GPU_TEXUNIT0:
-			GPUCMD_AddWrite(GPUREG_TEXUNIT0_TYPE, reg[0]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT0_ADDR1, reg[1]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT0_DIM, reg[2]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT0_PARAM, reg[3]);
+			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT0_BORDER_COLOR, reg, 5);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT0_TYPE, tex->fmt);
 			break;
 		case GPU_TEXUNIT1:
-			GPUCMD_AddWrite(GPUREG_TEXUNIT1_TYPE, reg[0]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT1_ADDR, reg[1]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT1_DIM, reg[2]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT1_PARAM, reg[3]);
+			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT1_BORDER_COLOR, reg, 5);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT1_TYPE, tex->fmt);
 			break;
 		case GPU_TEXUNIT2:
-			GPUCMD_AddWrite(GPUREG_TEXUNIT2_TYPE, reg[0]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT2_ADDR, reg[1]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT2_DIM, reg[2]);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT2_PARAM, reg[3]);
+			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT2_BORDER_COLOR, reg, 5);
+			GPUCMD_AddWrite(GPUREG_TEXUNIT2_TYPE, tex->fmt);
 			break;
 	}
 }
@@ -99,6 +94,7 @@ bool C3D_Init(size_t cmdBufSize)
 	C3D_AlphaTest(false, GPU_ALWAYS, 0x00);
 	C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA);
 	C3D_FragOpMode(GPU_FRAGOPMODE_GL);
+	C3D_FragOpShadow(0.0, 1.0);
 
 	ctx->texEnvBuf = 0;
 	ctx->texEnvBufClr = 0xFFFFFFFF;
