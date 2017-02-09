@@ -7,9 +7,10 @@ static inline C3D_Effect* getEffect()
 	return &ctx->effect;
 }
 
-void C3D_DepthMap(float zScale, float zOffset)
+void C3D_DepthMap(bool bIsZBuffer, float zScale, float zOffset)
 {
 	C3D_Effect* e = getEffect();
+	e->zBuffer = bIsZBuffer;
 	e->zScale  = f32tof24(zScale);
 	e->zOffset = f32tof24(zOffset);
 }
@@ -74,7 +75,7 @@ void C3D_FragOpMode(GPU_FRAGOPMODE mode)
 
 void C3Di_EffectBind(C3D_Effect* e)
 {
-	GPUCMD_AddWrite(GPUREG_DEPTHMAP_ENABLE, 1);
+	GPUCMD_AddWrite(GPUREG_DEPTHMAP_ENABLE, e->zBuffer ? 1 : 0);
 	GPUCMD_AddWrite(GPUREG_FACECULLING_CONFIG, e->cullMode & 0x3);
 	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHMAP_SCALE, (u32*)&e->zScale, 2);
 	GPUCMD_AddIncrementalWrites(GPUREG_FRAGOP_ALPHA_TEST, (u32*)&e->alphaTest, 4);

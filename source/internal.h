@@ -12,6 +12,7 @@ typedef struct
 	u32 fragOpMode;
 	u32 zScale, zOffset;
 	GPU_CULLMODE cullMode;
+	bool zBuffer;
 
 	u32 alphaTest;
 	u32 stencilMode, stencilOp;
