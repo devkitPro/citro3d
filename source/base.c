@@ -5,32 +5,6 @@
 
 C3D_Context __C3D_Context;
 
-static void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
-{
-	u32 reg[5];
-	reg[0] = tex->border;
-	reg[1] = (u32)tex->height | ((u32)tex->width << 16);
-	reg[2] = tex->param;
-	reg[3] = tex->lodParam;
-	reg[4] = osConvertVirtToPhys(tex->data) >> 3;
-
-	switch (unit)
-	{
-		case GPU_TEXUNIT0:
-			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT0_BORDER_COLOR, reg, 5);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT0_TYPE, tex->fmt);
-			break;
-		case GPU_TEXUNIT1:
-			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT1_BORDER_COLOR, reg, 5);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT1_TYPE, tex->fmt);
-			break;
-		case GPU_TEXUNIT2:
-			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT2_BORDER_COLOR, reg, 5);
-			GPUCMD_AddWrite(GPUREG_TEXUNIT2_TYPE, tex->fmt);
-			break;
-	}
-}
-
 static aptHookCookie hookCookie;
 
 static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)

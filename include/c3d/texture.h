@@ -3,12 +3,30 @@
 
 typedef struct
 {
-	void* data;
+	void* data[6];
+} C3D_TexCube;
+
+typedef struct
+{
+	union
+	{
+		void* data;
+		C3D_TexCube* cube;
+	};
 
 	GPU_TEXCOLOR fmt : 4;
 	size_t size : 28;
 
-	u16 width, height;
+	union
+	{
+		u32 dim;
+		struct
+		{
+			u16 height;
+			u16 width;
+		};
+	};
+
 	u32 param;
 	u32 border;
 	union
@@ -33,9 +51,9 @@ typedef struct ALIGN(8)
 	bool onVram                 : 1;
 } C3D_TexInitParams;
 
-bool C3D_TexInitWithParams(C3D_Tex* tex, C3D_TexInitParams p);
-void C3D_TexUploadLevel(C3D_Tex* tex, const void* data, int level);
-void C3D_TexGenerateMipmap(C3D_Tex* tex);
+bool C3D_TexInitWithParams(C3D_Tex* tex, C3D_TexCube* cube, C3D_TexInitParams p);
+void C3D_TexLoadImage(C3D_Tex* tex, const void* data, GPU_TEXFACE face, int level);
+void C3D_TexGenerateMipmap(C3D_Tex* tex, GPU_TEXFACE face);
 void C3D_TexBind(int unitId, C3D_Tex* tex);
 void C3D_TexFlush(C3D_Tex* tex);
 void C3D_TexDelete(C3D_Tex* tex);
@@ -73,32 +91,53 @@ static inline u32 C3D_TexCalcTotalSize(u32 size, int maxLevel)
 
 static inline bool C3D_TexInit(C3D_Tex* tex, u16 width, u16 height, GPU_TEXCOLOR format)
 {
-	return C3D_TexInitWithParams(tex,
+	return C3D_TexInitWithParams(tex, NULL,
 		(C3D_TexInitParams){ width, height, 0, format, GPU_TEX_2D, false });
 }
 
 static inline bool C3D_TexInitMipmap(C3D_Tex* tex, u16 width, u16 height, GPU_TEXCOLOR format)
 {
-	return C3D_TexInitWithParams(tex,
+	return C3D_TexInitWithParams(tex, NULL,
 		(C3D_TexInitParams){ width, height, (u8)C3D_TexCalcMaxLevel(width, height), format, GPU_TEX_2D, false });
+}
+
+static inline bool C3D_TexInitCube(C3D_Tex* tex, C3D_TexCube* cube, u16 width, u16 height, GPU_TEXCOLOR format)
+{
+	return C3D_TexInitWithParams(tex, cube,
+		(C3D_TexInitParams){ width, height, 0, format, GPU_TEX_CUBE_MAP, false });
 }
 
 static inline bool C3D_TexInitVRAM(C3D_Tex* tex, u16 width, u16 height, GPU_TEXCOLOR format)
 {
-	return C3D_TexInitWithParams(tex,
+	return C3D_TexInitWithParams(tex, NULL,
 		(C3D_TexInitParams){ width, height, 0, format, GPU_TEX_2D, true });
 }
 
-static inline void* C3D_TexGetLevel(C3D_Tex* tex, int level, u32* size)
+static inline GPU_TEXTURE_MODE_PARAM C3D_TexGetType(C3D_Tex* tex)
 {
-	if (size) *size = C3D_TexCalcLevelSize(tex->size, level);
-	if (!level) return tex->data;
-	return (u8*)tex->data + C3D_TexCalcTotalSize(tex->size, level-1);
+	return (GPU_TEXTURE_MODE_PARAM)((tex->param>>28)&0x7);
+}
+
+static inline void* C3D_TexGetImagePtr(C3D_Tex* tex, void* data, int level, u32* size)
+{
+	if (size) *size = level > 0 ? C3D_TexCalcLevelSize(tex->size, level) : C3D_TexCalcTotalSize(tex->size, tex->maxLevel);
+	if (!level) return data;
+	return (u8*)data + (level > 0 ? C3D_TexCalcTotalSize(tex->size, level-1) : 0);
+}
+
+static inline void* C3D_Tex2DGetImagePtr(C3D_Tex* tex, int level, u32* size)
+{
+	return C3D_TexGetImagePtr(tex, tex->data, level, size);
+}
+
+static inline void* C3D_TexCubeGetImagePtr(C3D_Tex* tex, GPU_TEXFACE face, int level, u32* size)
+{
+	return C3D_TexGetImagePtr(tex, tex->cube->data[face], level, size);
 }
 
 static inline void C3D_TexUpload(C3D_Tex* tex, const void* data)
 {
-	C3D_TexUploadLevel(tex, data, 0);
+	C3D_TexLoadImage(tex, data, GPU_TEXFACE_2D, 0);
 }
 
 static inline void C3D_TexSetFilter(C3D_Tex* tex, GPU_TEXTURE_FILTER_PARAM magFilter, GPU_TEXTURE_FILTER_PARAM minFilter)
