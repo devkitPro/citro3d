@@ -43,19 +43,9 @@ bool C3D_TexInitWithParams(C3D_Tex* tex, C3D_TexInitParams p)
 	u32 size = fmtSize(p.format);
 	if (!size) return false;
 	size *= (u32)p.width * p.height / 8;
+	u32 total_size = C3D_TexCalcLevelSize(size, p.maxLevel);
 
-	u32 alloc_size = size;
-	{
-		int i;
-		u32 level_size = size;
-		for (i = 0; i < p.maxLevel; i ++)
-		{
-			level_size >>= 2;
-			alloc_size += level_size;
-		}
-	}
-
-	tex->data = p.onVram ? vramAlloc(alloc_size) : linearAlloc(alloc_size);
+	tex->data = p.onVram ? vramAlloc(total_size) : linearAlloc(total_size);
 	if (!tex->data) return false;
 
 	tex->width = p.width;
@@ -74,24 +64,6 @@ bool C3D_TexInitWithParams(C3D_Tex* tex, C3D_TexInitParams p)
 	return true;
 }
 
-void* C3D_TexGetLevel(C3D_Tex* tex, int level, u32* size)
-{
-	u8* data = (u8*)tex->data;
-	u32 level_size = tex->size;
-	int i;
-	for (i = 0; i <= tex->maxLevel; i ++)
-	{
-		if (i == level)
-		{
-			if (size) *size = level_size;
-			return data;
-		}
-		data += level_size;
-		level_size >>= 2;
-	}
-	return NULL;
-}
-
 void C3D_TexUploadLevel(C3D_Tex* tex, const void* data, int level)
 {
 	if (!tex->data || addrIsVRAM(tex->data))
@@ -99,8 +71,7 @@ void C3D_TexUploadLevel(C3D_Tex* tex, const void* data, int level)
 
 	u32 size = 0;
 	void* out = C3D_TexGetLevel(tex, level, &size);
-	if (out)
-		memcpy(out, data, size);
+	memcpy(out, data, size);
 }
 
 static void C3Di_DownscaleRGBA8(u32* dst, const u32* src[4])
