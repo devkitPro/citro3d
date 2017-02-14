@@ -70,6 +70,7 @@ bool C3D_Init(size_t cmdBufSize)
 	C3D_FragOpMode(GPU_FRAGOPMODE_GL);
 	C3D_FragOpShadow(0.0, 1.0);
 
+	ctx->texConfig = BIT(12);
 	ctx->texEnvBuf = 0;
 	ctx->texEnvBufClr = 0xFFFFFFFF;
 
@@ -165,22 +166,29 @@ void C3Di_UpdateContext(void)
 
 	if (ctx->flags & C3DiF_TexAll)
 	{
-		GPU_TEXUNIT units = 0;
-
+		u32 units = 0;
 		for (i = 0; i < 3; i ++)
 		{
-			static const u8 parm[] = { GPU_TEXUNIT0, GPU_TEXUNIT1, GPU_TEXUNIT2 };
-
 			if (ctx->tex[i])
 			{
-				units |= parm[i];
+				units |= BIT(i);
 				if (ctx->flags & C3DiF_Tex(i))
-					C3Di_SetTex(parm[i], ctx->tex[i]);
+					C3Di_SetTex(i, ctx->tex[i]);
 			}
 		}
 
+		// Enable texture units and clear texture cache
+		ctx->texConfig &= ~7;
+		ctx->texConfig |= units | BIT(16);
 		ctx->flags &= ~C3DiF_TexAll;
-		GPUCMD_AddWrite(GPUREG_TEXUNIT_CONFIG, 0x00011000|units); // Enable texture units
+		ctx->flags |= C3DiF_TexStatus;
+	}
+
+	if (ctx->flags & C3DiF_TexStatus)
+	{
+		ctx->flags &= ~C3DiF_TexStatus;
+		GPUCMD_AddWrite(GPUREG_TEXUNIT_CONFIG,  ctx->texConfig);
+		ctx->texConfig &= ~BIT(16); // Remove clear-texture-cache flag
 	}
 
 	if (ctx->flags & C3DiF_TexEnvBuf)

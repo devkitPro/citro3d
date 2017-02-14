@@ -255,7 +255,7 @@ void C3D_TexDelete(C3D_Tex* tex)
 	tex->data = NULL;
 }
 
-void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
+void C3Di_SetTex(int unit, C3D_Tex* tex)
 {
 	u32 reg[10];
 	u32 regcount = 5;
@@ -277,15 +277,15 @@ void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex)
 
 	switch (unit)
 	{
-		case GPU_TEXUNIT0:
+		case 0:
 			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT0_BORDER_COLOR, reg, regcount);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT0_TYPE, tex->fmt);
 			break;
-		case GPU_TEXUNIT1:
+		case 1:
 			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT1_BORDER_COLOR, reg, 5);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT1_TYPE, tex->fmt);
 			break;
-		case GPU_TEXUNIT2:
+		case 2:
 			GPUCMD_AddIncrementalWrites(GPUREG_TEXUNIT2_BORDER_COLOR, reg, 5);
 			GPUCMD_AddWrite(GPUREG_TEXUNIT2_TYPE, tex->fmt);
 			break;

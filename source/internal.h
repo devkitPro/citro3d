@@ -38,6 +38,7 @@ typedef struct
 	C3D_Effect effect;
 	C3D_LightEnv* lightEnv;
 
+	u32 texConfig;
 	C3D_Tex* tex[3];
 	C3D_TexEnv texEnv[6];
 
@@ -71,6 +72,7 @@ enum
 	C3DiF_VshCode = BIT(11),
 	C3DiF_GshCode = BIT(12),
 	C3DiF_CmdBuffer = BIT(13),
+	C3DiF_TexStatus = BIT(14),
 
 #define C3DiF_Tex(n) BIT(23+(n))
 	C3DiF_TexAll = 7 << 23,
@@ -99,7 +101,7 @@ void C3Di_AttrInfoBind(C3D_AttrInfo* info);
 void C3Di_BufInfoBind(C3D_BufInfo* info);
 void C3Di_FrameBufBind(C3D_FrameBuf* fb);
 void C3Di_TexEnvBind(int id, C3D_TexEnv* env);
-void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex);
+void C3Di_SetTex(int unit, C3D_Tex* tex);
 void C3Di_EffectBind(C3D_Effect* effect);
 
 void C3Di_LightMtlBlend(C3D_Light* light);
