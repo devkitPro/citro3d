@@ -2,7 +2,7 @@
 #include <c3d/attribs.h>
 #include <c3d/buffers.h>
 #include <c3d/light.h>
-#include <c3d/renderbuffer.h>
+#include <c3d/framebuffer.h>
 #include <c3d/texenv.h>
 
 #define C3D_UNUSED __attribute__((unused))
@@ -43,7 +43,7 @@ typedef struct
 
 	u32 texEnvBuf, texEnvBufClr;
 
-	C3D_RenderBuf* rb;
+	C3D_FrameBuf fb;
 	u32 viewport[5];
 	u32 scissor[3];
 
@@ -62,7 +62,7 @@ enum
 	C3DiF_AttrInfo = BIT(2),
 	C3DiF_BufInfo = BIT(3),
 	C3DiF_Effect = BIT(4),
-	C3DiF_RenderBuf = BIT(5),
+	C3DiF_FrameBuf = BIT(5),
 	C3DiF_Viewport = BIT(6),
 	C3DiF_Scissor = BIT(7),
 	C3DiF_Program = BIT(8),
@@ -84,13 +84,23 @@ static inline C3D_Context* C3Di_GetContext(void)
 	return &__C3D_Context;
 }
 
+static inline bool typeIsCube(GPU_TEXTURE_MODE_PARAM type)
+{
+	return type == GPU_TEX_CUBE_MAP || type == GPU_TEX_SHADOW_CUBE;
+}
+
+static inline bool C3Di_TexIs2D(C3D_Tex* tex)
+{
+	return !typeIsCube(C3D_TexGetType(tex));
+}
+
 void C3Di_UpdateContext(void);
 void C3Di_AttrInfoBind(C3D_AttrInfo* info);
 void C3Di_BufInfoBind(C3D_BufInfo* info);
+void C3Di_FrameBufBind(C3D_FrameBuf* fb);
 void C3Di_TexEnvBind(int id, C3D_TexEnv* env);
 void C3Di_SetTex(GPU_TEXUNIT unit, C3D_Tex* tex);
 void C3Di_EffectBind(C3D_Effect* effect);
-void C3Di_RenderBufBind(C3D_RenderBuf* rb);
 
 void C3Di_LightMtlBlend(C3D_Light* light);
 

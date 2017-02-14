@@ -21,7 +21,7 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 		}
 		case APTHOOK_ONRESTORE:
 		{
-			ctx->flags |= C3DiF_AttrInfo | C3DiF_BufInfo | C3DiF_Effect | C3DiF_RenderBuf
+			ctx->flags |= C3DiF_AttrInfo | C3DiF_BufInfo | C3DiF_Effect | C3DiF_FrameBuf
 				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program | C3DiF_VshCode | C3DiF_GshCode
 				| C3DiF_TexAll | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_LightEnv;
 
@@ -55,7 +55,7 @@ bool C3D_Init(size_t cmdBufSize)
 
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 
-	ctx->flags = C3DiF_Active | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexAll;
+	ctx->flags = C3DiF_Active | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexStatus | C3DiF_TexAll;
 	ctx->renderQueueExit = NULL;
 
 	// TODO: replace with direct struct access
@@ -120,16 +120,16 @@ void C3Di_UpdateContext(void)
 		ctx->flags &= ~(C3DiF_Program | C3DiF_VshCode | C3DiF_GshCode);
 	}
 
-	if (ctx->flags & C3DiF_RenderBuf)
+	if (ctx->flags & C3DiF_FrameBuf)
 	{
-		ctx->flags &= ~C3DiF_RenderBuf;
+		ctx->flags &= ~C3DiF_FrameBuf;
 		if (ctx->flags & C3DiF_DrawUsed)
 		{
 			ctx->flags &= ~C3DiF_DrawUsed;
 			GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 1);
 			GPUCMD_AddWrite(GPUREG_EARLYDEPTH_CLEAR, 1);
 		}
-		C3Di_RenderBufBind(ctx->rb);
+		C3Di_FrameBufBind(&ctx->fb);
 	}
 
 	if (ctx->flags & C3DiF_Viewport)

@@ -30,16 +30,6 @@ static inline size_t fmtSize(GPU_TEXCOLOR fmt)
 	}
 }
 
-static inline bool typeIsCube(GPU_TEXTURE_MODE_PARAM type)
-{
-	return type == GPU_TEX_CUBE_MAP || type == GPU_TEX_SHADOW_CUBE;
-}
-
-static inline bool C3Di_TexIs2D(C3D_Tex* tex)
-{
-	return !typeIsCube(C3D_TexGetType(tex));
-}
-
 static inline bool addrIsVRAM(const void* addr)
 {
 	u32 vaddr = (u32)addr;

@@ -24,6 +24,7 @@ extern "C" {
 #include "c3d/light.h"
 #include "c3d/lightlut.h"
 
+#include "c3d/framebuffer.h"
 #include "c3d/renderbuffer.h"
 #include "c3d/renderqueue.h"
 
