@@ -1,3 +1,4 @@
+#define CITRO3D_NO_DEPRECATION
 #include "internal.h"
 #include <c3d/base.h>
 #include <c3d/renderbuffer.h>

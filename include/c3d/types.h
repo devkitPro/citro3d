@@ -8,6 +8,12 @@ typedef uint8_t u8;
 typedef uint32_t u32;
 #endif
 
+#ifndef CITRO3D_NO_DEPRECATION
+#define C3D_DEPRECATED __attribute__ ((deprecated))
+#else
+#define C3D_DEPRECATED
+#endif
+
 typedef u32 C3D_IVec;
 
 static inline C3D_IVec IVec_Pack(u8 x, u8 y, u8 z, u8 w)
