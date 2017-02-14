@@ -245,9 +245,9 @@ void C3D_LightEnvBumpSel(C3D_LightEnv* env, int texUnit)
 void C3D_LightEnvShadowMode(C3D_LightEnv* env, u32 mode)
 {
 	mode &= 0xF<<16;
-	if (mode & (GPU_SHADOW_PRIMARY | GPU_INVERT_SHADOW | GPU_SHADOW_ALPHA))
+	if (mode & (GPU_SHADOW_PRIMARY | GPU_SHADOW_SECONDARY | GPU_SHADOW_ALPHA))
 		mode |= BIT(0);
-	env->conf.config[0] &= ~((3<<28) | BIT(0));
+	env->conf.config[0] &= ~((0xF<<16) | BIT(0));
 	env->conf.config[0] |= mode;
 	env->flags |= C3DF_LightEnv_Dirty;
 }
