@@ -39,6 +39,8 @@ void C3D_DrawElements(GPU_Primitive_t primitive, int count, int type, const void
 	}
 	// Clear the post-vertex cache
 	GPUCMD_AddWrite(GPUREG_VTX_FUNC, 1);
+	GPUCMD_AddMaskedWrite(GPUREG_PRIMITIVE_CONFIG, 0x8, 0);
+	GPUCMD_AddMaskedWrite(GPUREG_PRIMITIVE_CONFIG, 0x8, 0);
 
 	C3Di_GetContext()->flags |= C3DiF_DrawUsed;
 }

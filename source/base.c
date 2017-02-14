@@ -316,9 +316,9 @@ void C3D_BindProgram(shaderProgram_s* program)
 
 		if (oldProg)
 		{
-			if (oldProg->vertexShader->dvle->dvlp != program->vertexShader->dvle->dvlp)
-				ctx->flags |= C3DiF_VshCode;
 			shaderInstance_s* oldGsh = oldProg->geometryShader;
+			if (oldProg->vertexShader->dvle->dvlp != program->vertexShader->dvle->dvlp || (!newGsh && oldGsh))
+				ctx->flags |= C3DiF_VshCode;
 			if (newGsh && (!oldGsh || oldGsh->dvle->dvlp != newGsh->dvle->dvlp))
 				ctx->flags |= C3DiF_GshCode;
 		} else
