@@ -1,6 +1,10 @@
 #include "internal.h"
+#include <c3d/base.h>
 #include <c3d/renderqueue.h>
 #include <stdlib.h>
+
+static const u8 colorFmtSizes[] = {2,1,0,0,0};
+static const u8 depthFmtSizes[] = {0,0,1,2};
 
 static C3D_RenderTarget *firstTarget, *lastTarget;
 static C3D_RenderTarget *linkedTarget[3];
@@ -32,21 +36,50 @@ static void performDraw(void)
 static void performTransfer(void)
 {
 	if (inSafeTransfer) return; // Let the safe transfer finish handler retry this
-	C3D_RenderBuf* renderBuf = &transferQueue->renderBuf;
-	u32* frameBuf = (u32*)gfxGetFramebuffer(transferQueue->screen, transferQueue->side, NULL, NULL);
+	C3D_FrameBuf* frameBuf = &transferQueue->frameBuf;
+	u32* outputFrameBuf = (u32*)gfxGetFramebuffer(transferQueue->screen, transferQueue->side, NULL, NULL);
 	if (transferQueue->side == GFX_LEFT)
 		gfxConfigScreen(transferQueue->screen, false);
+
+	u32 dim = GX_BUFFER_DIM((u32)frameBuf->width, (u32)frameBuf->height);
 	gspSetEventCallback(GSPGPU_EVENT_PPF, onTransferFinish, NULL, true);
-	C3D_RenderBufTransferAsync(renderBuf, frameBuf, transferQueue->transferFlags);
+	GX_DisplayTransfer((u32*)frameBuf->colorBuf, dim, outputFrameBuf, dim, transferQueue->transferFlags);
 }
 
 static void performClear(void)
 {
 	if (inSafeClear) return; // Let the safe clear finish handler retry this
-	C3D_RenderBuf* renderBuf = &clearQueue->renderBuf;
-	// TODO: obey renderBuf->clearBits
-	gspSetEventCallback(renderBuf->colorBuf.data ? GSPGPU_EVENT_PSC0 : GSPGPU_EVENT_PSC1, onClearDone, NULL, true);
-	C3D_RenderBufClearAsync(renderBuf);
+	C3D_RenderTarget* target = clearQueue;
+	while (target && !target->clearBits)
+	{
+		target->drawOk = true;
+		target = target->link;
+		clearQueue = target;
+	}
+	if (!target) return;
+
+	C3D_FrameBuf* frameBuf = &target->frameBuf;
+	u32 size = (u32)frameBuf->width * frameBuf->height;
+	u32 cfs = colorFmtSizes[frameBuf->colorFmt];
+	u32 dfs = depthFmtSizes[frameBuf->depthFmt];
+	void* colorBufEnd = (u8*)frameBuf->colorBuf + size*(2+cfs);
+	void* depthBufEnd = (u8*)frameBuf->depthBuf + size*(2+dfs);
+
+	gspSetEventCallback(GSPGPU_EVENT_PSC0, onClearDone, NULL, true);
+	if (target->clearBits & C3D_CLEAR_COLOR)
+	{
+		if (target->clearBits & C3D_CLEAR_DEPTH)
+			GX_MemoryFill(
+				(u32*)frameBuf->colorBuf, target->clearColor, (u32*)colorBufEnd, BIT(0) | (cfs << 8),
+				(u32*)frameBuf->depthBuf, target->clearDepth, (u32*)depthBufEnd, BIT(0) | (dfs << 8));
+		else
+			GX_MemoryFill(
+				(u32*)frameBuf->colorBuf, target->clearColor, (u32*)colorBufEnd, BIT(0) | (cfs << 8),
+				NULL, 0, NULL, 0);
+	} else
+		GX_MemoryFill(
+			(u32*)frameBuf->depthBuf, target->clearDepth, (u32*)depthBufEnd, BIT(0) | (dfs << 8),
+			NULL, 0, NULL, 0);
 }
 
 static bool framerateLimit(int id)
@@ -301,7 +334,8 @@ bool C3D_FrameDrawOn(C3D_RenderTarget* target)
 		}
 	}
 
-	C3D_RenderBufBind(&target->renderBuf);
+	C3D_SetFrameBuf(&target->frameBuf);
+	C3D_SetViewport(0, 0, target->frameBuf.width, target->frameBuf.height);
 	return true;
 }
 
@@ -331,18 +365,16 @@ void C3D_FrameEnd(u8 flags)
 	updateFrameQueue();
 }
 
-C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, int colorFmt, int depthFmt)
+static C3D_RenderTarget* C3Di_RenderTargetNew(void)
 {
-	if (!checkRenderQueueInit()) return NULL;
 	C3D_RenderTarget* target = (C3D_RenderTarget*)malloc(sizeof(C3D_RenderTarget));
 	if (!target) return NULL;
 	memset(target, 0, sizeof(C3D_RenderTarget));
-	if (!C3D_RenderBufInit(&target->renderBuf, width, height, colorFmt, depthFmt))
-	{
-		free(target);
-		return NULL;
-	}
+	return target;
+}
 
+static void C3Di_RenderTargetFinishInit(C3D_RenderTarget* target)
+{
 	target->drawOk = true;
 	target->prev = lastTarget;
 	target->next = NULL;
@@ -351,7 +383,73 @@ C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, int colorFmt, in
 	if (!firstTarget)
 		firstTarget = target;
 	lastTarget = target;
+}
 
+C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, GPU_COLORBUF colorFmt, C3D_DEPTHTYPE depthFmt)
+{
+	if (!checkRenderQueueInit()) goto _fail0;
+
+	u32 size = width*height;
+	GPU_DEPTHBUF depthFmtReal = GPU_RB_DEPTH16;
+	void* depthBuf = NULL;
+	void* colorBuf = vramAlloc(size*(2+colorFmtSizes[colorFmt]));
+	if (!colorBuf) goto _fail0;
+	if (C3D_DEPTHTYPE_OK(depthFmt))
+	{
+		depthFmtReal = C3D_DEPTHTYPE_VAL(depthFmt);
+		depthBuf = vramAlloc(size*(2+depthFmtSizes[depthFmtReal]));
+		if (!depthBuf) goto _fail1;
+	}
+
+	C3D_RenderTarget* target = C3Di_RenderTargetNew();
+	if (!target) goto _fail2;
+
+	C3D_FrameBuf* fb = &target->frameBuf;
+	C3D_FrameBufAttrib(fb, width, height, false);
+	C3D_FrameBufColor(fb, colorBuf, colorFmt);
+	target->ownsColor = true;
+	if (depthBuf)
+	{
+		C3D_FrameBufDepth(fb, depthBuf, depthFmtReal);
+		target->ownsDepth = true;
+	}
+	C3Di_RenderTargetFinishInit(target);
+	return target;
+
+_fail2:
+	if (depthBuf) vramFree(depthBuf);
+_fail1:
+	vramFree(colorBuf);
+_fail0:
+	return NULL;
+}
+
+C3D_RenderTarget* C3D_RenderTargetCreateFromTex(C3D_Tex* tex, GPU_TEXFACE face, int level, C3D_DEPTHTYPE depthFmt)
+{
+	if (!checkRenderQueueInit()) return NULL;
+
+	C3D_RenderTarget* target = C3Di_RenderTargetNew();
+	if (!target) return NULL;
+
+	C3D_FrameBuf* fb = &target->frameBuf;
+	C3D_FrameBufTex(fb, tex, face, level);
+
+	if (C3D_DEPTHTYPE_OK(depthFmt))
+	{
+		GPU_DEPTHBUF depthFmtReal = C3D_DEPTHTYPE_VAL(depthFmt);
+		u32 size = (u32)fb->width*fb->height;
+		void* depthBuf = vramAlloc(size*(2+depthFmtSizes[depthFmtReal]));
+		if (!depthBuf)
+		{
+			free(target);
+			return NULL;
+		}
+
+		C3D_FrameBufDepth(fb, depthBuf, depthFmtReal);
+		target->ownsDepth = true;
+	}
+
+	C3Di_RenderTargetFinishInit(target);
 	return target;
 }
 
@@ -361,7 +459,12 @@ void C3D_RenderTargetDelete(C3D_RenderTarget* target)
 	target->linked = false;
 	while (!target->drawOk)
 		gspWaitForAnyEvent();
-	C3D_RenderBufDelete(&target->renderBuf);
+
+	if (target->ownsColor)
+		vramFree(target->frameBuf.colorBuf);
+	if (target->ownsDepth)
+		vramFree(target->frameBuf.depthBuf);
+
 	C3D_RenderTarget** prevNext = target->prev ? &target->prev->next : &firstTarget;
 	C3D_RenderTarget** nextPrev = target->next ? &target->next->prev : &lastTarget;
 	*prevNext = target->next;
@@ -369,15 +472,15 @@ void C3D_RenderTargetDelete(C3D_RenderTarget* target)
 	free(target);
 }
 
-void C3D_RenderTargetSetClear(C3D_RenderTarget* target, u32 clearBits, u32 clearColor, u32 clearDepth)
+void C3D_RenderTargetSetClear(C3D_RenderTarget* target, C3D_ClearBits clearBits, u32 clearColor, u32 clearDepth)
 {
-	if (target->renderBuf.colorBuf.data==NULL) clearBits &= ~C3D_CLEAR_COLOR;
-	if (target->renderBuf.depthBuf.data==NULL) clearBits &= ~C3D_CLEAR_DEPTH;
+	if (!target->frameBuf.colorBuf) clearBits &= ~C3D_CLEAR_COLOR;
+	if (!target->frameBuf.depthBuf) clearBits &= ~C3D_CLEAR_DEPTH;
 
-	u32 oldClearBits = target->clearBits;
-	target->clearBits = clearBits & 0xFF;
-	target->renderBuf.clearColor = clearColor;
-	target->renderBuf.clearDepth = clearDepth;
+	C3D_ClearBits oldClearBits = target->clearBits;
+	target->clearBits = clearBits;
+	target->clearColor = clearColor;
+	target->clearDepth = clearDepth;
 
 	if (clearBits &~ oldClearBits && target->drawOk)
 	{
