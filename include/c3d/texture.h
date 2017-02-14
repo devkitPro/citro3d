@@ -58,6 +58,8 @@ void C3D_TexBind(int unitId, C3D_Tex* tex);
 void C3D_TexFlush(C3D_Tex* tex);
 void C3D_TexDelete(C3D_Tex* tex);
 
+void C3D_TexShadowParams(bool perspective, float bias);
+
 static inline int C3D_TexCalcMaxLevel(u32 width, u32 height)
 {
 	return (31-__builtin_clz(width < height ? width : height)) - 3; // avoid sizes smaller than 8
@@ -111,6 +113,18 @@ static inline bool C3D_TexInitVRAM(C3D_Tex* tex, u16 width, u16 height, GPU_TEXC
 {
 	return C3D_TexInitWithParams(tex, NULL,
 		(C3D_TexInitParams){ width, height, 0, format, GPU_TEX_2D, true });
+}
+
+static inline bool C3D_TexInitShadow(C3D_Tex* tex, u16 width, u16 height)
+{
+	return C3D_TexInitWithParams(tex, NULL,
+		(C3D_TexInitParams){ width, height, 0, GPU_RGBA8, GPU_TEX_SHADOW_2D, true });
+}
+
+static inline bool C3D_TexInitShadowCube(C3D_Tex* tex, C3D_TexCube* cube, u16 width, u16 height)
+{
+	return C3D_TexInitWithParams(tex, cube,
+		(C3D_TexInitParams){ width, height, 0, GPU_RGBA8, GPU_TEX_SHADOW_CUBE, true });
 }
 
 static inline GPU_TEXTURE_MODE_PARAM C3D_TexGetType(C3D_Tex* tex)

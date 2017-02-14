@@ -39,6 +39,7 @@ typedef struct
 	C3D_LightEnv* lightEnv;
 
 	u32 texConfig;
+	u32 texShadow;
 	C3D_Tex* tex[3];
 	C3D_TexEnv texEnv[6];
 

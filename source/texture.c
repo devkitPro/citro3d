@@ -255,6 +255,20 @@ void C3D_TexDelete(C3D_Tex* tex)
 	tex->data = NULL;
 }
 
+void C3D_TexShadowParams(bool perspective, float bias)
+{
+	C3D_Context* ctx = C3Di_GetContext();
+
+	if (!(ctx->flags & C3DiF_Active))
+		return;
+
+	u32 iBias = (u32)(fabs(bias) * BIT(24));
+	if (iBias >= BIT(24))
+		iBias = BIT(24)-1;
+
+	ctx->texShadow = (iBias &~ 1) | (perspective ? 0 : 1);
+}
+
 void C3Di_SetTex(int unit, C3D_Tex* tex)
 {
 	u32 reg[10];

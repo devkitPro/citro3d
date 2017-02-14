@@ -71,6 +71,7 @@ bool C3D_Init(size_t cmdBufSize)
 	C3D_FragOpShadow(0.0, 1.0);
 
 	ctx->texConfig = BIT(12);
+	ctx->texShadow = BIT(0);
 	ctx->texEnvBuf = 0;
 	ctx->texEnvBufClr = 0xFFFFFFFF;
 
@@ -188,6 +189,7 @@ void C3Di_UpdateContext(void)
 	{
 		ctx->flags &= ~C3DiF_TexStatus;
 		GPUCMD_AddWrite(GPUREG_TEXUNIT_CONFIG,  ctx->texConfig);
+		GPUCMD_AddWrite(GPUREG_TEXUNIT0_SHADOW, ctx->texShadow);
 		ctx->texConfig &= ~BIT(16); // Remove clear-texture-cache flag
 	}
 
