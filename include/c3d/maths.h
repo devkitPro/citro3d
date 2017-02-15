@@ -713,6 +713,14 @@ C3D_FQuat Quat_RotateZ(C3D_FQuat q, float r, bool bRightSide);
 C3D_FQuat Quat_FromMtx(const C3D_Mtx* m);
 
 /**
+ * @brief Get Quaternion equivalent to 4x4 matrix
+ * @note If the matrix is orthogonal or special orthogonal, where determinant(matrix) = +1.0f, then the matrix can be converted. 
+ * @param[in]   m Input  Matrix
+ * @return      Generated Quaternion
+ */
+C3D_FQuat Quat_FromMtx(const C3D_Mtx* m);
+
+/**
  * @brief Identity Quaternion
  * @return Identity Quaternion
  */
