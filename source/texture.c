@@ -59,7 +59,6 @@ static void C3Di_TexCubeDelete(C3D_TexCube* cube)
 
 bool C3D_TexInitWithParams(C3D_Tex* tex, C3D_TexCube* cube, C3D_TexInitParams p)
 {
-	if (tex->data) return false;
 	if ((p.width|p.height) & 7) return false;
 
 	bool isCube = typeIsCube(p.type);
@@ -109,9 +108,6 @@ bool C3D_TexInitWithParams(C3D_Tex* tex, C3D_TexCube* cube, C3D_TexInitParams p)
 
 void C3D_TexLoadImage(C3D_Tex* tex, const void* data, GPU_TEXFACE face, int level)
 {
-	if (!tex->data)
-		return;
-
 	u32 size = 0;
 	void* out = C3D_TexGetImagePtr(tex,
 		C3Di_TexIs2D(tex) ? tex->data : tex->cube->data[face],
@@ -240,19 +236,16 @@ void C3D_TexBind(int unitId, C3D_Tex* tex)
 
 void C3D_TexFlush(C3D_Tex* tex)
 {
-	if (tex->data && !addrIsVRAM(tex->data))
+	if (!addrIsVRAM(tex->data))
 		GSPGPU_FlushDataCache(tex->data, C3D_TexCalcTotalSize(tex->size, tex->maxLevel));
 }
 
 void C3D_TexDelete(C3D_Tex* tex)
 {
-	if (!tex->data) return;
-
 	if (C3Di_TexIs2D(tex))
 		allocFree(tex->data);
 	else
 		C3Di_TexCubeDelete(tex->cube);
-	tex->data = NULL;
 }
 
 void C3D_TexShadowParams(bool perspective, float bias)
