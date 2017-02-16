@@ -39,6 +39,9 @@ bool C3D_FrameBegin(u8 flags);
 bool C3D_FrameDrawOn(C3D_RenderTarget* target);
 void C3D_FrameEnd(u8 flags);
 
+float C3D_GetDrawingTime(void);
+float C3D_GetProcessingTime(void);
+
 #if defined(__GNUC__) && !defined(__cplusplus)
 typedef union __attribute__((__transparent_union__))
 {

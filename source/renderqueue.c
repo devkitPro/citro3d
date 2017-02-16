@@ -10,6 +10,8 @@ static C3D_RenderTarget *firstTarget, *lastTarget;
 static C3D_RenderTarget *linkedTarget[3];
 static C3D_RenderTarget *transferQueue, *clearQueue;
 
+static TickCounter gpuTime, cpuTime;
+
 static struct
 {
 	C3D_RenderTarget* targetList;
@@ -31,6 +33,7 @@ static void performDraw(void)
 {
 	gspSetEventCallback(GSPGPU_EVENT_P3D, onRenderFinish, NULL, true);
 	GX_ProcessCommandList(queuedFrame[queueSwap].cmdBuf, queuedFrame[queueSwap].cmdBufSize, queuedFrame[queueSwap].flags);
+	osTickCounterStart(&gpuTime);
 }
 
 static void performTransfer(void)
@@ -170,6 +173,7 @@ static void onVBlank1(C3D_UNUSED void* unused)
 void onRenderFinish(C3D_UNUSED void* unused)
 {
 	C3D_RenderTarget *a, *next;
+	osTickCounterUpdate(&gpuTime);
 
 	// The following check should never trigger
 	if (queuedState!=1) svcBreak(USERBREAK_PANIC);
@@ -312,6 +316,7 @@ bool C3D_FrameBegin(u8 flags)
 			return false;
 		gspWaitForP3D();
 	}
+	osTickCounterStart(&cpuTime);
 	inFrame = true;
 	return true;
 }
@@ -343,6 +348,7 @@ void C3D_FrameEnd(u8 flags)
 {
 	if (!inFrame) return;
 	inFrame = false;
+	osTickCounterUpdate(&cpuTime);
 
 	int pos = queueSwap^queuedCount;
 	if (!queuedFrame[pos].targetList) return;
@@ -363,6 +369,16 @@ void C3D_FrameEnd(u8 flags)
 
 	// Update the frame queue
 	updateFrameQueue();
+}
+
+float C3D_GetDrawingTime(void)
+{
+	return osTickCounterRead(&gpuTime);
+}
+
+float C3D_GetProcessingTime(void)
+{
+	return osTickCounterRead(&cpuTime);
 }
 
 static C3D_RenderTarget* C3Di_RenderTargetNew(void)
