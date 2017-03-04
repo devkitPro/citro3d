@@ -207,7 +207,10 @@ void C3D_LightEnvLut(C3D_LightEnv* env, int lutId, int input, bool abs, C3D_Ligh
 			env->conf.config[1] &= ~GPU_LC1_LUTBIT(lutId);
 			env->flags |= C3DF_LightEnv_LutDirty(id);
 		} else
+		{
+			env->conf.config[1] |= GPU_LC1_LUTBIT(lutId);
 			env->luts[id] = NULL;
+		}
 	}
 
 	env->conf.lutInput.select &= ~GPU_LIGHTLUTINPUT(lutId, 0xF);
