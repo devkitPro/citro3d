@@ -63,7 +63,7 @@ void C3D_UpdateUniforms(GPU_SHADER_TYPE type)
 		}
 
 		// Advance
-		i += j;
+		i = j;
 	}
 
 	// Update IVec uniforms
