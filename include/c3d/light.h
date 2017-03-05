@@ -49,8 +49,6 @@ enum
 
 struct C3D_LightEnv_t
 {
-	void (* Update)(C3D_LightEnv* env);
-	void (* Dirty)(C3D_LightEnv* env);
 	u32 flags;
 	C3D_LightLut* luts[6];
 	float ambient[3];

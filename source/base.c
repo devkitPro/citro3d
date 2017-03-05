@@ -7,6 +7,24 @@ C3D_Context __C3D_Context;
 
 static aptHookCookie hookCookie;
 
+__attribute__((weak)) void C3Di_RenderQueueWaitDone(void)
+{
+}
+
+__attribute__((weak)) void C3Di_RenderQueueExit(void)
+{
+}
+
+__attribute__((weak)) void C3Di_LightEnvUpdate(C3D_LightEnv* env)
+{
+	(void)env;
+}
+
+__attribute__((weak)) void C3Di_LightEnvDirty(C3D_LightEnv* env)
+{
+	(void)env;
+}
+
 static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 {
 	C3D_Context* ctx = C3Di_GetContext();
@@ -15,8 +33,7 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 	{
 		case APTHOOK_ONSUSPEND:
 		{
-			if (ctx->renderQueueWaitDone)
-				ctx->renderQueueWaitDone();
+			C3Di_RenderQueueWaitDone();
 			break;
 		}
 		case APTHOOK_ONRESTORE:
@@ -32,7 +49,7 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 
 			C3D_LightEnv* env = ctx->lightEnv;
 			if (env)
-				env->Dirty(env);
+				C3Di_LightEnvDirty(env);
 			break;
 		}
 		default:
@@ -56,7 +73,6 @@ bool C3D_Init(size_t cmdBufSize)
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 
 	ctx->flags = C3DiF_Active | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexStatus | C3DiF_TexAll;
-	ctx->renderQueueExit = NULL;
 
 	// TODO: replace with direct struct access
 	C3D_DepthMap(true, -1.0f, 0.0f);
@@ -221,7 +237,7 @@ void C3Di_UpdateContext(void)
 	}
 
 	if (env)
-		env->Update(env);
+		C3Di_LightEnvUpdate(env);
 
 	if (ctx->fixedAttribDirty)
 	{
@@ -292,9 +308,7 @@ void C3D_Fini(void)
 	if (!(ctx->flags & C3DiF_Active))
 		return;
 
-	if (ctx->renderQueueExit)
-		ctx->renderQueueExit();
-
+	C3Di_RenderQueueExit();
 	aptUnhook(&hookCookie);
 	linearFree(ctx->cmdBuf);
 	ctx->flags = 0;

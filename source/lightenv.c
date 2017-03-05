@@ -47,7 +47,7 @@ static void C3Di_LightEnvSelectLayer(C3D_LightEnv* env)
 	env->conf.config[0] = (env->conf.config[0] &~ (0xF<<4)) | (GPU_LIGHT_ENV_LAYER_CONFIG(i)<<4);
 }
 
-static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
+void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 {
 	int i;
 	C3D_LightEnvConf* conf = &env->conf;
@@ -129,7 +129,7 @@ static void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 	}
 }
 
-static void C3Di_LightEnvDirty(C3D_LightEnv* env)
+void C3Di_LightEnvDirty(C3D_LightEnv* env)
 {
 	env->flags |= C3DF_LightEnv_Dirty;
 	int i;
@@ -152,9 +152,6 @@ static void C3Di_LightEnvDirty(C3D_LightEnv* env)
 void C3D_LightEnvInit(C3D_LightEnv* env)
 {
 	memset(env, 0, sizeof(*env));
-	env->Update = C3Di_LightEnvUpdate;
-	env->Dirty = C3Di_LightEnvDirty;
-
 	env->flags = C3DF_LightEnv_Dirty;
 	env->conf.config[0] = (4<<8) | BIT(27) | BIT(31);
 	env->conf.config[1] = ~0;

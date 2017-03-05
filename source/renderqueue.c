@@ -21,6 +21,7 @@ static struct
 } queuedFrame[2];
 static u8 queueSwap, queuedCount, queuedState;
 
+static bool initialized;
 static bool inFrame, inSafeTransfer, inSafeClear;
 static float framerate = 60.0f;
 static float framerateCounter[2] = { 60.0f, 60.0f };
@@ -248,10 +249,13 @@ static void C3Di_RenderQueueInit(void)
 	gspSetEventCallback(GSPGPU_EVENT_VBlank1, onVBlank1, NULL, false);
 }
 
-static void C3Di_RenderQueueExit(void)
+void C3Di_RenderQueueExit(void)
 {
 	int i;
 	C3D_RenderTarget *a, *next;
+
+	if (!initialized)
+		return;
 
 	for (a = firstTarget; a; a = next)
 	{
@@ -269,10 +273,13 @@ static void C3Di_RenderQueueExit(void)
 	queueSwap = 0;
 	queuedCount = 0;
 	queuedState = 0;
+	initialized = false;
 }
 
-static void C3Di_RenderQueueWaitDone(void)
+void C3Di_RenderQueueWaitDone(void)
 {
+	if (!initialized)
+		return;
 	while (queuedCount || transferQueue || clearQueue)
 		gspWaitForAnyEvent();
 }
@@ -284,11 +291,10 @@ static bool checkRenderQueueInit(void)
 	if (!(ctx->flags & C3DiF_Active))
 		return false;
 
-	if (!ctx->renderQueueExit)
+	if (!initialized)
 	{
 		C3Di_RenderQueueInit();
-		ctx->renderQueueWaitDone = C3Di_RenderQueueWaitDone;
-		ctx->renderQueueExit = C3Di_RenderQueueExit;
+		initialized = true;
 	}
 
 	return true;
