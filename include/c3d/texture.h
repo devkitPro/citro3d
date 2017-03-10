@@ -134,7 +134,7 @@ static inline GPU_TEXTURE_MODE_PARAM C3D_TexGetType(C3D_Tex* tex)
 
 static inline void* C3D_TexGetImagePtr(C3D_Tex* tex, void* data, int level, u32* size)
 {
-	if (size) *size = level > 0 ? C3D_TexCalcLevelSize(tex->size, level) : C3D_TexCalcTotalSize(tex->size, tex->maxLevel);
+	if (size) *size = level >= 0 ? C3D_TexCalcLevelSize(tex->size, level) : C3D_TexCalcTotalSize(tex->size, tex->maxLevel);
 	if (!level) return data;
 	return (u8*)data + (level > 0 ? C3D_TexCalcTotalSize(tex->size, level-1) : 0);
 }
