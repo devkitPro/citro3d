@@ -21,6 +21,7 @@ extern "C" {
 #include "c3d/texenv.h"
 #include "c3d/effect.h"
 #include "c3d/texture.h"
+#include "c3d/proctex.h"
 #include "c3d/light.h"
 #include "c3d/lightlut.h"
 

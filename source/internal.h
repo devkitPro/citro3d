@@ -1,6 +1,7 @@
 #pragma once
 #include <c3d/attribs.h>
 #include <c3d/buffers.h>
+#include <c3d/proctex.h>
 #include <c3d/light.h>
 #include <c3d/framebuffer.h>
 #include <c3d/texenv.h>
@@ -45,6 +46,10 @@ typedef struct
 
 	u32 texEnvBuf, texEnvBufClr;
 
+	C3D_ProcTex* procTex;
+	C3D_ProcTexLut* procTexLut[3];
+	C3D_ProcTexColorLut* procTexColorLut;
+
 	C3D_FrameBuf fb;
 	u32 viewport[5];
 	u32 scissor[3];
@@ -70,7 +75,11 @@ enum
 	C3DiF_GshCode = BIT(12),
 	C3DiF_CmdBuffer = BIT(13),
 	C3DiF_TexStatus = BIT(14),
+	C3DiF_ProcTex = BIT(15),
+	C3DiF_ProcTexColorLut = BIT(16),
 
+#define C3DiF_ProcTexLut(n) BIT(20+(n))
+	C3DiF_ProcTexLutAll = 7 << 20,
 #define C3DiF_Tex(n) BIT(23+(n))
 	C3DiF_TexAll = 7 << 23,
 #define C3DiF_TexEnv(n) BIT(26+(n))

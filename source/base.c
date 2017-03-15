@@ -25,6 +25,16 @@ __attribute__((weak)) void C3Di_LightEnvDirty(C3D_LightEnv* env)
 	(void)env;
 }
 
+__attribute__((weak)) void C3Di_ProcTexUpdate(C3D_Context* ctx)
+{
+	(void)ctx;
+}
+
+__attribute__((weak)) void C3Di_ProcTexDirty(C3D_Context* ctx)
+{
+	(void)ctx;
+}
+
 static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 {
 	C3D_Context* ctx = C3Di_GetContext();
@@ -50,6 +60,7 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 			C3D_LightEnv* env = ctx->lightEnv;
 			if (env)
 				C3Di_LightEnvDirty(env);
+			C3Di_ProcTexDirty(ctx);
 			break;
 		}
 		default:
@@ -208,6 +219,9 @@ void C3Di_UpdateContext(void)
 		GPUCMD_AddWrite(GPUREG_TEXUNIT0_SHADOW, ctx->texShadow);
 		ctx->texConfig &= ~BIT(16); // Remove clear-texture-cache flag
 	}
+
+	if (ctx->flags & (C3DiF_ProcTex | C3DiF_ProcTexColorLut | C3DiF_ProcTexLutAll))
+		C3Di_ProcTexUpdate(ctx);
 
 	if (ctx->flags & C3DiF_TexEnvBuf)
 	{
