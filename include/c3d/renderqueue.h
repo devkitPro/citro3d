@@ -5,30 +5,33 @@ typedef struct C3D_RenderTarget_tag C3D_RenderTarget;
 
 struct C3D_RenderTarget_tag
 {
-	C3D_RenderTarget *next, *prev, *link, *frame[2];
+	C3D_RenderTarget *next, *prev;
 	C3D_FrameBuf frameBuf;
 
-	u32 transferFlags;
-	u32 clearColor, clearDepth;
-	C3D_ClearBits clearBits;
+	bool used;
 	bool ownsColor, ownsDepth;
 
-	bool drawOk, transferOk;
 	bool linked;
 	gfxScreen_t screen;
 	gfx3dSide_t side;
+	C3D_ClearBits clearBits;
+	u32 transferFlags;
+	u32 clearColor, clearDepth;
 };
 
 // Flags for C3D_FrameBegin
 enum
 {
-	C3D_FRAME_SYNCDRAW = BIT(0), // Do not render the frame until the previous has finished rendering
-	C3D_FRAME_NONBLOCK = BIT(1), // Return false instead of waiting for the GPU to finish rendering
+	C3D_FRAME_SYNCDRAW = BIT(0), // Perform C3D_FrameSync before checking the GPU status
+	C3D_FRAME_NONBLOCK = BIT(1), // Return false instead of waiting if the GPU is busy
 };
 
 float C3D_FrameRate(float fps);
+void C3D_FrameSync(void);
+
 bool C3D_FrameBegin(u8 flags);
 bool C3D_FrameDrawOn(C3D_RenderTarget* target);
+void C3D_FrameSplit(u8 flags);
 void C3D_FrameEnd(u8 flags);
 
 float C3D_GetDrawingTime(void);

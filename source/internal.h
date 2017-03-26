@@ -27,6 +27,7 @@ typedef struct
 
 typedef struct
 {
+	gxCmdQueue_s gxQueue;
 	u32* cmdBuf;
 	size_t cmdBufSize;
 	float cmdBufUsage;
@@ -73,7 +74,6 @@ enum
 	C3DiF_LightEnv = BIT(10),
 	C3DiF_VshCode = BIT(11),
 	C3DiF_GshCode = BIT(12),
-	C3DiF_CmdBuffer = BIT(13),
 	C3DiF_TexStatus = BIT(14),
 	C3DiF_ProcTex = BIT(15),
 	C3DiF_ProcTexColorLut = BIT(16),
@@ -116,4 +116,4 @@ void C3Di_DirtyUniforms(GPU_SHADER_TYPE type);
 void C3Di_LoadShaderUniforms(shaderInstance_s* si);
 void C3Di_ClearShaderUniforms(GPU_SHADER_TYPE type);
 
-void C3Di_FinalizeFrame(u32** pBuf, u32* pSize);
+bool C3Di_SplitFrame(u32** pBuf, u32* pSize);

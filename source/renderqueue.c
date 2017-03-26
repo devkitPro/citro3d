@@ -3,88 +3,24 @@
 #include <c3d/renderqueue.h>
 #include <stdlib.h>
 
-static const u8 colorFmtSizes[] = {2,1,0,0,0};
-static const u8 depthFmtSizes[] = {0,0,1,2};
-
 static C3D_RenderTarget *firstTarget, *lastTarget;
 static C3D_RenderTarget *linkedTarget[3];
-static C3D_RenderTarget *transferQueue, *clearQueue;
 
 static TickCounter gpuTime, cpuTime;
 
-static struct
-{
-	C3D_RenderTarget* targetList;
-	u32* cmdBuf;
-	u32 cmdBufSize;
-	u8 flags;
-} queuedFrame[2];
-static u8 queueSwap, queuedCount, queuedState;
+#define STAGE_HAS_TRANSFER(n)   BIT(0+(n))
+#define STAGE_HAS_ANY_TRANSFER  (7<<0)
+#define STAGE_NEED_TRANSFER(n)  BIT(3+(n))
+#define STAGE_NEED_TOP_TRANSFER (STAGE_NEED_TRANSFER(0)|STAGE_NEED_TRANSFER(1))
+#define STAGE_NEED_BOT_TRANSFER STAGE_NEED_TRANSFER(2)
+#define STAGE_WAIT_TRANSFER     BIT(6)
 
 static bool initialized;
-static bool inFrame, inSafeTransfer, inSafeClear;
+static bool inFrame, inSafeTransfer, measureGpuTime;
+static u8 frameStage;
 static float framerate = 60.0f;
 static float framerateCounter[2] = { 60.0f, 60.0f };
-
-static void onRenderFinish(void* unused);
-static void onTransferFinish(void* unused);
-static void onClearDone(void* unused);
-
-static void performDraw(void)
-{
-	gspSetEventCallback(GSPGPU_EVENT_P3D, onRenderFinish, NULL, true);
-	GX_ProcessCommandList(queuedFrame[queueSwap].cmdBuf, queuedFrame[queueSwap].cmdBufSize, queuedFrame[queueSwap].flags);
-	osTickCounterStart(&gpuTime);
-}
-
-static void performTransfer(void)
-{
-	if (inSafeTransfer) return; // Let the safe transfer finish handler retry this
-	C3D_FrameBuf* frameBuf = &transferQueue->frameBuf;
-	u32* outputFrameBuf = (u32*)gfxGetFramebuffer(transferQueue->screen, transferQueue->side, NULL, NULL);
-	if (transferQueue->side == GFX_LEFT)
-		gfxConfigScreen(transferQueue->screen, false);
-
-	u32 dim = GX_BUFFER_DIM((u32)frameBuf->width, (u32)frameBuf->height);
-	gspSetEventCallback(GSPGPU_EVENT_PPF, onTransferFinish, NULL, true);
-	GX_DisplayTransfer((u32*)frameBuf->colorBuf, dim, outputFrameBuf, dim, transferQueue->transferFlags);
-}
-
-static void performClear(void)
-{
-	if (inSafeClear) return; // Let the safe clear finish handler retry this
-	C3D_RenderTarget* target = clearQueue;
-	while (target && !target->clearBits)
-	{
-		target->drawOk = true;
-		target = target->link;
-		clearQueue = target;
-	}
-	if (!target) return;
-
-	C3D_FrameBuf* frameBuf = &target->frameBuf;
-	u32 size = (u32)frameBuf->width * frameBuf->height;
-	u32 cfs = colorFmtSizes[frameBuf->colorFmt];
-	u32 dfs = depthFmtSizes[frameBuf->depthFmt];
-	void* colorBufEnd = (u8*)frameBuf->colorBuf + size*(2+cfs);
-	void* depthBufEnd = (u8*)frameBuf->depthBuf + size*(2+dfs);
-
-	gspSetEventCallback(GSPGPU_EVENT_PSC0, onClearDone, NULL, true);
-	if (target->clearBits & C3D_CLEAR_COLOR)
-	{
-		if (target->clearBits & C3D_CLEAR_DEPTH)
-			GX_MemoryFill(
-				(u32*)frameBuf->colorBuf, target->clearColor, (u32*)colorBufEnd, BIT(0) | (cfs << 8),
-				(u32*)frameBuf->depthBuf, target->clearDepth, (u32*)depthBufEnd, BIT(0) | (dfs << 8));
-		else
-			GX_MemoryFill(
-				(u32*)frameBuf->colorBuf, target->clearColor, (u32*)colorBufEnd, BIT(0) | (cfs << 8),
-				NULL, 0, NULL, 0);
-	} else
-		GX_MemoryFill(
-			(u32*)frameBuf->depthBuf, target->clearDepth, (u32*)depthBufEnd, BIT(0) | (dfs << 8),
-			NULL, 0, NULL, 0);
-}
+static u32 frameCounter[2];
 
 static bool framerateLimit(int id)
 {
@@ -97,157 +33,122 @@ static bool framerateLimit(int id)
 	return false;
 }
 
-static void updateFrameQueue(void)
+static void C3Di_TargetTransfer(C3D_RenderTarget* target, gfxScreen_t screen, gfx3dSide_t side)
 {
-	C3D_RenderTarget* a;
-	if (queuedState>0) return; // Still rendering
-
-	// Check that all targets are OK to be drawn on
-	for (a = queuedFrame[queueSwap].targetList; a; a = a->frame[queueSwap])
-		if (!a->drawOk)
-			return; // Nope, we can't start rendering yet
-
-	// Start rendering the frame
-	queuedState=1;
-	for (a = queuedFrame[queueSwap].targetList; a; a = a->frame[queueSwap])
-		a->drawOk = false;
-	performDraw();
-}
-
-static void transferTarget(C3D_RenderTarget* target)
-{
-	C3D_RenderTarget* a;
-	target->transferOk = false;
-	target->link = NULL;
-	if (!transferQueue)
-	{
-		transferQueue = target;
-		performTransfer();
-		return;
-	}
-	for (a = transferQueue; a->link; a = a->link);
-	a->link = target;
-}
-
-static void clearTarget(C3D_RenderTarget* target)
-{
-	C3D_RenderTarget* a;
-	target->link = NULL;
-	if (!clearQueue)
-	{
-		clearQueue = target;
-		performClear();
-		return;
-	}
-	for (a = clearQueue; a->link; a = a->link);
-	a->link = target;
+	C3D_FrameBufTransfer(&target->frameBuf, screen, side, target->transferFlags);
+	if (target->clearBits)
+		C3D_FrameBufClear(&target->frameBuf, target->clearBits, target->clearColor, target->clearDepth);
 }
 
 static void onVBlank0(C3D_UNUSED void* unused)
 {
-	if (!linkedTarget[0] || !framerateLimit(0)) return;
-
-	if (gfxIs3D())
+	gxCmdQueue_s* queue = &C3Di_GetContext()->gxQueue;
+	if (frameStage & STAGE_NEED_TOP_TRANSFER)
 	{
-		if (linkedTarget[1] && linkedTarget[1]->transferOk)
-			transferTarget(linkedTarget[1]);
-		else if (linkedTarget[0]->transferOk)
+		gxCmdQueueStop(queue);
+		C3D_RenderTarget *left = linkedTarget[0], *right = linkedTarget[1];
+		if (left && !(frameStage&STAGE_NEED_TRANSFER(0)))
+			left = NULL;
+		if (right && !(frameStage&STAGE_NEED_TRANSFER(1)))
+			right = NULL;
+		if (gfxIs3D() && !right)
+			right = left;
+
+		frameStage &= ~STAGE_NEED_TOP_TRANSFER;
+		if (left || right)
 		{
-			// Use a temporary copy of the left framebuffer to fill in the missing right image.
-			static C3D_RenderTarget temp;
-			memcpy(&temp, linkedTarget[0], sizeof(temp));
-			temp.side = GFX_RIGHT;
-			temp.clearBits = false;
-			transferTarget(&temp);
+			frameStage |= STAGE_WAIT_TRANSFER;
+			if (left)
+				C3Di_TargetTransfer(left, GFX_TOP, GFX_LEFT);
+			if (right)
+				C3Di_TargetTransfer(right, GFX_TOP, GFX_RIGHT);
+			gfxConfigScreen(GFX_TOP, false);
 		}
+		gxCmdQueueRun(queue);
 	}
-	if (linkedTarget[0]->transferOk)
-		transferTarget(linkedTarget[0]);
+	if (framerateLimit(0))
+		frameCounter[0]++;
 }
 
 static void onVBlank1(C3D_UNUSED void* unused)
 {
-	if (linkedTarget[2] && framerateLimit(1) && linkedTarget[2]->transferOk)
-		transferTarget(linkedTarget[2]);
-}
-
-void onRenderFinish(C3D_UNUSED void* unused)
-{
-	C3D_RenderTarget *a, *next;
-	osTickCounterUpdate(&gpuTime);
-
-	// The following check should never trigger
-	if (queuedState!=1) svcBreak(USERBREAK_PANIC);
-
-	for (a = queuedFrame[queueSwap].targetList; a; a = next)
+	gxCmdQueue_s* queue = &C3Di_GetContext()->gxQueue;
+	if (frameStage & STAGE_NEED_BOT_TRANSFER)
 	{
-		next = a->frame[queueSwap];
-		a->frame[queueSwap] = NULL;
-		if (a->linked)
-			a->transferOk = true;
-		else if (a->clearBits)
-			clearTarget(a);
-		else
-			a->drawOk = true;
+		gxCmdQueueStop(queue);
+		frameStage &= ~STAGE_NEED_BOT_TRANSFER;
+		C3D_RenderTarget* target = linkedTarget[2];
+		if (target)
+		{
+			frameStage |= STAGE_WAIT_TRANSFER;
+			C3Di_TargetTransfer(target, GFX_BOTTOM, GFX_LEFT);
+			gfxConfigScreen(GFX_BOTTOM, false);
+		}
+		gxCmdQueueRun(queue);
 	}
-
-	// Consume the frame that has been just rendered
-	memset(&queuedFrame[queueSwap], 0, sizeof(queuedFrame[queueSwap]));
-	queueSwap ^= 1;
-	queuedCount--;
-	queuedState = 0;
-
-	// Update the frame queue if there are still frames to render
-	if (queuedCount>0)
-		updateFrameQueue();
+	if (framerateLimit(1))
+		frameCounter[1]++;
 }
 
-void onTransferFinish(C3D_UNUSED void* unused)
+static void onQueueFinish(gxCmdQueue_s* queue)
 {
-	C3D_RenderTarget* target = transferQueue;
+	if (measureGpuTime)
+	{
+		osTickCounterUpdate(&gpuTime);
+		measureGpuTime = false;
+	}
 	if (inSafeTransfer)
 	{
 		inSafeTransfer = false;
-		// Try again if there are queued transfers
-		if (target)
-			performTransfer();
-		return;
+		if (inFrame)
+		{
+			gxCmdQueueStop(queue);
+			gxCmdQueueClear(queue);
+		}
 	}
-	transferQueue = target->link;
-	if (target->clearBits)
-		clearTarget(target);
+	else if (frameStage & STAGE_WAIT_TRANSFER)
+		frameStage &= ~STAGE_WAIT_TRANSFER;
 	else
-		target->drawOk = true;
-	if (transferQueue)
-		performTransfer();
-	if (target->drawOk && queuedCount>0 && queuedState==0)
-		updateFrameQueue();
+	{
+		u8 needs = frameStage & STAGE_HAS_ANY_TRANSFER;
+		frameStage = (frameStage&~STAGE_HAS_ANY_TRANSFER) | (needs<<3);
+	}
 }
 
-void onClearDone(C3D_UNUSED void* unused)
+void C3D_FrameSync(void)
 {
-	C3D_RenderTarget* target = clearQueue;
-	if (inSafeClear)
+	u32 cur[2];
+	u32 start[2] = { frameCounter[0], frameCounter[1] };
+	do
 	{
-		inSafeClear = false;
-		// Try again if there are queued clears
-		if (target)
-			performClear();
-		return;
-	}
-	clearQueue = target->link;
-	target->drawOk = true;
-	if (clearQueue)
-		performClear();
-	if (queuedCount>0 && queuedState==0)
-		updateFrameQueue();
+		gspWaitForAnyEvent();
+		cur[0] = frameCounter[0];
+		cur[1] = frameCounter[1];
+	} while (cur[0]==start[0] || cur[1]==start[1]);
+}
+
+static bool C3Di_WaitAndClearQueue(s64 timeout)
+{
+	gxCmdQueue_s* queue = &C3Di_GetContext()->gxQueue;
+	if (!gxCmdQueueWait(queue, timeout))
+		return false;
+	if (timeout==0 && frameStage)
+		return false;
+	while (frameStage)
+		gspWaitForAnyEvent();
+	gxCmdQueueStop(queue);
+	gxCmdQueueClear(queue);
+	return true;
 }
 
 static void C3Di_RenderQueueInit(void)
 {
 	gspSetEventCallback(GSPGPU_EVENT_VBlank0, onVBlank0, NULL, false);
 	gspSetEventCallback(GSPGPU_EVENT_VBlank1, onVBlank1, NULL, false);
+	gxCmdQueueSetCallback(&C3Di_GetContext()->gxQueue, onQueueFinish, NULL);
 }
+
+static void C3Di_RenderTargetDestroy(C3D_RenderTarget* target);
 
 void C3Di_RenderQueueExit(void)
 {
@@ -257,22 +158,20 @@ void C3Di_RenderQueueExit(void)
 	if (!initialized)
 		return;
 
+	C3Di_WaitAndClearQueue(-1);
 	for (a = firstTarget; a; a = next)
 	{
 		next = a->next;
-		C3D_RenderTargetDelete(a);
+		C3Di_RenderTargetDestroy(a);
 	}
 
 	gspSetEventCallback(GSPGPU_EVENT_VBlank0, NULL, NULL, false);
 	gspSetEventCallback(GSPGPU_EVENT_VBlank1, NULL, NULL, false);
+	gxCmdQueueSetCallback(&C3Di_GetContext()->gxQueue, NULL, NULL);
 
 	for (i = 0; i < 3; i ++)
 		linkedTarget[i] = NULL;
 
-	memset(queuedFrame, 0, sizeof(queuedFrame));
-	queueSwap = 0;
-	queuedCount = 0;
-	queuedState = 0;
 	initialized = false;
 }
 
@@ -280,8 +179,7 @@ void C3Di_RenderQueueWaitDone(void)
 {
 	if (!initialized)
 		return;
-	while (queuedCount || transferQueue || clearQueue)
-		gspWaitForAnyEvent();
+	C3Di_WaitAndClearQueue(-1);
 }
 
 static bool checkRenderQueueInit(void)
@@ -315,15 +213,12 @@ float C3D_FrameRate(float fps)
 bool C3D_FrameBegin(u8 flags)
 {
 	if (inFrame) return false;
-	int maxCount = (flags & C3D_FRAME_SYNCDRAW) ? 1 : 2;
-	while (queuedCount >= maxCount)
-	{
-		if (flags & C3D_FRAME_NONBLOCK)
-			return false;
-		gspWaitForP3D();
-	}
-	osTickCounterStart(&cpuTime);
+	if (flags & C3D_FRAME_SYNCDRAW)
+		C3D_FrameSync();
+	if (!C3Di_WaitAndClearQueue((flags & C3D_FRAME_NONBLOCK) ? 0 : -1))
+		return false;
 	inFrame = true;
+	osTickCounterStart(&cpuTime);
 	return true;
 }
 
@@ -331,50 +226,59 @@ bool C3D_FrameDrawOn(C3D_RenderTarget* target)
 {
 	if (!inFrame) return false;
 
-	// Queue the target in the frame if it hasn't already been.
-	int pos = queueSwap^queuedCount;
-	if (!target->frame[pos])
-	{
-		if (!queuedFrame[pos].targetList)
-			queuedFrame[pos].targetList = target;
-		else
-		{
-			C3D_RenderTarget* a;
-			for (a = queuedFrame[pos].targetList; a->frame[pos]; a = a->frame[pos]);
-			a->frame[pos] = target;
-		}
-	}
-
+	target->used = true;
 	C3D_SetFrameBuf(&target->frameBuf);
 	C3D_SetViewport(0, 0, target->frameBuf.width, target->frameBuf.height);
 	return true;
 }
 
+void C3D_FrameSplit(u8 flags)
+{
+	u32 *cmdBuf, cmdBufSize;
+	if (!inFrame) return;
+	if (C3Di_SplitFrame(&cmdBuf, &cmdBufSize))
+		GX_ProcessCommandList(cmdBuf, cmdBufSize*4, flags);
+}
+
 void C3D_FrameEnd(u8 flags)
 {
-	if (!inFrame) return;
+	C3D_Context* ctx = C3Di_GetContext();
+
+	C3D_FrameSplit(flags);
 	inFrame = false;
 	osTickCounterUpdate(&cpuTime);
-
-	int pos = queueSwap^queuedCount;
-	if (!queuedFrame[pos].targetList) return;
-
-	// Add the frame to the queue
-	queuedCount++;
-	C3Di_FinalizeFrame(&queuedFrame[pos].cmdBuf, &queuedFrame[pos].cmdBufSize);
-	queuedFrame[pos].flags = flags;
 
 	// Flush the entire linear memory if the user did not explicitly mandate to flush the command list
 	if (!(flags & GX_CMDLIST_FLUSH))
 	{
-		// Take advantage of GX_FlushCacheRegions to flush gsp heap
 		extern u32 __ctru_linear_heap;
 		extern u32 __ctru_linear_heap_size;
-		GX_FlushCacheRegions(queuedFrame[queueSwap].cmdBuf, queuedFrame[queueSwap].cmdBufSize, (u32 *) __ctru_linear_heap, __ctru_linear_heap_size, NULL, 0);
+		GSPGPU_FlushDataCache((void*)__ctru_linear_heap, __ctru_linear_heap_size);
 	}
 
-	// Update the frame queue
-	updateFrameQueue();
+	int i;
+	C3D_RenderTarget* target;
+	for (i = 2; i >= 0; i --)
+	{
+		target = linkedTarget[i];
+		if (!target || !target->used)
+			continue;
+		target->used = false;
+		frameStage |= STAGE_HAS_TRANSFER(i);
+	}
+
+	for (target = firstTarget; target; target = target->next)
+	{
+		if (!target->used || !target->clearBits)
+			continue;
+		target->used = false;
+		C3D_FrameBufClear(&target->frameBuf, target->clearBits, target->clearColor, target->clearDepth);
+	}
+
+	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
+	measureGpuTime = true;
+	osTickCounterStart(&gpuTime);
+	gxCmdQueueRun(&ctx->gxQueue);
 }
 
 float C3D_GetDrawingTime(void)
@@ -397,7 +301,6 @@ static C3D_RenderTarget* C3Di_RenderTargetNew(void)
 
 static void C3Di_RenderTargetFinishInit(C3D_RenderTarget* target)
 {
-	target->drawOk = true;
 	target->prev = lastTarget;
 	target->next = NULL;
 	if (lastTarget)
@@ -411,15 +314,14 @@ C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, GPU_COLORBUF col
 {
 	if (!checkRenderQueueInit()) goto _fail0;
 
-	u32 size = width*height;
 	GPU_DEPTHBUF depthFmtReal = GPU_RB_DEPTH16;
 	void* depthBuf = NULL;
-	void* colorBuf = vramAlloc(size*(2+colorFmtSizes[colorFmt]));
+	void* colorBuf = vramAlloc(C3D_CalcColorBufSize(width,height,colorFmt));
 	if (!colorBuf) goto _fail0;
 	if (C3D_DEPTHTYPE_OK(depthFmt))
 	{
 		depthFmtReal = C3D_DEPTHTYPE_VAL(depthFmt);
-		depthBuf = vramAlloc(size*(2+depthFmtSizes[depthFmtReal]));
+		depthBuf = vramAlloc(C3D_CalcDepthBufSize(width,height,depthFmtReal));
 		if (!depthBuf) goto _fail1;
 	}
 
@@ -459,8 +361,7 @@ C3D_RenderTarget* C3D_RenderTargetCreateFromTex(C3D_Tex* tex, GPU_TEXFACE face, 
 	if (C3D_DEPTHTYPE_OK(depthFmt))
 	{
 		GPU_DEPTHBUF depthFmtReal = C3D_DEPTHTYPE_VAL(depthFmt);
-		u32 size = (u32)fb->width*fb->height;
-		void* depthBuf = vramAlloc(size*(2+depthFmtSizes[depthFmtReal]));
+		void* depthBuf = vramAlloc(C3D_CalcDepthBufSize(fb->width,fb->height,depthFmtReal));
 		if (!depthBuf)
 		{
 			free(target);
@@ -475,13 +376,8 @@ C3D_RenderTarget* C3D_RenderTargetCreateFromTex(C3D_Tex* tex, GPU_TEXFACE face, 
 	return target;
 }
 
-void C3D_RenderTargetDelete(C3D_RenderTarget* target)
+void C3Di_RenderTargetDestroy(C3D_RenderTarget* target)
 {
-	target->clearBits = 0;
-	target->linked = false;
-	while (!target->drawOk)
-		gspWaitForAnyEvent();
-
 	if (target->ownsColor)
 		vramFree(target->frameBuf.colorBuf);
 	if (target->ownsDepth)
@@ -494,6 +390,14 @@ void C3D_RenderTargetDelete(C3D_RenderTarget* target)
 	free(target);
 }
 
+void C3D_RenderTargetDelete(C3D_RenderTarget* target)
+{
+	if (inFrame)
+		svcBreak(USERBREAK_PANIC); // Shouldn't happen.
+	C3Di_WaitAndClearQueue(-1);
+	C3Di_RenderTargetDestroy(target);
+}
+
 void C3D_RenderTargetSetClear(C3D_RenderTarget* target, C3D_ClearBits clearBits, u32 clearColor, u32 clearDepth)
 {
 	if (!target->frameBuf.colorBuf) clearBits &= ~C3D_CLEAR_COLOR;
@@ -504,11 +408,8 @@ void C3D_RenderTargetSetClear(C3D_RenderTarget* target, C3D_ClearBits clearBits,
 	target->clearColor = clearColor;
 	target->clearDepth = clearDepth;
 
-	if (clearBits &~ oldClearBits && target->drawOk)
-	{
-		target->drawOk = false;
-		clearTarget(target);
-	}
+	if (clearBits &~ oldClearBits)
+		C3D_FrameBufClear(&target->frameBuf, clearBits, clearColor, clearDepth);
 }
 
 void C3D_RenderTargetSetOutput(C3D_RenderTarget* target, gfxScreen_t screen, gfx3dSide_t side, u32 transferFlags)
@@ -527,27 +428,24 @@ void C3D_RenderTargetSetOutput(C3D_RenderTarget* target, gfxScreen_t screen, gfx
 
 void C3D_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)
 {
-	while (transferQueue || inSafeTransfer)
-		gspWaitForPPF();
+	C3Di_WaitAndClearQueue(-1);
 	inSafeTransfer = true;
-	gspSetEventCallback(GSPGPU_EVENT_PPF, onTransferFinish, NULL, true);
 	GX_DisplayTransfer(inadr, indim, outadr, outdim, flags);
+	gxCmdQueueRun(&C3Di_GetContext()->gxQueue);
 }
 
 void C3D_SafeTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 size, u32 flags)
 {
-	while (transferQueue || inSafeTransfer)
-		gspWaitForPPF();
+	C3Di_WaitAndClearQueue(-1);
 	inSafeTransfer = true;
-	gspSetEventCallback(GSPGPU_EVENT_PPF, onTransferFinish, NULL, true);
 	GX_TextureCopy(inadr, indim, outadr, outdim, size, flags);
+	gxCmdQueueRun(&C3Di_GetContext()->gxQueue);
 }
 
 void C3D_SafeMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0, u32* buf1a, u32 buf1v, u32* buf1e, u16 control1)
 {
-	while (clearQueue || inSafeClear)
-		gspWaitForAnyEvent();
-	inSafeClear = true;
-	gspSetEventCallback(buf0a ? GSPGPU_EVENT_PSC0 : GSPGPU_EVENT_PSC1, onClearDone, NULL, true);
+	C3Di_WaitAndClearQueue(-1);
+	inSafeTransfer = true;
 	GX_MemoryFill(buf0a, buf0v, buf0e, control0, buf1a, buf1v, buf1e, control1);
+	gxCmdQueueRun(&C3Di_GetContext()->gxQueue);
 }

@@ -1,4 +1,5 @@
 #include "internal.h"
+#include <stdlib.h>
 #include <c3d/base.h>
 #include <c3d/effect.h>
 #include <c3d/uniforms.h>
@@ -76,12 +77,24 @@ bool C3D_Init(size_t cmdBufSize)
 	if (ctx->flags & C3DiF_Active)
 		return false;
 
-	ctx->cmdBufSize = cmdBufSize/8; // Half of the size of the cmdbuf, in words
+	cmdBufSize = (cmdBufSize + 0xF) &~ 0xF; // 0x10-byte align
+	ctx->cmdBufSize = cmdBufSize/4;
 	ctx->cmdBuf = (u32*)linearAlloc(cmdBufSize);
 	ctx->cmdBufUsage = 0;
-	if (!ctx->cmdBuf) return false;
+	if (!ctx->cmdBuf)
+		return false;
+
+	ctx->gxQueue.maxEntries = 32;
+	ctx->gxQueue.entries = (gxCmdEntry_s*)malloc(ctx->gxQueue.maxEntries*sizeof(gxCmdEntry_s));
+	if (!ctx->gxQueue.entries)
+	{
+		linearFree(ctx->cmdBuf);
+		return false;
+	}
 
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
+	GX_BindQueue(&ctx->gxQueue);
+	gxCmdQueueRun(&ctx->gxQueue);
 
 	ctx->flags = C3DiF_Active | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexStatus | C3DiF_TexAll;
 
@@ -270,9 +283,12 @@ void C3Di_UpdateContext(void)
 	C3D_UpdateUniforms(GPU_GEOMETRY_SHADER);
 }
 
-void C3Di_FinalizeFrame(u32** pBuf, u32* pSize)
+bool C3Di_SplitFrame(u32** pBuf, u32* pSize)
 {
 	C3D_Context* ctx = C3Di_GetContext();
+
+	if (!gpuCmdBufOffset)
+		return false; // Nothing was drawn
 
 	if (ctx->flags & C3DiF_DrawUsed)
 	{
@@ -282,32 +298,29 @@ void C3Di_FinalizeFrame(u32** pBuf, u32* pSize)
 		GPUCMD_AddWrite(GPUREG_EARLYDEPTH_CLEAR, 1);
 	}
 
-	GPUCMD_Finalize();
-	GPUCMD_GetBuffer(pBuf, NULL, pSize);
-	ctx->cmdBufUsage = (float)(*pSize) / ctx->cmdBufSize;
-	*pSize *= 4;
-
-	ctx->flags ^= C3DiF_CmdBuffer;
-	u32* buf = ctx->cmdBuf;
-	if (ctx->flags & C3DiF_CmdBuffer)
-		buf += ctx->cmdBufSize;
-	GPUCMD_SetBuffer(buf, ctx->cmdBufSize, 0);
+	GPUCMD_Split(pBuf, pSize);
+	u32 totalCmdBufSize = *pBuf + *pSize - ctx->cmdBuf;
+	ctx->cmdBufUsage = (float)totalCmdBufSize / ctx->cmdBufSize;
+	return true;
 }
 
 void C3D_FlushAsync(void)
 {
-	if (!(C3Di_GetContext()->flags & C3DiF_Active))
+	C3D_Context* ctx = C3Di_GetContext();
+
+	if (!(ctx->flags & C3DiF_Active))
 		return;
 
 	u32* cmdBuf;
 	u32 cmdBufSize;
-	C3Di_FinalizeFrame(&cmdBuf, &cmdBufSize);
+	C3Di_SplitFrame(&cmdBuf, &cmdBufSize);
+	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 
 	//take advantage of GX_FlushCacheRegions to flush gsp heap
 	extern u32 __ctru_linear_heap;
 	extern u32 __ctru_linear_heap_size;
-	GX_FlushCacheRegions(cmdBuf, cmdBufSize, (u32 *) __ctru_linear_heap, __ctru_linear_heap_size, NULL, 0);
-	GX_ProcessCommandList(cmdBuf, cmdBufSize, 0x0);
+	GX_FlushCacheRegions(cmdBuf, cmdBufSize*4, (u32 *) __ctru_linear_heap, __ctru_linear_heap_size, NULL, 0);
+	GX_ProcessCommandList(cmdBuf, cmdBufSize*4, 0x0);
 }
 
 float C3D_GetCmdBufUsage(void)
@@ -324,6 +337,10 @@ void C3D_Fini(void)
 
 	C3Di_RenderQueueExit();
 	aptUnhook(&hookCookie);
+	gxCmdQueueStop(&ctx->gxQueue);
+	gxCmdQueueWait(&ctx->gxQueue, -1);
+	GX_BindQueue(NULL);
+	free(ctx->gxQueue.entries);
 	linearFree(ctx->cmdBuf);
 	ctx->flags = 0;
 }
