@@ -1,14 +1,6 @@
 #pragma once
 #include "framebuffer.h"
 
-// Flags for C3D_RenderTargetSetClear
-typedef enum
-{
-	C3D_CLEAR_COLOR = BIT(0),
-	C3D_CLEAR_DEPTH = BIT(1),
-	C3D_CLEAR_ALL   = C3D_CLEAR_COLOR | C3D_CLEAR_DEPTH,
-} C3D_ClearBits;
-
 typedef struct C3D_RenderTarget_tag C3D_RenderTarget;
 
 struct C3D_RenderTarget_tag

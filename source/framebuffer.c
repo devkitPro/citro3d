@@ -1,5 +1,20 @@
 #include "internal.h"
 
+static const u8 colorFmtSizes[] = {2,1,0,0,0};
+static const u8 depthFmtSizes[] = {0,0,1,2};
+
+u32 C3D_CalcColorBufSize(u32 width, u32 height, GPU_COLORBUF fmt)
+{
+	u32 size = width*height;
+	return size*(2+colorFmtSizes[fmt]);
+}
+
+u32 C3D_CalcDepthBufSize(u32 width, u32 height, GPU_DEPTHBUF fmt)
+{
+	u32 size = width*height;
+	return size*(2+depthFmtSizes[fmt]);
+}
+
 C3D_FrameBuf* C3D_GetFrameBuf(void)
 {
 	C3D_Context* ctx = C3Di_GetContext();
@@ -33,7 +48,6 @@ void C3D_FrameBufTex(C3D_FrameBuf* fb, C3D_Tex* tex, GPU_TEXFACE face, int level
 
 void C3Di_FrameBufBind(C3D_FrameBuf* fb)
 {
-	static const u8 colorFmtSizes[] = {2,1,0,0,0};
 	u32 param[4] = { 0, 0, 0, 0 };
 
 	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 1);
@@ -52,4 +66,35 @@ void C3Di_FrameBufBind(C3D_FrameBuf* fb)
 	param[0] = param[1] = fb->colorBuf ? fb->colorMask : 0;
 	param[2] = param[3] = fb->depthBuf ? fb->depthMask : 0;
 	GPUCMD_AddIncrementalWrites(GPUREG_COLORBUFFER_READ, param, 4);
+}
+
+void C3D_FrameBufClear(C3D_FrameBuf* frameBuf, C3D_ClearBits clearBits, u32 clearColor, u32 clearDepth)
+{
+	u32 size = (u32)frameBuf->width * frameBuf->height;
+	u32 cfs = colorFmtSizes[frameBuf->colorFmt];
+	u32 dfs = depthFmtSizes[frameBuf->depthFmt];
+	void* colorBufEnd = (u8*)frameBuf->colorBuf + size*(2+cfs);
+	void* depthBufEnd = (u8*)frameBuf->depthBuf + size*(2+dfs);
+
+	if (clearBits & C3D_CLEAR_COLOR)
+	{
+		if (clearBits & C3D_CLEAR_DEPTH)
+			GX_MemoryFill(
+				(u32*)frameBuf->colorBuf, clearColor, (u32*)colorBufEnd, BIT(0) | (cfs << 8),
+				(u32*)frameBuf->depthBuf, clearDepth, (u32*)depthBufEnd, BIT(0) | (dfs << 8));
+		else
+			GX_MemoryFill(
+				(u32*)frameBuf->colorBuf, clearColor, (u32*)colorBufEnd, BIT(0) | (cfs << 8),
+				NULL, 0, NULL, 0);
+	} else
+		GX_MemoryFill(
+			(u32*)frameBuf->depthBuf, clearDepth, (u32*)depthBufEnd, BIT(0) | (dfs << 8),
+			NULL, 0, NULL, 0);
+}
+
+void C3D_FrameBufTransfer(C3D_FrameBuf* frameBuf, gfxScreen_t screen, gfx3dSide_t side, u32 transferFlags)
+{
+	u32* outputFrameBuf = (u32*)gfxGetFramebuffer(screen, side, NULL, NULL);
+	u32 dim = GX_BUFFER_DIM((u32)frameBuf->width, (u32)frameBuf->height);
+	GX_DisplayTransfer((u32*)frameBuf->colorBuf, dim, outputFrameBuf, dim, transferFlags);
 }
