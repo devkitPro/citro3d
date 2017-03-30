@@ -33,13 +33,6 @@ static bool framerateLimit(int id)
 	return false;
 }
 
-static void C3Di_TargetTransfer(C3D_RenderTarget* target, gfxScreen_t screen, gfx3dSide_t side)
-{
-	C3D_FrameBufTransfer(&target->frameBuf, screen, side, target->transferFlags);
-	if (target->clearBits)
-		C3D_FrameBufClear(&target->frameBuf, target->clearBits, target->clearColor, target->clearDepth);
-}
-
 static void onVBlank0(C3D_UNUSED void* unused)
 {
 	gxCmdQueue_s* queue = &C3Di_GetContext()->gxQueue;
@@ -59,9 +52,13 @@ static void onVBlank0(C3D_UNUSED void* unused)
 		{
 			frameStage |= STAGE_WAIT_TRANSFER;
 			if (left)
-				C3Di_TargetTransfer(left, GFX_TOP, GFX_LEFT);
+				C3D_FrameBufTransfer(&left->frameBuf, GFX_TOP, GFX_LEFT, left->transferFlags);
 			if (right)
-				C3Di_TargetTransfer(right, GFX_TOP, GFX_RIGHT);
+				C3D_FrameBufTransfer(&right->frameBuf, GFX_TOP, GFX_RIGHT, right->transferFlags);
+			if (left && left->clearBits)
+				C3D_FrameBufClear(&left->frameBuf, left->clearBits, left->clearColor, left->clearDepth);
+			if (right && right != left && right->clearBits)
+				C3D_FrameBufClear(&right->frameBuf, right->clearBits, right->clearColor, right->clearDepth);
 			gfxConfigScreen(GFX_TOP, false);
 		}
 		gxCmdQueueRun(queue);
@@ -81,7 +78,9 @@ static void onVBlank1(C3D_UNUSED void* unused)
 		if (target)
 		{
 			frameStage |= STAGE_WAIT_TRANSFER;
-			C3Di_TargetTransfer(target, GFX_BOTTOM, GFX_LEFT);
+			C3D_FrameBufTransfer(&target->frameBuf, GFX_TOP, GFX_LEFT, target->transferFlags);
+			if (target->clearBits)
+				C3D_FrameBufClear(&target->frameBuf, target->clearBits, target->clearColor, target->clearDepth);
 			gfxConfigScreen(GFX_BOTTOM, false);
 		}
 		gxCmdQueueRun(queue);
