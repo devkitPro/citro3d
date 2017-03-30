@@ -35,15 +35,17 @@ void LightLut_FromFunc(C3D_LightLut* lut, C3D_LightLutFunc func, float param, bo
 	int i;
 	float data[512];
 	memset(data, 0, sizeof(data));
-	int start = negative ? (-128) : 0;
-	for (i = start; i <= 128; i ++)
+	int min = negative ? (-128) : 0;
+	int max = negative ?   128  : 256;
+	for (i = min; i <= max; i ++)
 	{
-		float x   = i/128.0f;
+		float x   = (float)i/max;
 		float val = func(x, param);
-		if (i < 128)
-			data[i & 0xFF] = val;
-		if (i > start)
-			data[(i & 0xFF) + 255] = val - data[(i-1) & 0xFF];
+		int   idx = negative ? (i & 0xFF) : i;
+		if (i < max)
+			data[idx] = val;
+		if (i > min)
+			data[idx+255] = val-data[idx-1];
 	}
 	LightLut_FromArray(lut, data);
 }

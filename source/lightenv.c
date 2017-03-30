@@ -192,7 +192,7 @@ void C3D_LightEnvAmbient(C3D_LightEnv* env, float r, float g, float b)
 	env->flags |= C3DF_LightEnv_MtlDirty;
 }
 
-void C3D_LightEnvLut(C3D_LightEnv* env, int lutId, int input, bool abs, C3D_LightLut* lut)
+void C3D_LightEnvLut(C3D_LightEnv* env, GPU_LIGHTLUTID lutId, GPU_LIGHTLUTINPUT input, bool negative, C3D_LightLut* lut)
 {
 	static const s8 ids[] = { 0, 1, -1, 2, 3, 4, 5, -1 };
 	int id = ids[lutId];
@@ -215,7 +215,7 @@ void C3D_LightEnvLut(C3D_LightEnv* env, int lutId, int input, bool abs, C3D_Ligh
 
 	u32 absbit = 1 << (lutId*4 + 1);
 	env->conf.lutInput.abs &= ~absbit;
-	if (!abs)
+	if (negative)
 		env->conf.lutInput.abs |= absbit;
 
 	env->flags |= C3DF_LightEnv_Dirty;

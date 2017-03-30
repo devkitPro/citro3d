@@ -62,7 +62,7 @@ void C3D_LightEnvBind(C3D_LightEnv* env);
 
 void C3D_LightEnvMaterial(C3D_LightEnv* env, const C3D_Material* mtl);
 void C3D_LightEnvAmbient(C3D_LightEnv* env, float r, float g, float b);
-void C3D_LightEnvLut(C3D_LightEnv* env, int lutId, int input, bool abs, C3D_LightLut* lut);
+void C3D_LightEnvLut(C3D_LightEnv* env, GPU_LIGHTLUTID lutId, GPU_LIGHTLUTINPUT input, bool negative, C3D_LightLut* lut);
 
 enum
 {
