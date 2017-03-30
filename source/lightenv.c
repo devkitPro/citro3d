@@ -153,6 +153,7 @@ void C3D_LightEnvInit(C3D_LightEnv* env)
 {
 	memset(env, 0, sizeof(*env));
 	env->flags = C3DF_LightEnv_Dirty;
+	env->ambient[0] = env->ambient[1] = env->ambient[2] = 1.0f;
 	env->conf.config[0] = (4<<8) | BIT(27) | BIT(31);
 	env->conf.config[1] = ~0;
 	env->conf.lutInput.select = GPU_LIGHTLUTINPUT(GPU_LUT_SP, GPU_LUTINPUT_SP);
