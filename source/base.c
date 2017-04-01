@@ -359,15 +359,23 @@ void C3D_BindProgram(shaderProgram_s* program)
 		ctx->program = program;
 		ctx->flags |= C3DiF_Program | C3DiF_AttrInfo;
 
-		if (oldProg)
+		if (!oldProg)
+			ctx->flags |= C3DiF_VshCode | C3DiF_GshCode;
+		else
 		{
 			shaderInstance_s* oldGsh = oldProg->geometryShader;
-			if (oldProg->vertexShader->dvle->dvlp != program->vertexShader->dvle->dvlp || (!newGsh && oldGsh))
+
+			DVLP_s* oldProgV = oldProg->vertexShader->dvle->dvlp;
+			DVLP_s* oldProgG = oldGsh ? oldGsh->dvle->dvlp : oldProgV;
+
+			DVLP_s* newProgV = program->vertexShader->dvle->dvlp;
+			DVLP_s* newProgG = newGsh ? newGsh->dvle->dvlp : newProgV;
+
+			if (oldProgV != newProgV || (!newGsh && oldProgG != newProgG))
 				ctx->flags |= C3DiF_VshCode;
-			if (newGsh && (!oldGsh || oldGsh->dvle->dvlp != newGsh->dvle->dvlp))
+			if (oldProgG != newProgG || (newProgG==oldProgV && newProgG->codeSize >= 512))
 				ctx->flags |= C3DiF_GshCode;
-		} else
-			ctx->flags |= C3DiF_VshCode | C3DiF_GshCode;
+		}
 	}
 
 	C3Di_LoadShaderUniforms(program->vertexShader);
