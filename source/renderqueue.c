@@ -78,7 +78,7 @@ static void onVBlank1(C3D_UNUSED void* unused)
 		if (target)
 		{
 			frameStage |= STAGE_WAIT_TRANSFER;
-			C3D_FrameBufTransfer(&target->frameBuf, GFX_TOP, GFX_LEFT, target->transferFlags);
+			C3D_FrameBufTransfer(&target->frameBuf, GFX_BOTTOM, GFX_LEFT, target->transferFlags);
 			if (target->clearBits)
 				C3D_FrameBufClear(&target->frameBuf, target->clearBits, target->clearColor, target->clearDepth);
 			gfxConfigScreen(GFX_BOTTOM, false);
