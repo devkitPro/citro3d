@@ -39,6 +39,14 @@ void C3D_BlendingColor(u32 color)
 	e->blendClr = color;
 }
 
+void C3D_EarlyDepthTest(bool enable, GPU_EARLYDEPTHFUNC function, u32 ref)
+{
+	C3D_Effect* e = getEffect();
+	e->earlyDepth = enable;
+	e->earlyDepthFunc = function;
+	e->earlyDepthRef = ref;
+}
+
 void C3D_DepthTest(bool enable, GPU_TESTFUNC function, GPU_WRITEMASK writemask)
 {
 	C3D_Effect* e = getEffect();
@@ -90,8 +98,8 @@ void C3Di_EffectBind(C3D_Effect* e)
 	GPUCMD_AddWrite(GPUREG_LOGIC_OP, e->clrLogicOp);
 	GPUCMD_AddMaskedWrite(GPUREG_COLOR_OPERATION, 7, e->fragOpMode);
 	GPUCMD_AddWrite(GPUREG_FRAGOP_SHADOW, e->fragOpShadow);
-
-	// Disable early depth test?
-	GPUCMD_AddMaskedWrite(GPUREG_EARLYDEPTH_TEST1, 1, 0);
-	GPUCMD_AddWrite(GPUREG_EARLYDEPTH_TEST2, 0);
+	GPUCMD_AddMaskedWrite(GPUREG_EARLYDEPTH_TEST1, 1, e->earlyDepth ? 1 : 0);
+	GPUCMD_AddWrite(GPUREG_EARLYDEPTH_TEST2, e->earlyDepth ? 1 : 0);
+	GPUCMD_AddMaskedWrite(GPUREG_EARLYDEPTH_FUNC, 1, e->earlyDepthFunc);
+	GPUCMD_AddMaskedWrite(GPUREG_EARLYDEPTH_DATA, 0x7, e->earlyDepthRef);
 }

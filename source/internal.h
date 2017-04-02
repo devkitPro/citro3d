@@ -14,7 +14,9 @@ typedef struct
 	u32 fragOpShadow;
 	u32 zScale, zOffset;
 	GPU_CULLMODE cullMode;
-	bool zBuffer;
+	bool zBuffer, earlyDepth;
+	GPU_EARLYDEPTHFUNC earlyDepthFunc;
+	u32 earlyDepthRef;
 
 	u32 alphaTest;
 	u32 stencilMode, stencilOp;
