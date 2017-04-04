@@ -22,7 +22,6 @@ VERSION	:=	$(CITRO3D_MAJOR).$(CITRO3D_MINOR).$(CITRO3D_PATCH)
 # INCLUDES is a list of directories containing header files
 #---------------------------------------------------------------------------------
 TARGET		:=	citro3d
-BUILD		:=	build
 SOURCES		:=	source \
 				source/maths
 DATA		:=	data
@@ -33,9 +32,9 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-g -Wall -Wextra -Werror -O2 -mword-relocations \
-			-fomit-frame-pointer -ffunction-sections \
-			$(ARCH)
+CFLAGS	:=	-g -Wall -Werror -mword-relocations \
+			-ffunction-sections -fdata-sections \
+			$(ARCH) $(BUILD_CFLAGS)
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DCITRO3D_BUILD
 
@@ -56,12 +55,10 @@ LIBDIRS	:= $(CTRULIB)
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
-export OUTPUT	:=	$(CURDIR)/lib/lib$(TARGET).a
-
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
-export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+export DEPSDIR	:=	$(CURDIR)/deps
 
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
@@ -87,12 +84,12 @@ export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-			-I$(CURDIR)/$(BUILD)
+			-I.
 
-.PHONY: $(BUILD) clean all doc
+.PHONY: clean all doc
 
 #---------------------------------------------------------------------------------
-all: $(BUILD)
+all: deps lib/libcitro3d.a lib/libcitro3dd.a
 
 doc:
 	@doxygen Doxyfile
@@ -112,14 +109,25 @@ install: dist-bin
 lib:
 	@[ -d $@ ] || mkdir -p $@
 
-$(BUILD): lib
+deps:
 	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+
+release:
+	@[ -d $@ ] || mkdir -p $@
+
+debug:
+	@[ -d $@ ] || mkdir -p $@
+
+lib/libcitro3d.a : lib release
+	@$(MAKE) BUILD=release OUTPUT=$(CURDIR)/$@ BUILD_CFLAGS="-DNDEBUG=1 -O2 -fomit-frame-pointer" --no-print-directory -C release -f $(CURDIR)/Makefile
+
+lib/libcitro3dd.a : lib debug
+	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ BUILD_CFLAGS="-DDEBUG=1 -Og" --no-print-directory -C debug -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) lib
+	@rm -fr deps release debug lib
 
 #---------------------------------------------------------------------------------
 else
