@@ -59,6 +59,8 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 			ctx->fixedAttribDirty |= ctx->fixedAttribEverDirty;
 
 			C3D_LightEnv* env = ctx->lightEnv;
+			if (ctx->fogLut)
+				ctx->flags |= C3DiF_FogLut;
 			if (env)
 				C3Di_LightEnvDirty(env);
 			C3Di_ProcTexDirty(ctx);
@@ -115,6 +117,8 @@ bool C3D_Init(size_t cmdBufSize)
 	ctx->texShadow = BIT(0);
 	ctx->texEnvBuf = 0;
 	ctx->texEnvBufClr = 0xFFFFFFFF;
+	ctx->fogClr = 0;
+	ctx->fogLut = NULL;
 
 	for (i = 0; i < 3; i ++)
 		ctx->tex[i] = NULL;
@@ -240,8 +244,19 @@ void C3Di_UpdateContext(void)
 	if (ctx->flags & C3DiF_TexEnvBuf)
 	{
 		ctx->flags &= ~C3DiF_TexEnvBuf;
-		GPUCMD_AddMaskedWrite(GPUREG_TEXENV_UPDATE_BUFFER, 0x2, ctx->texEnvBuf);
+		GPUCMD_AddMaskedWrite(GPUREG_TEXENV_UPDATE_BUFFER, 0x7, ctx->texEnvBuf);
 		GPUCMD_AddWrite(GPUREG_TEXENV_BUFFER_COLOR, ctx->texEnvBufClr);
+		GPUCMD_AddWrite(GPUREG_FOG_COLOR, ctx->fogClr);
+	}
+
+	if (ctx->flags & C3DiF_FogLut)
+	{
+		ctx->flags &= ~C3DiF_FogLut;
+		if (ctx->fogLut)
+		{
+			GPUCMD_AddWrite(GPUREG_FOG_LUT_INDEX, 0);
+			GPUCMD_AddWrites(GPUREG_FOG_LUT_DATA0, ctx->fogLut->data, 128);
+		}
 	}
 
 	if (ctx->flags & C3DiF_TexEnvAll)

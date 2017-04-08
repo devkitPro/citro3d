@@ -5,6 +5,7 @@
 #include <c3d/light.h>
 #include <c3d/framebuffer.h>
 #include <c3d/texenv.h>
+#include <c3d/fog.h>
 
 #define C3D_UNUSED __attribute__((unused))
 
@@ -48,6 +49,8 @@ typedef struct
 	C3D_TexEnv texEnv[6];
 
 	u32 texEnvBuf, texEnvBufClr;
+	u32 fogClr;
+	C3D_FogLut* fogLut;
 
 	C3D_ProcTex* procTex;
 	C3D_ProcTexLut* procTexLut[3];
@@ -79,6 +82,7 @@ enum
 	C3DiF_TexStatus = BIT(14),
 	C3DiF_ProcTex = BIT(15),
 	C3DiF_ProcTexColorLut = BIT(16),
+	C3DiF_FogLut = BIT(17),
 
 #define C3DiF_ProcTexLut(n) BIT(20+(n))
 	C3DiF_ProcTexLutAll = 7 << 20,
