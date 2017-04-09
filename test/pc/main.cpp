@@ -754,13 +754,26 @@ check_matrix(generator_t &gen, distribution_t &dist)
       check = loadMatrix(m);
 
       Mtx_Transpose(&m);
+      assert(m == glm::transpose(check));
       Mtx_Transpose(&m);
-      assert(m == glm::transpose(glm::transpose(check)));
+      assert(m == check);
 
       //Comparing inverse(transpose(m)) == transpose(inverse(m))
-      Mtx_Transpose(&m);
-      Mtx_Inverse(&m);
-      assert(m == glm::transpose(glm::inverse(check)));
+      C3D_Mtx m2;
+      Mtx_Copy(&m2, &m);
+      Mtx_Transpose(&m2);
+      if(Mtx_Inverse(&m2))
+      {
+        assert(m2 == glm::inverse(glm::transpose(check)));
+        assert(m2 == glm::transpose(glm::inverse(check)));
+      }
+      Mtx_Copy(&m2, &m);
+      if(Mtx_Inverse(&m2))
+      {
+        Mtx_Transpose(&m2);
+        assert(m2 == glm::inverse(glm::transpose(check)));
+        assert(m2 == glm::transpose(glm::inverse(check)));
+      }
     }
   }
 }
