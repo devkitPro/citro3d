@@ -43,13 +43,20 @@ typedef union __attribute__((__transparent_union__))
 	int __i;
 	GPU_DEPTHBUF __e;
 } C3D_DEPTHTYPE;
+#else
+union C3D_DEPTHTYPE
+{
+private:
+	int __i;
+	GPU_DEPTHBUF __e;
+public:
+	C3D_DEPTHTYPE(GPU_DEPTHBUF e) : __e(e) {}
+	C3D_DEPTHTYPE(int i) : __i(-1) { (void)i; }
+};
+#endif
+
 #define C3D_DEPTHTYPE_OK(_x)  ((_x).__i >= 0)
 #define C3D_DEPTHTYPE_VAL(_x) ((_x).__e)
-#else
-typedef int C3D_DEPTHTYPE;
-#define C3D_DEPTHTYPE_OK(_x)  ((_x) >= 0)
-#define C3D_DEPTHTYPE_VAL(_x) ((GPU_DEPTHBUF)(_x))
-#endif
 
 C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, GPU_COLORBUF colorFmt, C3D_DEPTHTYPE depthFmt);
 C3D_RenderTarget* C3D_RenderTargetCreateFromTex(C3D_Tex* tex, GPU_TEXFACE face, int level, C3D_DEPTHTYPE depthFmt);
