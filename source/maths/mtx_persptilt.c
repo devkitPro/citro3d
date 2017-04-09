@@ -32,15 +32,6 @@ void Mtx_PerspTilt(C3D_Mtx* mtx, float fovx, float invaspect, float near, float 
 	mtx->r[0].y = 1.0f / fovx_tan;
 	mtx->r[1].x = -1.0f / (fovx_tan*invaspect);
 	mtx->r[2].w = far*near / (near - far);
-
-	if (isLeftHanded)
-	{
-		mtx->r[2].z = 0.5f*(far + near) / (far - near) - 0.5f;
-		mtx->r[3].z = 1.0f;
-	}
-	else
-	{
-		mtx->r[2].z = 0.5f*(far + near) / (near - far) + 0.5f;
-		mtx->r[3].z = -1.0f;
-	}
+	mtx->r[3].z = isLeftHanded ? 1.0f : -1.0f;
+	mtx->r[2].z = -mtx->r[3].z * near / (near - far);
 }
