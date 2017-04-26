@@ -35,6 +35,18 @@ void C3D_SetTexEnv(int id, C3D_TexEnv* env)
 	ctx->flags |= C3DiF_TexEnv(id);
 }
 
+void C3D_DirtyTexEnv(C3D_TexEnv* env)
+{
+	C3D_Context* ctx = C3Di_GetContext();
+
+	if (!(ctx->flags & C3DiF_Active))
+		return;
+
+	u32 id = env-ctx->texEnv;
+	if (id < 6)
+		ctx->flags |= C3DiF_TexEnv(id);
+}
+
 void C3Di_TexEnvBind(int id, C3D_TexEnv* env)
 {
 	if (id >= 4) id += 2;

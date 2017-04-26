@@ -21,6 +21,7 @@ void TexEnv_Init(C3D_TexEnv* env);
 
 C3D_TexEnv* C3D_GetTexEnv(int id);
 void C3D_SetTexEnv(int id, C3D_TexEnv* env);
+void C3D_DirtyTexEnv(C3D_TexEnv* env);
 
 void C3D_TexEnvBufUpdate(int mode, int mask);
 void C3D_TexEnvBufColor(u32 color);
