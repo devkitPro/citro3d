@@ -143,6 +143,9 @@ void ProcTexColorLut_Write(C3D_ProcTexColorLut* out, const u32* in, int offset, 
 
 void C3Di_ProcTexUpdate(C3D_Context* ctx)
 {
+	if (!(ctx->texConfig & BIT(10)))
+		return;
+
 	if (ctx->flags & C3DiF_ProcTex)
 	{
 		ctx->flags &= ~C3DiF_ProcTex;
