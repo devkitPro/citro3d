@@ -120,6 +120,11 @@ void C3D_FrameSync(void)
 	} while (cur[0]==start[0] || cur[1]==start[1]);
 }
 
+u32 C3D_FrameCounter(int id)
+{
+	return frameCounter[id];
+}
+
 static bool C3Di_WaitAndClearQueue(s64 timeout)
 {
 	gxCmdQueue_s* queue = &C3Di_GetContext()->gxQueue;
