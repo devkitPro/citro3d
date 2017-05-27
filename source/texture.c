@@ -67,7 +67,7 @@ bool C3D_TexInitWithParams(C3D_Tex* tex, C3D_TexCube* cube, C3D_TexInitParams p)
 	u32 size = fmtSize(p.format);
 	if (!size) return false;
 	size *= (u32)p.width * p.height / 8;
-	u32 total_size = C3D_TexCalcLevelSize(size, p.maxLevel);
+	u32 total_size = C3D_TexCalcTotalSize(size, p.maxLevel);
 
 	if (!isCube)
 	{
