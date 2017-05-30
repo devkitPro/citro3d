@@ -43,6 +43,8 @@ enum
 	C3DF_LightEnv_MtlDirty = BIT(1),
 	C3DF_LightEnv_LCDirty  = BIT(2),
 
+#define C3DF_LightEnv_IsCP(n)     BIT(18+(n))
+#define C3DF_LightEnv_IsCP_Any    (0xFF<<18)
 #define C3DF_LightEnv_LutDirty(n) BIT(26+(n))
 #define C3DF_LightEnv_LutDirtyAll (0x3F<<26)
 };

@@ -40,10 +40,12 @@ static void C3Di_LightEnvSelectLayer(C3D_LightEnv* env)
 	if (reg & (0xFF<< 8)) reg |= GPU_LC1_LUTBIT(GPU_LUT_SP);
 	if (reg & (0xFF<<24)) reg |= GPU_LC1_LUTBIT(GPU_LUT_DA);
 	reg = (reg >> 16) & 0xFF;
-	int i;
-	for (i = 0; i < 7; i ++)
-		if ((layer_enabled[i] & reg) == reg) // Check if the layer supports all LUTs we need
-			break;
+
+	int i = 7;
+	if (!(env->flags & C3DF_LightEnv_IsCP_Any))
+		for (i = 0; i < 7; i ++)
+			if ((layer_enabled[i] & reg) == reg) // Check if the layer supports all LUTs we need
+				break;
 	env->conf.config[0] = (env->conf.config[0] &~ (0xF<<4)) | (GPU_LIGHT_ENV_LAYER_CONFIG(i)<<4);
 }
 
@@ -221,6 +223,10 @@ void C3D_LightEnvLut(C3D_LightEnv* env, GPU_LIGHTLUTID lutId, GPU_LIGHTLUTINPUT 
 		env->conf.lutInput.abs |= absbit;
 
 	env->flags |= C3DF_LightEnv_Dirty;
+	if (input == GPU_LUTINPUT_CP)
+		env->flags |= C3DF_LightEnv_IsCP(lutId);
+	else
+		env->flags &= ~C3DF_LightEnv_IsCP(lutId);
 }
 
 void C3D_LightEnvFresnel(C3D_LightEnv* env, GPU_FRESNELSEL selector)
