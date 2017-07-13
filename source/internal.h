@@ -52,6 +52,10 @@ typedef struct
 	u32 fogClr;
 	C3D_FogLut* fogLut;
 
+	u16 gasAttn, gasAccMax;
+	u32 gasLightXY, gasLightZ, gasLightZColor, gasDeltaZ;
+	C3D_GasLut* gasLut;
+
 	C3D_ProcTex* procTex;
 	C3D_ProcTexLut* procTexLut[3];
 	C3D_ProcTexColorLut* procTexColorLut;
@@ -83,6 +87,8 @@ enum
 	C3DiF_ProcTex = BIT(15),
 	C3DiF_ProcTexColorLut = BIT(16),
 	C3DiF_FogLut = BIT(17),
+	C3DiF_Gas = BIT(18),
+	C3DiF_GasLut = BIT(19),
 
 #define C3DiF_ProcTexLut(n) BIT(20+(n))
 	C3DiF_ProcTexLutAll = 7 << 20,
@@ -115,6 +121,7 @@ void C3Di_FrameBufBind(C3D_FrameBuf* fb);
 void C3Di_TexEnvBind(int id, C3D_TexEnv* env);
 void C3Di_SetTex(int unit, C3D_Tex* tex);
 void C3Di_EffectBind(C3D_Effect* effect);
+void C3Di_GasUpdate(C3D_Context* ctx);
 
 void C3Di_LightMtlBlend(C3D_Light* light);
 

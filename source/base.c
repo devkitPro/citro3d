@@ -36,6 +36,11 @@ __attribute__((weak)) void C3Di_ProcTexDirty(C3D_Context* ctx)
 	(void)ctx;
 }
 
+__attribute__((weak)) void C3Di_GasUpdate(C3D_Context* ctx)
+{
+	(void)ctx;
+}
+
 static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 {
 	C3D_Context* ctx = C3Di_GetContext();
@@ -51,7 +56,7 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 		{
 			ctx->flags |= C3DiF_AttrInfo | C3DiF_BufInfo | C3DiF_Effect | C3DiF_FrameBuf
 				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program | C3DiF_VshCode | C3DiF_GshCode
-				| C3DiF_TexAll | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_LightEnv;
+				| C3DiF_TexAll | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_LightEnv | C3DiF_Gas;
 
 			C3Di_DirtyUniforms(GPU_VERTEX_SHADER);
 			C3Di_DirtyUniforms(GPU_GEOMETRY_SHADER);
@@ -61,6 +66,8 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 			C3D_LightEnv* env = ctx->lightEnv;
 			if (ctx->fogLut)
 				ctx->flags |= C3DiF_FogLut;
+			if (ctx->gasLut)
+				ctx->flags |= C3DiF_GasLut;
 			if (env)
 				C3Di_LightEnvDirty(env);
 			C3Di_ProcTexDirty(ctx);
@@ -233,9 +240,14 @@ void C3Di_UpdateContext(void)
 	if (ctx->flags & C3DiF_TexStatus)
 	{
 		ctx->flags &= ~C3DiF_TexStatus;
-		GPUCMD_AddWrite(GPUREG_TEXUNIT_CONFIG,  ctx->texConfig);
+		GPUCMD_AddMaskedWrite(GPUREG_TEXUNIT_CONFIG, 0xB, ctx->texConfig);
+		// Clear texture cache if requested *after* configuring texture units
+		if (ctx->texConfig & BIT(16))
+		{
+			ctx->texConfig &= ~BIT(16);
+			GPUCMD_AddMaskedWrite(GPUREG_TEXUNIT_CONFIG, 0x4, BIT(16));
+		}
 		GPUCMD_AddWrite(GPUREG_TEXUNIT0_SHADOW, ctx->texShadow);
-		ctx->texConfig &= ~BIT(16); // Remove clear-texture-cache flag
 	}
 
 	if (ctx->flags & (C3DiF_ProcTex | C3DiF_ProcTexColorLut | C3DiF_ProcTexLutAll))
@@ -249,7 +261,7 @@ void C3Di_UpdateContext(void)
 		GPUCMD_AddWrite(GPUREG_FOG_COLOR, ctx->fogClr);
 	}
 
-	if (ctx->flags & C3DiF_FogLut)
+	if ((ctx->flags & C3DiF_FogLut) && (ctx->texEnvBuf&7) != GPU_NO_FOG)
 	{
 		ctx->flags &= ~C3DiF_FogLut;
 		if (ctx->fogLut)
@@ -258,6 +270,9 @@ void C3Di_UpdateContext(void)
 			GPUCMD_AddWrites(GPUREG_FOG_LUT_DATA0, ctx->fogLut->data, 128);
 		}
 	}
+
+	if ((ctx->texEnvBuf&7) == GPU_GAS)
+		C3Di_GasUpdate(ctx);
 
 	if (ctx->flags & C3DiF_TexEnvAll)
 	{
