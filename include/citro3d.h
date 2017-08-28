@@ -27,7 +27,6 @@ extern "C" {
 #include "c3d/fog.h"
 
 #include "c3d/framebuffer.h"
-#include "c3d/renderbuffer.h" // Deprecated
 #include "c3d/renderqueue.h"
 
 #ifdef __cplusplus
