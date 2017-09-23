@@ -22,8 +22,7 @@ VERSION	:=	$(CITRO3D_MAJOR).$(CITRO3D_MINOR).$(CITRO3D_PATCH)
 # INCLUDES is a list of directories containing header files
 #---------------------------------------------------------------------------------
 TARGET		:=	citro3d
-SOURCES		:=	source \
-				source/maths
+SOURCES		:=	source source/maths
 DATA		:=	data
 INCLUDES	:=	include
 
