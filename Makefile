@@ -10,7 +10,7 @@ include $(DEVKITARM)/3ds_rules
 
 export CITRO3D_MAJOR	:= 1
 export CITRO3D_MINOR	:= 3
-export CITRO3D_PATCH	:= 0
+export CITRO3D_PATCH	:= 1
 
 VERSION	:=	$(CITRO3D_MAJOR).$(CITRO3D_MINOR).$(CITRO3D_PATCH)
 
