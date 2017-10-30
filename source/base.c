@@ -124,7 +124,7 @@ bool C3D_Init(size_t cmdBufSize)
 		ctx->tex[i] = NULL;
 
 	for (i = 0; i < 6; i ++)
-		TexEnv_Init(&ctx->texEnv[i]);
+		C3D_TexEnvInit(&ctx->texEnv[i]);
 
 	ctx->fixedAttribDirty = 0;
 	ctx->fixedAttribEverDirty = 0;
