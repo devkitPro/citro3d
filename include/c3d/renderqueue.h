@@ -35,6 +35,8 @@ bool C3D_FrameDrawOn(C3D_RenderTarget* target);
 void C3D_FrameSplit(u8 flags);
 void C3D_FrameEnd(u8 flags);
 
+void C3D_FrameEndHook(void (* hook)(void*), void* param);
+
 float C3D_GetDrawingTime(void);
 float C3D_GetProcessingTime(void);
 

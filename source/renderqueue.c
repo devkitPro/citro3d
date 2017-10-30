@@ -21,6 +21,8 @@ static u8 frameStage;
 static float framerate = 60.0f;
 static float framerateCounter[2] = { 60.0f, 60.0f };
 static u32 frameCounter[2];
+static void (* frameEndCb)(void*);
+static void* frameEndCbData;
 
 static bool framerateLimit(int id)
 {
@@ -242,6 +244,9 @@ void C3D_FrameEnd(u8 flags)
 {
 	C3D_Context* ctx = C3Di_GetContext();
 
+	if (frameEndCb)
+		frameEndCb(frameEndCbData);
+
 	C3D_FrameSplit(flags);
 	inFrame = false;
 	osTickCounterUpdate(&cpuTime);
@@ -277,6 +282,12 @@ void C3D_FrameEnd(u8 flags)
 	measureGpuTime = true;
 	osTickCounterStart(&gpuTime);
 	gxCmdQueueRun(&ctx->gxQueue);
+}
+
+void C3D_FrameEndHook(void (* hook)(void*), void* param)
+{
+	frameEndCb = hook;
+	frameEndCbData = param;
 }
 
 float C3D_GetDrawingTime(void)
