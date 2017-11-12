@@ -435,7 +435,7 @@ void C3D_RenderTargetSetOutput(C3D_RenderTarget* target, gfxScreen_t screen, gfx
 	target->side = side;
 }
 
-void C3D_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)
+static void C3Di_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)
 {
 	C3Di_WaitAndClearQueue(-1);
 	inSafeTransfer = true;
@@ -443,7 +443,7 @@ void C3D_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32
 	gxCmdQueueRun(&C3Di_GetContext()->gxQueue);
 }
 
-void C3D_SafeTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 size, u32 flags)
+static void C3Di_SafeTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 size, u32 flags)
 {
 	C3Di_WaitAndClearQueue(-1);
 	inSafeTransfer = true;
@@ -451,10 +451,64 @@ void C3D_SafeTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 siz
 	gxCmdQueueRun(&C3Di_GetContext()->gxQueue);
 }
 
-void C3D_SafeMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0, u32* buf1a, u32 buf1v, u32* buf1e, u16 control1)
+static void C3Di_SafeMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0, u32* buf1a, u32 buf1v, u32* buf1e, u16 control1)
 {
 	C3Di_WaitAndClearQueue(-1);
 	inSafeTransfer = true;
 	GX_MemoryFill(buf0a, buf0v, buf0e, control0, buf1a, buf1v, buf1e, control1);
 	gxCmdQueueRun(&C3Di_GetContext()->gxQueue);
+}
+
+void C3D_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)
+{
+	C3Di_SafeDisplayTransfer(inadr, indim, outadr, outdim, flags);
+}
+
+void C3D_SafeTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 size, u32 flags)
+{
+	C3Di_SafeTextureCopy(inadr, indim, outadr, outdim, size, flags);
+}
+
+void C3D_SafeMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0, u32* buf1a, u32 buf1v, u32* buf1e, u16 control1)
+{
+	C3Di_SafeMemoryFill(buf0a, buf0v, buf0e, control0, buf1a, buf1v, buf1e, control1);
+}
+
+void C3D_SyncDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)
+{
+	if (inFrame)
+	{
+		C3D_FrameSplit(0);
+		GX_DisplayTransfer(inadr, indim, outadr, outdim, flags);
+	} else
+	{
+		C3Di_SafeDisplayTransfer(inadr, indim, outadr, outdim, flags);
+		gspWaitForPPF();
+	}
+}
+
+void C3D_SyncTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 size, u32 flags)
+{
+	if (inFrame)
+	{
+		C3D_FrameSplit(0);
+		GX_TextureCopy(inadr, indim, outadr, outdim, size, flags);
+	} else
+	{
+		C3Di_SafeTextureCopy(inadr, indim, outadr, outdim, size, flags);
+		gspWaitForPPF();
+	}
+}
+
+void C3D_SyncMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0, u32* buf1a, u32 buf1v, u32* buf1e, u16 control1)
+{
+	if (inFrame)
+	{
+		C3D_FrameSplit(0);
+		GX_MemoryFill(buf0a, buf0v, buf0e, control0, buf1a, buf1v, buf1e, control1);
+	} else
+	{
+		C3Di_SafeMemoryFill(buf0a, buf0v, buf0e, control0, buf1a, buf1v, buf1e, control1);
+		gspWaitForPSC0();
+	}
 }

@@ -125,10 +125,7 @@ void C3D_TexLoadImage(C3D_Tex* tex, const void* data, GPU_TEXFACE face, int leve
 	if (!addrIsVRAM(out))
 		memcpy(out, data, size);
 	else
-	{
-		C3D_SafeTextureCopy((u32*)data, 0, (u32*)out, 0, size, 8);
-		gspWaitForPPF();
-	}
+		C3D_SyncTextureCopy((u32*)data, 0, (u32*)out, 0, size, 8);
 }
 
 static void C3Di_DownscaleRGBA8(u32* dst, const u32* src[4])
@@ -187,11 +184,10 @@ void C3D_TexGenerateMipmap(C3D_Tex* tex, GPU_TEXFACE face)
 		u32 dst_height = src_height>>1;
 
 		/* Doesn't work due to size restriction bullshit
-		C3D_SafeDisplayTransfer(
+		C3D_SyncDisplayTransfer(
 			(u32*)src, GX_BUFFER_DIM(src_width,src_height),
 			(u32*)dst, GX_BUFFER_DIM(dst_width,dst_height),
 			transfer_flags);
-		gspWaitForPPF();
 		*/
 
 		u32 i,j;
