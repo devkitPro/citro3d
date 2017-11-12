@@ -36,6 +36,15 @@ static inline bool addrIsVRAM(const void* addr)
 	return vaddr >= 0x1F000000 && vaddr < 0x1F600000;
 }
 
+static inline bool checkTexSize(u32 size)
+{
+	if (size < 8 || size > 1024)
+		return false;
+	if (size & (size-1))
+		return false;
+	return true;
+}
+
 static inline void allocFree(void* addr)
 {
 	if (addrIsVRAM(addr))
@@ -59,7 +68,7 @@ static void C3Di_TexCubeDelete(C3D_TexCube* cube)
 
 bool C3D_TexInitWithParams(C3D_Tex* tex, C3D_TexCube* cube, C3D_TexInitParams p)
 {
-	if ((p.width|p.height) & 7) return false;
+	if (!checkTexSize(p.width) || !checkTexSize(p.height)) return false;
 
 	bool isCube = typeIsCube(p.type);
 	if (isCube && !cube) return false;
