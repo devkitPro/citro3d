@@ -953,13 +953,15 @@ check_quaternion(generator_t &gen, distribution_t &dist)
 
     // check conversion to matrix
     {
-      C3D_FQuat q = randomQuat(gen, dist);
+      C3D_FQuat q = Quat_Normalize(randomQuat(gen, dist));
       glm::quat g = loadQuat(q);
 
       C3D_Mtx m;
       Mtx_FromQuat(&m, q);
-
       assert(m == glm::mat4_cast(g));
+
+      C3D_FQuat q2 = Quat_FromMtx(&m);
+      assert(q2 == q || q2 == FVec4_Negate(q));
     }
   }
 }
