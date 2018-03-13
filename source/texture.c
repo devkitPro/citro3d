@@ -265,6 +265,7 @@ void C3D_TexShadowParams(bool perspective, float bias)
 		iBias = BIT(24)-1;
 
 	ctx->texShadow = (iBias &~ 1) | (perspective ? 0 : 1);
+	ctx->flags |= C3DiF_TexStatus;
 }
 
 void C3Di_SetTex(int unit, C3D_Tex* tex)
