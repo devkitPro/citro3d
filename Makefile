@@ -9,8 +9,8 @@ endif
 include $(DEVKITARM)/3ds_rules
 
 export CITRO3D_MAJOR	:= 1
-export CITRO3D_MINOR	:= 3
-export CITRO3D_PATCH	:= 1
+export CITRO3D_MINOR	:= 4
+export CITRO3D_PATCH	:= 0
 
 VERSION	:=	$(CITRO3D_MAJOR).$(CITRO3D_MINOR).$(CITRO3D_PATCH)
 
@@ -100,8 +100,8 @@ dist-src:
 dist: dist-src dist-bin
 
 install: dist-bin
-	mkdir -p $(DEVKITPRO)/libctru
-	bzip2 -cd citro3d-$(VERSION).tar.bz2 | tar -xf - -C $(DEVKITPRO)/libctru
+	mkdir -p $(DESTDIR)$(DEVKITPRO)/libctru
+	bzip2 -cd citro3d-$(VERSION).tar.bz2 | tar -xf - -C $(DESTDIR)$(DEVKITPRO)/libctru
 
 lib:
 	@[ -d $@ ] || mkdir -p $@
