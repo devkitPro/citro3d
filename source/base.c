@@ -168,12 +168,6 @@ void C3Di_UpdateContext(void)
 	int i;
 	C3D_Context* ctx = C3Di_GetContext();
 
-	if (ctx->flags & C3DiF_Program)
-	{
-		shaderProgramConfigure(ctx->program, (ctx->flags & C3DiF_VshCode) != 0, (ctx->flags & C3DiF_GshCode) != 0);
-		ctx->flags &= ~(C3DiF_Program | C3DiF_VshCode | C3DiF_GshCode);
-	}
-
 	if (ctx->flags & C3DiF_FrameBuf)
 	{
 		ctx->flags &= ~C3DiF_FrameBuf;
@@ -197,6 +191,12 @@ void C3Di_UpdateContext(void)
 	{
 		ctx->flags &= ~C3DiF_Scissor;
 		GPUCMD_AddIncrementalWrites(GPUREG_SCISSORTEST_MODE, ctx->scissor, 3);
+	}
+
+	if (ctx->flags & C3DiF_Program)
+	{
+		shaderProgramConfigure(ctx->program, (ctx->flags & C3DiF_VshCode) != 0, (ctx->flags & C3DiF_GshCode) != 0);
+		ctx->flags &= ~(C3DiF_Program | C3DiF_VshCode | C3DiF_GshCode);
 	}
 
 	if (ctx->flags & C3DiF_AttrInfo)
