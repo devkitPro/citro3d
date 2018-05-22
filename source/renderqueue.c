@@ -55,10 +55,6 @@ static void onVBlank0(C3D_UNUSED void* unused)
 				C3D_FrameBufTransfer(&left->frameBuf, GFX_TOP, GFX_LEFT, left->transferFlags);
 			if (right)
 				C3D_FrameBufTransfer(&right->frameBuf, GFX_TOP, GFX_RIGHT, right->transferFlags);
-			if (left && left->clearBits)
-				C3D_FrameBufClear(&left->frameBuf, left->clearBits, left->clearColor, left->clearDepth);
-			if (right && right != left && right->clearBits)
-				C3D_FrameBufClear(&right->frameBuf, right->clearBits, right->clearColor, right->clearDepth);
 			gfxConfigScreen(GFX_TOP, false);
 		}
 	}
@@ -76,8 +72,6 @@ static void onVBlank1(C3D_UNUSED void* unused)
 		{
 			frameStage |= STAGE_WAIT_TRANSFER;
 			C3D_FrameBufTransfer(&target->frameBuf, GFX_BOTTOM, GFX_LEFT, target->transferFlags);
-			if (target->clearBits)
-				C3D_FrameBufClear(&target->frameBuf, target->clearBits, target->clearColor, target->clearDepth);
 			gfxConfigScreen(GFX_BOTTOM, false);
 		}
 	}
@@ -270,14 +264,6 @@ void C3D_FrameEnd(u8 flags)
 		frameStage |= STAGE_HAS_TRANSFER(i);
 	}
 
-	for (target = firstTarget; target; target = target->next)
-	{
-		if (!target->used || !target->clearBits)
-			continue;
-		target->used = false;
-		C3D_FrameBufClear(&target->frameBuf, target->clearBits, target->clearColor, target->clearDepth);
-	}
-
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 	measureGpuTime = true;
 	osTickCounterStart(&gpuTime);
@@ -407,20 +393,6 @@ void C3D_RenderTargetDelete(C3D_RenderTarget* target)
 	C3Di_RenderTargetDestroy(target);
 }
 
-void C3D_RenderTargetSetClear(C3D_RenderTarget* target, C3D_ClearBits clearBits, u32 clearColor, u32 clearDepth)
-{
-	if (!target->frameBuf.colorBuf) clearBits &= ~C3D_CLEAR_COLOR;
-	if (!target->frameBuf.depthBuf) clearBits &= ~C3D_CLEAR_DEPTH;
-
-	C3D_ClearBits oldClearBits = target->clearBits;
-	target->clearBits = clearBits;
-	target->clearColor = clearColor;
-	target->clearDepth = clearDepth;
-
-	if (clearBits &~ oldClearBits)
-		C3D_FrameBufClear(&target->frameBuf, clearBits, clearColor, clearDepth);
-}
-
 void C3D_RenderTargetSetOutput(C3D_RenderTarget* target, gfxScreen_t screen, gfx3dSide_t side, u32 transferFlags)
 {
 	int id = 0;
@@ -457,21 +429,6 @@ static void C3Di_SafeMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0,
 	inSafeTransfer = true;
 	GX_MemoryFill(buf0a, buf0v, buf0e, control0, buf1a, buf1v, buf1e, control1);
 	gxCmdQueueRun(&C3Di_GetContext()->gxQueue);
-}
-
-void C3D_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)
-{
-	C3Di_SafeDisplayTransfer(inadr, indim, outadr, outdim, flags);
-}
-
-void C3D_SafeTextureCopy(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 size, u32 flags)
-{
-	C3Di_SafeTextureCopy(inadr, indim, outadr, outdim, size, flags);
-}
-
-void C3D_SafeMemoryFill(u32* buf0a, u32 buf0v, u32* buf0e, u16 control0, u32* buf1a, u32 buf1v, u32* buf1e, u16 control1)
-{
-	C3Di_SafeMemoryFill(buf0a, buf0v, buf0e, control0, buf1a, buf1v, buf1e, control1);
 }
 
 void C3D_SyncDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)

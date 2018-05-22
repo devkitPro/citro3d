@@ -46,11 +46,6 @@ static inline void C3D_TexEnvInit(C3D_TexEnv* env)
 #define _C3D_DEFAULT(x)
 #endif
 
-C3D_DEPRECATED static inline void TexEnv_Init(C3D_TexEnv* env)
-{
-	C3D_TexEnvInit(env);
-}
-
 static inline void C3D_TexEnvSrc(C3D_TexEnv* env, C3D_TexEnvMode mode,
 	GPU_TEVSRC s1,
 	GPU_TEVSRC s2 _C3D_DEFAULT(GPU_PRIMARY_COLOR),
@@ -61,15 +56,6 @@ static inline void C3D_TexEnvSrc(C3D_TexEnv* env, C3D_TexEnvMode mode,
 		env->srcRgb = param;
 	if ((int)mode & C3D_Alpha)
 		env->srcAlpha = param;
-}
-
-C3D_DEPRECATED static inline void C3D_TexEnvOp(C3D_TexEnv* env, C3D_TexEnvMode mode, int o1, int o2, int o3)
-{
-	int param = GPU_TEVOPERANDS(o1, o2, o3);
-	if ((int)mode & C3D_RGB)
-		env->opRgb = param;
-	if ((int)mode & C3D_Alpha)
-		env->opAlpha = param;
 }
 
 static inline void C3D_TexEnvOpRgb(C3D_TexEnv* env,
