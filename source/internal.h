@@ -53,7 +53,9 @@ typedef struct
 	C3D_FogLut* fogLut;
 
 	u16 gasAttn, gasAccMax;
-	u32 gasLightXY, gasLightZ, gasLightZColor, gasDeltaZ;
+	u32 gasLightXY, gasLightZ, gasLightZColor;
+	u32 gasDeltaZ : 24;
+	u32 gasFlags : 8;
 	C3D_GasLut* gasLut;
 
 	C3D_ProcTex* procTex;
@@ -96,6 +98,14 @@ enum
 	C3DiF_TexAll = 7 << 23,
 #define C3DiF_TexEnv(n) BIT(26+(n))
 	C3DiF_TexEnvAll = 0x3F << 26,
+};
+
+enum
+{
+	C3DiG_BeginAcc    = BIT(0),
+	C3DiG_AccStage    = BIT(1),
+	C3DiG_SetAccMax   = BIT(2),
+	C3DiG_RenderStage = BIT(3),
 };
 
 static inline C3D_Context* C3Di_GetContext(void)

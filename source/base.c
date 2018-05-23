@@ -62,6 +62,7 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 			C3Di_DirtyUniforms(GPU_GEOMETRY_SHADER);
 
 			ctx->fixedAttribDirty |= ctx->fixedAttribEverDirty;
+			ctx->gasFlags |= C3DiG_BeginAcc | C3DiG_AccStage | C3DiG_RenderStage;
 
 			C3D_LightEnv* env = ctx->lightEnv;
 			if (ctx->fogLut)

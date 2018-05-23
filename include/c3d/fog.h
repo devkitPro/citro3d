@@ -27,9 +27,11 @@ void C3D_FogLutBind(C3D_FogLut* lut);
 
 void GasLut_FromArray(C3D_GasLut* lut, const u32 data[9]);
 
-void C3D_GasAttn(float value);
-void C3D_GasAccMax(float value);
+void C3D_GasBeginAcc(void);
 void C3D_GasDeltaZ(float value);
+
+void C3D_GasAccMax(float value);
+void C3D_GasAttn(float value);
 void C3D_GasLightPlanar(float min, float max, float attn);
 void C3D_GasLightView(float min, float max, float attn);
 void C3D_GasLightDirection(float dotp);
