@@ -336,25 +336,6 @@ bool C3Di_SplitFrame(u32** pBuf, u32* pSize)
 	return true;
 }
 
-void C3D_FlushAsync(void)
-{
-	C3D_Context* ctx = C3Di_GetContext();
-
-	if (!(ctx->flags & C3DiF_Active))
-		return;
-
-	u32* cmdBuf;
-	u32 cmdBufSize;
-	C3Di_SplitFrame(&cmdBuf, &cmdBufSize);
-	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
-
-	//take advantage of GX_FlushCacheRegions to flush gsp heap
-	extern u32 __ctru_linear_heap;
-	extern u32 __ctru_linear_heap_size;
-	GX_FlushCacheRegions(cmdBuf, cmdBufSize*4, (u32 *) __ctru_linear_heap, __ctru_linear_heap_size, NULL, 0);
-	GX_ProcessCommandList(cmdBuf, cmdBufSize*4, 0x0);
-}
-
 float C3D_GetCmdBufUsage(void)
 {
 	return C3Di_GetContext()->cmdBufUsage;
