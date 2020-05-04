@@ -8,16 +8,9 @@ static C3D_RenderTarget *linkedTarget[3];
 
 static TickCounter gpuTime, cpuTime;
 
-#define STAGE_HAS_TRANSFER(n)   BIT(0+(n))
-#define STAGE_HAS_ANY_TRANSFER  (7<<0)
-#define STAGE_NEED_TRANSFER(n)  BIT(3+(n))
-#define STAGE_NEED_TOP_TRANSFER (STAGE_NEED_TRANSFER(0)|STAGE_NEED_TRANSFER(1))
-#define STAGE_NEED_BOT_TRANSFER STAGE_NEED_TRANSFER(2)
-#define STAGE_WAIT_TRANSFER     BIT(6)
-
 static bool initialized;
 static bool inFrame, inSafeTransfer, measureGpuTime;
-static u8 frameStage;
+static bool needSwapTop, needSwapBot;
 static float framerate = 60.0f;
 static float framerateCounter[2] = { 60.0f, 60.0f };
 static u32 frameCounter[2];
@@ -37,44 +30,12 @@ static bool framerateLimit(int id)
 
 static void onVBlank0(C3D_UNUSED void* unused)
 {
-	if (frameStage & STAGE_NEED_TOP_TRANSFER)
-	{
-		C3D_RenderTarget *left = linkedTarget[0], *right = linkedTarget[1];
-		if (left && !(frameStage&STAGE_NEED_TRANSFER(0)))
-			left = NULL;
-		if (right && !(frameStage&STAGE_NEED_TRANSFER(1)))
-			right = NULL;
-		if (gfxIs3D() && !right)
-			right = left;
-
-		frameStage &= ~STAGE_NEED_TOP_TRANSFER;
-		if (left || right)
-		{
-			frameStage |= STAGE_WAIT_TRANSFER;
-			if (left)
-				C3D_FrameBufTransfer(&left->frameBuf, GFX_TOP, GFX_LEFT, left->transferFlags);
-			if (right)
-				C3D_FrameBufTransfer(&right->frameBuf, GFX_TOP, GFX_RIGHT, right->transferFlags);
-			gfxConfigScreen(GFX_TOP, false);
-		}
-	}
 	if (framerateLimit(0))
 		frameCounter[0]++;
 }
 
 static void onVBlank1(C3D_UNUSED void* unused)
 {
-	if (frameStage & STAGE_NEED_BOT_TRANSFER)
-	{
-		frameStage &= ~STAGE_NEED_BOT_TRANSFER;
-		C3D_RenderTarget* target = linkedTarget[2];
-		if (target)
-		{
-			frameStage |= STAGE_WAIT_TRANSFER;
-			C3D_FrameBufTransfer(&target->frameBuf, GFX_BOTTOM, GFX_LEFT, target->transferFlags);
-			gfxConfigScreen(GFX_BOTTOM, false);
-		}
-	}
 	if (framerateLimit(1))
 		frameCounter[1]++;
 }
@@ -95,12 +56,18 @@ static void onQueueFinish(gxCmdQueue_s* queue)
 			gxCmdQueueClear(queue);
 		}
 	}
-	else if (frameStage & STAGE_WAIT_TRANSFER)
-		frameStage &= ~STAGE_WAIT_TRANSFER;
 	else
 	{
-		u8 needs = frameStage & STAGE_HAS_ANY_TRANSFER;
-		frameStage = (frameStage&~STAGE_HAS_ANY_TRANSFER) | (needs<<3);
+		if (needSwapTop)
+		{
+			gfxConfigScreen(GFX_TOP, false);
+			needSwapTop = false;
+		}
+		if (needSwapBot)
+		{
+			gfxConfigScreen(GFX_BOTTOM, false);
+			needSwapBot = false;
+		}
 	}
 }
 
@@ -126,10 +93,6 @@ static bool C3Di_WaitAndClearQueue(s64 timeout)
 	gxCmdQueue_s* queue = &C3Di_GetContext()->gxQueue;
 	if (!gxCmdQueueWait(queue, timeout))
 		return false;
-	if (timeout==0 && frameStage)
-		return false;
-	while (frameStage)
-		gspWaitForAnyEvent();
 	gxCmdQueueStop(queue);
 	gxCmdQueueClear(queue);
 	return true;
@@ -261,7 +224,11 @@ void C3D_FrameEnd(u8 flags)
 		if (!target || !target->used)
 			continue;
 		target->used = false;
-		frameStage |= STAGE_HAS_TRANSFER(i);
+		C3D_FrameBufTransfer(&target->frameBuf, target->screen, target->side, target->transferFlags);
+		if (target->screen == GFX_TOP)
+			needSwapTop = true;
+		else if (target->screen == GFX_BOTTOM)
+			needSwapBot = true;
 	}
 
 	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
