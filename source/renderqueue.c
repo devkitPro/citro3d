@@ -8,7 +8,6 @@ static C3D_RenderTarget *linkedTarget[3];
 
 static TickCounter gpuTime, cpuTime;
 
-static bool initialized;
 static bool inFrame, inSafeTransfer, measureGpuTime;
 static bool needSwapTop, needSwapBot;
 static float framerate = 60.0f;
@@ -16,6 +15,8 @@ static float framerateCounter[2] = { 60.0f, 60.0f };
 static u32 frameCounter[2];
 static void (* frameEndCb)(void*);
 static void* frameEndCbData;
+
+static void C3Di_RenderTargetDestroy(C3D_RenderTarget* target);
 
 static bool framerateLimit(int id)
 {
@@ -98,61 +99,43 @@ static bool C3Di_WaitAndClearQueue(s64 timeout)
 	return true;
 }
 
-static void C3Di_RenderQueueInit(void)
+void C3Di_RenderQueueInit(void)
 {
+	C3D_Context* ctx = C3Di_GetContext();
+
 	gspSetEventCallback(GSPGPU_EVENT_VBlank0, onVBlank0, NULL, false);
 	gspSetEventCallback(GSPGPU_EVENT_VBlank1, onVBlank1, NULL, false);
-	gxCmdQueueSetCallback(&C3Di_GetContext()->gxQueue, onQueueFinish, NULL);
-}
 
-static void C3Di_RenderTargetDestroy(C3D_RenderTarget* target);
+	GX_BindQueue(&ctx->gxQueue);
+	gxCmdQueueSetCallback(&ctx->gxQueue, onQueueFinish, NULL);
+	gxCmdQueueRun(&ctx->gxQueue);
+}
 
 void C3Di_RenderQueueExit(void)
 {
 	int i;
 	C3D_RenderTarget *a, *next;
 
-	if (!initialized)
-		return;
-
 	C3Di_WaitAndClearQueue(-1);
+	gxCmdQueueSetCallback(&C3Di_GetContext()->gxQueue, NULL, NULL);
+	GX_BindQueue(NULL);
+
+	gspSetEventCallback(GSPGPU_EVENT_VBlank0, NULL, NULL, false);
+	gspSetEventCallback(GSPGPU_EVENT_VBlank1, NULL, NULL, false);
+
+	for (i = 0; i < 3; i ++)
+		linkedTarget[i] = NULL;
+
 	for (a = firstTarget; a; a = next)
 	{
 		next = a->next;
 		C3Di_RenderTargetDestroy(a);
 	}
-
-	gspSetEventCallback(GSPGPU_EVENT_VBlank0, NULL, NULL, false);
-	gspSetEventCallback(GSPGPU_EVENT_VBlank1, NULL, NULL, false);
-	gxCmdQueueSetCallback(&C3Di_GetContext()->gxQueue, NULL, NULL);
-
-	for (i = 0; i < 3; i ++)
-		linkedTarget[i] = NULL;
-
-	initialized = false;
 }
 
 void C3Di_RenderQueueWaitDone(void)
 {
-	if (!initialized)
-		return;
 	C3Di_WaitAndClearQueue(-1);
-}
-
-static bool checkRenderQueueInit(void)
-{
-	C3D_Context* ctx = C3Di_GetContext();
-
-	if (!(ctx->flags & C3DiF_Active))
-		return false;
-
-	if (!initialized)
-	{
-		C3Di_RenderQueueInit();
-		initialized = true;
-	}
-
-	return true;
 }
 
 float C3D_FrameRate(float fps)
@@ -169,13 +152,17 @@ float C3D_FrameRate(float fps)
 
 bool C3D_FrameBegin(u8 flags)
 {
+	C3D_Context* ctx = C3Di_GetContext();
 	if (inFrame) return false;
+
 	if (flags & C3D_FRAME_SYNCDRAW)
 		C3D_FrameSync();
 	if (!C3Di_WaitAndClearQueue((flags & C3D_FRAME_NONBLOCK) ? 0 : -1))
 		return false;
+
 	inFrame = true;
 	osTickCounterStart(&cpuTime);
+	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 	return true;
 }
 
@@ -200,13 +187,15 @@ void C3D_FrameSplit(u8 flags)
 void C3D_FrameEnd(u8 flags)
 {
 	C3D_Context* ctx = C3Di_GetContext();
+	if (!inFrame) return;
 
 	if (frameEndCb)
 		frameEndCb(frameEndCbData);
 
 	C3D_FrameSplit(flags);
-	inFrame = false;
+	GPUCMD_SetBuffer(NULL, 0, 0);
 	osTickCounterUpdate(&cpuTime);
+	inFrame = false;
 
 	// Flush the entire linear memory if the user did not explicitly mandate to flush the command list
 	if (!(flags & GX_CMDLIST_FLUSH))
@@ -231,7 +220,6 @@ void C3D_FrameEnd(u8 flags)
 			needSwapBot = true;
 	}
 
-	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
 	measureGpuTime = true;
 	osTickCounterStart(&gpuTime);
 	gxCmdQueueRun(&ctx->gxQueue);
@@ -274,8 +262,6 @@ static void C3Di_RenderTargetFinishInit(C3D_RenderTarget* target)
 
 C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, GPU_COLORBUF colorFmt, C3D_DEPTHTYPE depthFmt)
 {
-	if (!checkRenderQueueInit()) goto _fail0;
-
 	GPU_DEPTHBUF depthFmtReal = GPU_RB_DEPTH16;
 	void* depthBuf = NULL;
 	void* colorBuf = vramAlloc(C3D_CalcColorBufSize(width,height,colorFmt));
@@ -312,8 +298,6 @@ _fail0:
 
 C3D_RenderTarget* C3D_RenderTargetCreateFromTex(C3D_Tex* tex, GPU_TEXFACE face, int level, C3D_DEPTHTYPE depthFmt)
 {
-	if (!checkRenderQueueInit()) return NULL;
-
 	C3D_RenderTarget* target = C3Di_RenderTargetNew();
 	if (!target) return NULL;
 

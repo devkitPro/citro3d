@@ -8,14 +8,6 @@ C3D_Context __C3D_Context;
 
 static aptHookCookie hookCookie;
 
-__attribute__((weak)) void C3Di_RenderQueueWaitDone(void)
-{
-}
-
-__attribute__((weak)) void C3Di_RenderQueueExit(void)
-{
-}
-
 __attribute__((weak)) void C3Di_LightEnvUpdate(C3D_LightEnv* env)
 {
 	(void)env;
@@ -102,10 +94,6 @@ bool C3D_Init(size_t cmdBufSize)
 		return false;
 	}
 
-	GPUCMD_SetBuffer(ctx->cmdBuf, ctx->cmdBufSize, 0);
-	GX_BindQueue(&ctx->gxQueue);
-	gxCmdQueueRun(&ctx->gxQueue);
-
 	ctx->flags = C3DiF_Active | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_Effect | C3DiF_TexStatus | C3DiF_TexAll;
 
 	// TODO: replace with direct struct access
@@ -137,6 +125,7 @@ bool C3D_Init(size_t cmdBufSize)
 	ctx->fixedAttribDirty = 0;
 	ctx->fixedAttribEverDirty = 0;
 
+	C3Di_RenderQueueInit();
 	aptHook(&hookCookie, C3Di_AptEventHook, NULL);
 
 	return true;
@@ -348,11 +337,8 @@ void C3D_Fini(void)
 	if (!(ctx->flags & C3DiF_Active))
 		return;
 
-	C3Di_RenderQueueExit();
 	aptUnhook(&hookCookie);
-	gxCmdQueueStop(&ctx->gxQueue);
-	gxCmdQueueWait(&ctx->gxQueue, -1);
-	GX_BindQueue(NULL);
+	C3Di_RenderQueueExit();
 	free(ctx->gxQueue.entries);
 	linearFree(ctx->cmdBuf);
 	ctx->flags = 0;
