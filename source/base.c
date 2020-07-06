@@ -42,10 +42,12 @@ static void C3Di_AptEventHook(APT_HookType hookType, C3D_UNUSED void* param)
 		case APTHOOK_ONSUSPEND:
 		{
 			C3Di_RenderQueueWaitDone();
+			C3Di_RenderQueueDisableVBlank();
 			break;
 		}
 		case APTHOOK_ONRESTORE:
 		{
+			C3Di_RenderQueueEnableVBlank();
 			ctx->flags |= C3DiF_AttrInfo | C3DiF_BufInfo | C3DiF_Effect | C3DiF_FrameBuf
 				| C3DiF_Viewport | C3DiF_Scissor | C3DiF_Program | C3DiF_VshCode | C3DiF_GshCode
 				| C3DiF_TexAll | C3DiF_TexEnvBuf | C3DiF_TexEnvAll | C3DiF_LightEnv | C3DiF_Gas;

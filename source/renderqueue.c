@@ -99,12 +99,23 @@ static bool C3Di_WaitAndClearQueue(s64 timeout)
 	return true;
 }
 
+void C3Di_RenderQueueEnableVBlank(void)
+{
+	gspSetEventCallback(GSPGPU_EVENT_VBlank0, onVBlank0, NULL, false);
+	gspSetEventCallback(GSPGPU_EVENT_VBlank1, onVBlank1, NULL, false);
+}
+
+void C3Di_RenderQueueDisableVBlank(void)
+{
+	gspSetEventCallback(GSPGPU_EVENT_VBlank0, NULL, NULL, false);
+	gspSetEventCallback(GSPGPU_EVENT_VBlank1, NULL, NULL, false);
+}
+
 void C3Di_RenderQueueInit(void)
 {
 	C3D_Context* ctx = C3Di_GetContext();
 
-	gspSetEventCallback(GSPGPU_EVENT_VBlank0, onVBlank0, NULL, false);
-	gspSetEventCallback(GSPGPU_EVENT_VBlank1, onVBlank1, NULL, false);
+	C3Di_RenderQueueEnableVBlank();
 
 	GX_BindQueue(&ctx->gxQueue);
 	gxCmdQueueSetCallback(&ctx->gxQueue, onQueueFinish, NULL);
@@ -120,8 +131,7 @@ void C3Di_RenderQueueExit(void)
 	gxCmdQueueSetCallback(&C3Di_GetContext()->gxQueue, NULL, NULL);
 	GX_BindQueue(NULL);
 
-	gspSetEventCallback(GSPGPU_EVENT_VBlank0, NULL, NULL, false);
-	gspSetEventCallback(GSPGPU_EVENT_VBlank1, NULL, NULL, false);
+	C3Di_RenderQueueDisableVBlank();
 
 	for (i = 0; i < 3; i ++)
 		linkedTarget[i] = NULL;
