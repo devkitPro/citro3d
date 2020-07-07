@@ -9,7 +9,7 @@ static C3D_RenderTarget *linkedTarget[3];
 static TickCounter gpuTime, cpuTime;
 
 static bool inFrame, inSafeTransfer, measureGpuTime;
-static bool needSwapTop, needSwapBot;
+static bool needSwapTop, needSwapBot, isTopStereo;
 static float framerate = 60.0f;
 static float framerateCounter[2] = { 60.0f, 60.0f };
 static u32 frameCounter[2];
@@ -61,12 +61,12 @@ static void onQueueFinish(gxCmdQueue_s* queue)
 	{
 		if (needSwapTop)
 		{
-			gfxConfigScreen(GFX_TOP, false);
+			gfxScreenSwapBuffers(GFX_TOP, isTopStereo);
 			needSwapTop = false;
 		}
 		if (needSwapBot)
 		{
-			gfxConfigScreen(GFX_BOTTOM, false);
+			gfxScreenSwapBuffers(GFX_BOTTOM, false);
 			needSwapBot = false;
 		}
 	}
@@ -217,6 +217,7 @@ void C3D_FrameEnd(u8 flags)
 
 	int i;
 	C3D_RenderTarget* target;
+	isTopStereo = false;
 	for (i = 2; i >= 0; i --)
 	{
 		target = linkedTarget[i];
@@ -225,7 +226,11 @@ void C3D_FrameEnd(u8 flags)
 		target->used = false;
 		C3D_FrameBufTransfer(&target->frameBuf, target->screen, target->side, target->transferFlags);
 		if (target->screen == GFX_TOP)
+		{
 			needSwapTop = true;
+			if (target->side == GFX_RIGHT)
+				isTopStereo = true;
+		}
 		else if (target->screen == GFX_BOTTOM)
 			needSwapBot = true;
 	}
