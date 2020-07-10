@@ -114,7 +114,7 @@ debug:
 
 lib/libcitro3d.a : lib release $(SOURCES) $(INCLUDES)
 	@$(MAKE) BUILD=release OUTPUT=$(CURDIR)/$@ \
-	BUILD_CFLAGS="-DNDEBUG=1 -O2 -fomit-frame-pointer" \
+	BUILD_CFLAGS="-DNDEBUG=1 -O2 -fomit-frame-pointer -fno-math-errno" \
 	DEPSDIR=$(CURDIR)/release \
 	--no-print-directory -C release \
 	-f $(CURDIR)/Makefile
