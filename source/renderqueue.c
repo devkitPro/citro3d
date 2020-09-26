@@ -339,10 +339,17 @@ C3D_RenderTarget* C3D_RenderTargetCreateFromTex(C3D_Tex* tex, GPU_TEXFACE face, 
 
 void C3Di_RenderTargetDestroy(C3D_RenderTarget* target)
 {
+	int i;
+
 	if (target->ownsColor)
 		vramFree(target->frameBuf.colorBuf);
 	if (target->ownsDepth)
 		vramFree(target->frameBuf.depthBuf);
+	for (i = 0; i < 3; i ++)
+	{
+		if (linkedTarget[i] == target)
+			linkedTarget[i] = NULL;
+	}
 
 	C3D_RenderTarget** prevNext = target->prev ? &target->prev->next : &firstTarget;
 	C3D_RenderTarget** nextPrev = target->next ? &target->next->prev : &lastTarget;
