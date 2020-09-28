@@ -355,7 +355,10 @@ void C3D_RenderTargetDelete(C3D_RenderTarget* target)
 {
 	if (inFrame)
 		svcBreak(USERBREAK_PANIC); // Shouldn't happen.
-	C3Di_WaitAndClearQueue(-1);
+	if (target->linked)
+		C3D_RenderTargetDetachOutput(target);
+	else
+		C3Di_WaitAndClearQueue(-1);
 	C3Di_RenderTargetDestroy(target);
 }
 
@@ -365,12 +368,19 @@ void C3D_RenderTargetSetOutput(C3D_RenderTarget* target, gfxScreen_t screen, gfx
 	if (screen==GFX_BOTTOM) id = 2;
 	else if (side==GFX_RIGHT) id = 1;
 	if (linkedTarget[id])
+	{
 		linkedTarget[id]->linked = false;
+		if (!inFrame)
+			C3Di_WaitAndClearQueue(-1);
+	}
 	linkedTarget[id] = target;
-	target->linked = true;
-	target->transferFlags = transferFlags;
-	target->screen = screen;
-	target->side = side;
+	if (target)
+	{
+		target->linked = true;
+		target->transferFlags = transferFlags;
+		target->screen = screen;
+		target->side = side;
+	}
 }
 
 static void C3Di_SafeDisplayTransfer(u32* inadr, u32 indim, u32* outadr, u32 outdim, u32 flags)
