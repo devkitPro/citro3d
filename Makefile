@@ -83,13 +83,13 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 			-I.
 
-.PHONY: clean all doc
+.PHONY: clean all docs
 
 #---------------------------------------------------------------------------------
 all: lib/libcitro3d.a lib/libcitro3dd.a
 
-doc:
-	@doxygen Doxyfile
+docs:
+	@CITRO3D_VERSION=$(VERSION) CTRU_DOCPATH="https://libctru.devkitpro.org/" doxygen Doxyfile
 
 dist-bin: all
 	@tar --exclude=*~ -cjf citro3d-$(VERSION).tar.bz2 include lib
