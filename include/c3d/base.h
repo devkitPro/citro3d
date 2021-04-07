@@ -48,7 +48,7 @@ void C3D_BindProgram(shaderProgram_s* program);
 
 /**
  * @brief Sets the viewport for the current framebuffer.
- * @note This value is modified by \ref C3D_FrameDrawOn(). (using values specified by \ref C3D_RenderTargetSetOutput())
+ * @note This function is called by \ref C3D_FrameDrawOn(). (using values specified by \ref C3D_RenderTargetCreate())
  * @note When using this with a rendertarget intended for display, keep in mind the orientation of the screens.
  * @param[in] x X offset from the origin of the viewport in pixels.
  * @param[in] y Y offset from the origin of the viewport in pixels.
