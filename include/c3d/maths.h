@@ -1,3 +1,7 @@
+/**
+ * @file maths.h
+ * @brief Basic math library for matrix, vector, and quaternion operations
+ */
 #pragma once
 #include "types.h"
 #include <math.h>
