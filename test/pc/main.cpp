@@ -13,41 +13,43 @@ extern "C" {
 #include <c3d/maths.h>
 }
 
-typedef std::default_random_engine            generator_t;
-typedef std::uniform_real_distribution<float> distribution_t;
+namespace
+{
+using generator_t    = std::default_random_engine;
+using distribution_t = std::uniform_real_distribution<float>;
 
-static inline void
+inline void
 randomMatrix(C3D_Mtx &m, generator_t &g, distribution_t &d)
 {
   for(size_t i = 0; i < 16; ++i)
     m.m[i] = d(g);
 }
 
-static inline glm::vec3
+inline glm::vec3
 randomVector3(generator_t &g, distribution_t &d)
 {
   return glm::vec3(d(g), d(g), d(g));
 }
 
-static inline glm::vec4
+inline glm::vec4
 randomVector4(generator_t &g, distribution_t &d)
 {
   return glm::vec4(d(g), d(g), d(g), d(g));
 }
 
-static inline float
+inline float
 randomAngle(generator_t &g, distribution_t &d)
 {
   return d(g);
 }
 
-static inline C3D_FQuat
+inline C3D_FQuat
 randomQuat(generator_t &g, distribution_t &d)
 {
   return Quat_New(d(g), d(g), d(g), d(g));
 }
 
-static inline glm::mat4
+inline glm::mat4
 loadMatrix(const C3D_Mtx &m)
 {
   return glm::mat4(m.m[ 3], m.m[ 7], m.m[11], m.m[15],
@@ -56,13 +58,13 @@ loadMatrix(const C3D_Mtx &m)
                    m.m[ 0], m.m[ 4], m.m[ 8], m.m[12]);
 }
 
-static inline glm::quat
+inline glm::quat
 loadQuat(const C3D_FQuat &q)
 {
   return glm::quat(q.r, q.i, q.j, q.k);
 }
 
-static inline bool
+inline bool
 operator==(const glm::vec3 &lhs, const C3D_FVec &rhs)
 {
   return std::abs(lhs.x - rhs.x) < 0.001f
@@ -70,13 +72,13 @@ operator==(const glm::vec3 &lhs, const C3D_FVec &rhs)
       && std::abs(lhs.z - rhs.z) < 0.001f;
 }
 
-static inline bool
+inline bool
 operator==(const C3D_FVec &lhs, const glm::vec3 &rhs)
 {
   return rhs == lhs;
 }
 
-static inline bool
+inline bool
 operator==(const glm::vec4 &lhs, const C3D_FVec &rhs)
 {
   return std::abs(lhs.x - rhs.x) < 0.001f
@@ -85,13 +87,13 @@ operator==(const glm::vec4 &lhs, const C3D_FVec &rhs)
       && std::abs(lhs.w - rhs.w) < 0.001f;
 }
 
-static inline bool
+inline bool
 operator==(const C3D_FVec &lhs, const glm::vec4 &rhs)
 {
   return rhs == lhs;
 }
 
-static inline bool
+inline bool
 operator==(const glm::mat4 &lhs, const C3D_Mtx &rhs)
 {
   for(size_t i = 0; i < 4; ++i)
@@ -106,13 +108,13 @@ operator==(const glm::mat4 &lhs, const C3D_Mtx &rhs)
   return true;
 }
 
-static inline bool
+inline bool
 operator==(const C3D_Mtx &lhs, const glm::mat4 &rhs)
 {
   return rhs == lhs;
 }
 
-static inline bool
+inline bool
 operator==(const glm::quat &lhs, const C3D_FQuat &rhs)
 {
   return std::abs(lhs.w - rhs.r) < 0.01f
@@ -121,13 +123,13 @@ operator==(const glm::quat &lhs, const C3D_FQuat &rhs)
       && std::abs(lhs.z - rhs.k) < 0.01f;
 }
 
-static inline bool
+inline bool
 operator==(const C3D_FQuat &lhs, const glm::quat &rhs)
 {
   return rhs == lhs;
 }
 
-static inline bool
+inline bool
 operator==(const C3D_FQuat &lhs, const C3D_FQuat &rhs)
 {
   return std::abs(lhs.r - rhs.r) < 0.01f
@@ -136,28 +138,28 @@ operator==(const C3D_FQuat &lhs, const C3D_FQuat &rhs)
       && std::abs(lhs.k - rhs.k) < 0.01f;
 }
 
-static inline void
+inline void
 print(const C3D_FVec &v)
 {
   std::printf("%s:\n", __PRETTY_FUNCTION__);
   std::printf("% 6.4f % 6.4f % 6.4f % 6.4f\n", v.w, v.x, v.y, v.z);
 }
 
-static inline void
+inline void
 print(const glm::vec3 &v)
 {
   std::printf("%s:\n", __PRETTY_FUNCTION__);
   std::printf("% 6.4f % 6.4f % 6.4f\n", v.x, v.y, v.z);
 }
 
-static inline void
+inline void
 print(const glm::vec4 &v)
 {
   std::printf("%s:\n", __PRETTY_FUNCTION__);
   std::printf("%6.4f % 6.4f % 6.4f % 6.4f\n", v.w, v.x, v.y, v.z);
 }
 
-static inline void
+inline void
 print(const C3D_Mtx &m)
 {
   std::printf("%s:\n", __PRETTY_FUNCTION__);
@@ -171,7 +173,7 @@ print(const C3D_Mtx &m)
   }
 }
 
-static inline void
+inline void
 print(const glm::mat4 &m)
 {
   std::printf("%s:\n", __PRETTY_FUNCTION__);
@@ -185,19 +187,33 @@ print(const glm::mat4 &m)
   }
 }
 
-static inline void
+inline void
 print(const glm::quat &q)
 {
   std::printf("%s:\n", __PRETTY_FUNCTION__);
   std::printf("% 6.4f % 6.4f % 6.4f % 6.4f\n", q.w, q.x, q.y, q.z);
 }
 
-static const glm::vec3 x_axis(1.0f, 0.0f, 0.0f);
-static const glm::vec3 y_axis(0.0f, 1.0f, 0.0f);
-static const glm::vec3 z_axis(0.0f, 0.0f, 1.0f);
-static const glm::vec3 z_flip(1.0f, 1.0f, -1.0f);
+template <typename T, typename U>
+bool compare(const T &actual, const U &expected)
+{
+  if(actual == expected)
+    return true;
 
-static void
+  std::printf("Expected:\n");
+  print(expected);
+  std::printf("Actual:\n");
+  print(actual);
+
+  return false;
+}
+
+const glm::vec3 x_axis(1.0f, 0.0f, 0.0f);
+const glm::vec3 y_axis(0.0f, 1.0f, 0.0f);
+const glm::vec3 z_axis(0.0f, 0.0f, 1.0f);
+const glm::vec3 z_flip(1.0f, 1.0f, -1.0f);
+
+void
 check_matrix(generator_t &gen, distribution_t &dist)
 {
 
@@ -211,7 +227,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
   {
     C3D_Mtx m;
     Mtx_Identity(&m);
-    assert(m == glm::mat4());
+    assert(compare(m, glm::mat4()));
   }
 
   // ortho nominal cases
@@ -230,12 +246,12 @@ check_matrix(generator_t &gen, distribution_t &dist)
     // check near clip plane
     v = Mtx_MultiplyFVecH(&m, FVec3_New((r-l)/2.0f, (t-b)/2.0f, -n));
     v = FVec4_PerspDivide(v);
-    assert(v == FVec4_New(0.0f, 0.0f, -1.0f, 1.0f));
+    assert(compare(v, FVec4_New(0.0f, 0.0f, -1.0f, 1.0f)));
 
     // check far clip plane
     v = Mtx_MultiplyFVecH(&m, FVec3_New((r-l)/2.0f, (t-b)/2.0f, -f));
     v = FVec4_PerspDivide(v);
-    assert(v == FVec4_New(0.0f, 0.0f, 0.0f, 1.0f));
+    assert(compare(v, FVec4_New(0.0f, 0.0f, 0.0f, 1.0f)));
   }
 
   // perspective nominal cases
@@ -252,12 +268,12 @@ check_matrix(generator_t &gen, distribution_t &dist)
     // check near clip plane
     v = Mtx_MultiplyFVecH(&m, FVec3_New(0.0f, 0.0f, -near));
     v = FVec4_PerspDivide(v);
-    assert(v == FVec4_New(0.0f, 0.0f, -1.0f, 1.0f));
+    assert(compare(v, FVec4_New(0.0f, 0.0f, -1.0f, 1.0f)));
 
     // check far clip plane
     v = Mtx_MultiplyFVecH(&m, FVec3_New(0.0f, 0.0f, -far));
     v = FVec4_PerspDivide(v);
-    assert(v == FVec4_New(0.0f, 0.0f, 0.0f, 1.0f));
+    assert(compare(v, FVec4_New(0.0f, 0.0f, 0.0f, 1.0f)));
   }
 
   for(size_t x = 0; x < 10000; ++x)
@@ -276,9 +292,9 @@ check_matrix(generator_t &gen, distribution_t &dist)
       if(Mtx_Inverse(&inv))
       {
         Mtx_Multiply(&id, &m, &inv);
-        assert(id == glm::mat4()); // could still fail due to rounding errors
+        assert(compare(id, glm::mat4())); // could still fail due to rounding errors
         Mtx_Multiply(&id, &inv, &m);
-        assert(id == glm::mat4()); // could still fail due to rounding errors
+        assert(compare(id, glm::mat4())); // could still fail due to rounding errors
       }
     }
 
@@ -308,12 +324,12 @@ check_matrix(generator_t &gen, distribution_t &dist)
       // RH
       Mtx_Persp(&m, fovy, aspect, near, far, false);
       glm::mat4 g = glm::perspective(fovy, aspect, near, far);
-      assert(m == fix_depth*g);
+      assert(compare(m, fix_depth*g));
 
       // LH
       Mtx_Persp(&m, fovy, aspect, near, far, true);
       g = glm::perspective(fovy, aspect, near, far);
-      assert(m == fix_depth*glm::scale(g, z_flip));
+      assert(compare(m, fix_depth*glm::scale(g, z_flip)));
     }
 
     // check perspective tilt
@@ -342,12 +358,12 @@ check_matrix(generator_t &gen, distribution_t &dist)
       // RH
       Mtx_PerspTilt(&m, fovy, aspect, near, far, false);
       glm::mat4 g = glm::perspective(fovx, 1.0f / aspect, near, far);
-      assert(m == fix_depth*g*tilt);
+      assert(compare(m, fix_depth*g*tilt));
 
       // LH
       Mtx_PerspTilt(&m, fovy, aspect, near, far, true);
       g = glm::perspective(fovx, 1.0f / aspect, near, far);
-      assert(m == fix_depth*glm::scale(g, z_flip)*tilt);
+      assert(compare(m, fix_depth*glm::scale(g, z_flip)*tilt));
     }
 
     // check perspective stereo
@@ -394,14 +410,14 @@ check_matrix(generator_t &gen, distribution_t &dist)
       // RH
       Mtx_PerspStereo(&left, fovy, aspect, near, far, -iod, focLen, false);
       Mtx_PerspStereo(&right, fovy, aspect, near, far, iod, focLen, false);
-      assert(left == fix_depth*g*left_eye);
-      assert(right == fix_depth*g*right_eye);
+      assert(compare(left, fix_depth*g*left_eye));
+      assert(compare(right, fix_depth*g*right_eye));
 
       // LH
       Mtx_PerspStereo(&left, fovy, aspect, near, far, -iod, focLen, true);
       Mtx_PerspStereo(&right, fovy, aspect, near, far, iod, focLen, true);
-      assert(left == fix_depth*glm::scale(g*left_eye, z_flip));
-      assert(right == fix_depth*glm::scale(g*right_eye, z_flip));
+      assert(compare(left, fix_depth*glm::scale(g*left_eye, z_flip)));
+      assert(compare(right, fix_depth*glm::scale(g*right_eye, z_flip)));
     }
 
     // check perspective stereo tilt
@@ -448,14 +464,14 @@ check_matrix(generator_t &gen, distribution_t &dist)
       // RH
       Mtx_PerspStereoTilt(&left, fovy, aspect, near, far, -iod, focLen, false);
       Mtx_PerspStereoTilt(&right, fovy, aspect, near, far, iod, focLen, false);
-      assert(left == fix_depth*g*left_eye*tilt);
-      assert(right == fix_depth*g*right_eye*tilt);
+      assert(compare(left, fix_depth*g*left_eye*tilt));
+      assert(compare(right, fix_depth*g*right_eye*tilt));
 
       // LH
       Mtx_PerspStereoTilt(&left, fovy, aspect, near, far, -iod, focLen, true);
       Mtx_PerspStereoTilt(&right, fovy, aspect, near, far, iod, focLen, true);
-      assert(left == fix_depth*glm::scale(g*left_eye, z_flip)*tilt);
-      assert(right == fix_depth*glm::scale(g*right_eye, z_flip)*tilt);
+      assert(compare(left, fix_depth*glm::scale(g*left_eye, z_flip)*tilt));
+      assert(compare(right, fix_depth*glm::scale(g*right_eye, z_flip)*tilt));
     }
 
     // check ortho
@@ -480,12 +496,12 @@ check_matrix(generator_t &gen, distribution_t &dist)
       // RH
       Mtx_Ortho(&m, l, r, b, t, n, f, false);
       glm::mat4 g = glm::ortho(l, r, b, t, n, f);
-      assert(m == fix_depth*g);
+      assert(compare(m, fix_depth*g));
 
       // LH
       Mtx_Ortho(&m, l, r, b, t, n, f, true);
       g = glm::ortho(l, r, b, t, n, f);
-      assert(m == fix_depth*glm::scale(g, z_flip));
+      assert(compare(m, fix_depth*glm::scale(g, z_flip)));
     }
 
     // check ortho tilt
@@ -510,12 +526,12 @@ check_matrix(generator_t &gen, distribution_t &dist)
       // RH
       Mtx_OrthoTilt(&m, l, r, b, t, n, f, false);
       glm::mat4 g = glm::ortho(l, r, b, t, n, f);
-      assert(m == tilt*fix_depth*g);
+      assert(compare(m, tilt*fix_depth*g));
 
       // LH
       Mtx_OrthoTilt(&m, l, r, b, t, n, f, true);
       g = glm::ortho(l, r, b, t, n, f);
-      assert(m == tilt*fix_depth*glm::scale(g, z_flip));
+      assert(compare(m, tilt*fix_depth*glm::scale(g, z_flip)));
     }
 
     // check lookAt
@@ -540,12 +556,12 @@ check_matrix(generator_t &gen, distribution_t &dist)
 
       // RH
       Mtx_LookAt(&m, camera, target, up, false);
-      assert(m == g);
+      assert(compare(m, g));
 
       // LH
       Mtx_LookAt(&m, camera, target, up, true);
       // I can't say for certain that this is the correct test
-      assert(m == glm::scale(glm::mat4(), glm::vec3(-1.0f, 1.0f, -1.0f))*g);
+      assert(compare(m, glm::scale(glm::mat4(), glm::vec3(-1.0f, 1.0f, -1.0f))*g));
     }
 
     // check multiply
@@ -559,7 +575,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
 
       C3D_Mtx result;
       Mtx_Multiply(&result, &m1, &m2);
-      assert(result == g1*g2);
+      assert(compare(result, g1*g2));
     }
 
     // check translate
@@ -571,7 +587,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::vec3 v = randomVector3(gen, dist);
 
       Mtx_Translate(&m, v.x, v.y, v.z, true);
-      assert(m == glm::translate(g, v));
+      assert(compare(m, glm::translate(g, v)));
     }
 
     // check translate (reversed)
@@ -583,7 +599,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::vec3 v = randomVector3(gen, dist);
 
       Mtx_Translate(&m, v.x, v.y, v.z, false);
-      assert(m == glm::translate(glm::mat4(), v)*g);
+      assert(compare(m, glm::translate(glm::mat4(), v)*g));
     }
 
     // check scale
@@ -595,7 +611,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::vec3 v = randomVector3(gen, dist);
 
       Mtx_Scale(&m, v.x, v.y, v.z);
-      assert(m == glm::scale(g, v));
+      assert(compare(m, glm::scale(g, v)));
     }
 
     // check rotate
@@ -609,7 +625,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::vec3 v = randomVector3(gen, dist);
 
       Mtx_Rotate(&m, FVec3_New(v.x, v.y, v.z), r, true);
-      assert(m == glm::rotate(g, r, v));
+      assert(compare(m, glm::rotate(g, r, v)));
     }
 
     // check rotate (reversed)
@@ -623,7 +639,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::vec3 v = randomVector3(gen, dist);
 
       Mtx_Rotate(&m, FVec3_New(v.x, v.y, v.z), r, false);
-      assert(m == glm::rotate(glm::mat4(), r, v)*g);
+      assert(compare(m, glm::rotate(glm::mat4(), r, v)*g));
     }
 
     // check rotate X
@@ -636,7 +652,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::mat4 g = loadMatrix(m);
 
       Mtx_RotateX(&m, r, true);
-      assert(m == glm::rotate(g, r, x_axis));
+      assert(compare(m, glm::rotate(g, r, x_axis)));
     }
 
     // check rotate X (reversed)
@@ -649,7 +665,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::mat4 g = loadMatrix(m);
 
       Mtx_RotateX(&m, r, false);
-      assert(m == glm::rotate(glm::mat4(), r, x_axis)*g);
+      assert(compare(m, glm::rotate(glm::mat4(), r, x_axis)*g));
     }
 
     // check rotate Y
@@ -662,7 +678,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::mat4 g = loadMatrix(m);
 
       Mtx_RotateY(&m, r, true);
-      assert(m == glm::rotate(g, r, y_axis));
+      assert(compare(m, glm::rotate(g, r, y_axis)));
     }
 
     // check rotate Y (reversed)
@@ -675,7 +691,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::mat4 g = loadMatrix(m);
 
       Mtx_RotateY(&m, r, false);
-      assert(m == glm::rotate(glm::mat4(), r, y_axis)*g);
+      assert(compare(m, glm::rotate(glm::mat4(), r, y_axis)*g));
     }
 
     // check rotate Z
@@ -688,7 +704,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::mat4 g = loadMatrix(m);
 
       Mtx_RotateZ(&m, r, true);
-      assert(m == glm::rotate(g, r, z_axis));
+      assert(compare(m, glm::rotate(g, r, z_axis)));
     }
 
     // check rotate Z (reversed)
@@ -701,7 +717,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::mat4 g = loadMatrix(m);
 
       Mtx_RotateZ(&m, r, false);
-      assert(m == glm::rotate(glm::mat4(), r, z_axis)*g);
+      assert(compare(m, glm::rotate(glm::mat4(), r, z_axis)*g));
     }
 
     // check vec3 multiply
@@ -712,7 +728,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::mat4 g = loadMatrix(m);
       glm::vec3 v = randomVector3(gen, dist);
 
-      assert(Mtx_MultiplyFVec3(&m, FVec3_New(v.x, v.y, v.z)) == glm::mat3x3(g)*v);
+      assert(compare(Mtx_MultiplyFVec3(&m, FVec3_New(v.x, v.y, v.z)), glm::mat3x3(g)*v));
     }
 
     // check vec4 multiply
@@ -723,7 +739,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::mat4 g = loadMatrix(m);
       glm::vec4 v = randomVector4(gen, dist);
 
-      assert(Mtx_MultiplyFVec4(&m, FVec4_New(v.x, v.y, v.z, v.w)) == g*v);
+      assert(compare(Mtx_MultiplyFVec4(&m, FVec4_New(v.x, v.y, v.z, v.w)), g*v));
     }
 
     // check vecH multiply
@@ -735,7 +751,7 @@ check_matrix(generator_t &gen, distribution_t &dist)
       glm::vec4 v = randomVector4(gen, dist);
       v.w = 1.0f;
 
-      assert(Mtx_MultiplyFVecH(&m, FVec3_New(v.x, v.y, v.z)) == glm::mat4x3(g)*v);
+      assert(compare(Mtx_MultiplyFVecH(&m, FVec3_New(v.x, v.y, v.z)), glm::mat4x3(g)*v));
     }
 
     // check matrix transpose
@@ -754,9 +770,9 @@ check_matrix(generator_t &gen, distribution_t &dist)
       check = loadMatrix(m);
 
       Mtx_Transpose(&m);
-      assert(m == glm::transpose(check));
+      assert(compare(m, glm::transpose(check)));
       Mtx_Transpose(&m);
-      assert(m == check);
+      assert(compare(m, check));
 
       //Comparing inverse(transpose(m)) == transpose(inverse(m))
       C3D_Mtx m2;
@@ -764,21 +780,21 @@ check_matrix(generator_t &gen, distribution_t &dist)
       Mtx_Transpose(&m2);
       if(Mtx_Inverse(&m2))
       {
-        assert(m2 == glm::inverse(glm::transpose(check)));
-        assert(m2 == glm::transpose(glm::inverse(check)));
+        assert(compare(m2, glm::inverse(glm::transpose(check))));
+        assert(compare(m2, glm::transpose(glm::inverse(check))));
       }
       Mtx_Copy(&m2, &m);
       if(Mtx_Inverse(&m2))
       {
         Mtx_Transpose(&m2);
-        assert(m2 == glm::inverse(glm::transpose(check)));
-        assert(m2 == glm::transpose(glm::inverse(check)));
+        assert(compare(m2, glm::inverse(glm::transpose(check))));
+        assert(compare(m2, glm::transpose(glm::inverse(check))));
       }
     }
   }
 }
 
-static void
+void
 check_quaternion(generator_t &gen, distribution_t &dist)
 {
   // check identity
@@ -786,7 +802,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
     C3D_FQuat q = Quat_Identity();
     glm::quat g;
 
-    assert(q == g);
+    assert(compare(q, g));
   }
 
   for(size_t x = 0; x < 10000; ++x)
@@ -796,7 +812,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       C3D_FQuat q = randomQuat(gen, dist);
       glm::quat g = loadQuat(q);
 
-      assert(Quat_Negate(q) == -g);
+      assert(compare(Quat_Negate(q), -g));
     }
 
     // check addition
@@ -807,7 +823,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       glm::quat g1 = loadQuat(q1);
       glm::quat g2 = loadQuat(q2);
 
-      assert(Quat_Add(q1, q2) == g1+g2);
+      assert(compare(Quat_Add(q1, q2), g1+g2));
     }
 
     // check subtraction
@@ -818,7 +834,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       glm::quat g1 = loadQuat(q1);
       glm::quat g2 = loadQuat(q2);
 
-      assert(Quat_Subtract(q1, q2) == g1 + (-g2));
+      assert(compare(Quat_Subtract(q1, q2), g1 + (-g2)));
     }
 
     // check scale
@@ -828,7 +844,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
 
       float f = dist(gen);
 
-      assert(Quat_Scale(q, f) == g*f);
+      assert(compare(Quat_Scale(q, f), g*f));
     }
 
     // check normalize
@@ -836,7 +852,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       C3D_FQuat q = randomQuat(gen, dist);
       glm::quat g = loadQuat(q);
 
-      assert(Quat_Normalize(q) == glm::normalize(g));
+      assert(compare(Quat_Normalize(q), glm::normalize(g)));
     }
 
     // check dot
@@ -854,7 +870,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       C3D_FQuat q = randomQuat(gen, dist);
       glm::quat g = loadQuat(q);
 
-      assert(Quat_Conjugate(q) == glm::conjugate(g));
+      assert(compare(Quat_Conjugate(q), glm::conjugate(g)));
     }
 
     // check inverse
@@ -862,7 +878,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       C3D_FQuat q = randomQuat(gen, dist);
       glm::quat g = loadQuat(q);
 
-      assert(Quat_Inverse(q) == glm::inverse(g));
+      assert(compare(Quat_Inverse(q), glm::inverse(g)));
     }
 
     // check quaternion multiplication
@@ -872,7 +888,7 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       glm::quat g1 = loadQuat(q1);
       glm::quat g2 = loadQuat(q2);
 
-      assert(Quat_Multiply(q1, q2) == g1*g2);
+      assert(compare(Quat_Multiply(q1, q2), g1*g2));
     }
 
     // check quat pow()
@@ -882,17 +898,17 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       //glm::quat g = loadQuat(q);
       float     r = dist(gen);
 
-      //assert(Quat_Pow(q, r) == glm::pow(g, r));
+      //assert(compare(Quat_Pow(q, r), glm::pow(g, r)));
 
       q = Quat_Normalize(q);
 
       // check trivial cases
-      assert(Quat_Pow(q, 1.0f) == q);
-      assert(Quat_Pow(q, 0.0f) == Quat_Identity());
-      assert(Quat_Pow(Quat_Identity(), r) == Quat_Identity());
+      assert(compare(Quat_Pow(q, 1.0f), q));
+      assert(compare(Quat_Pow(q, 0.0f), Quat_Identity()));
+      assert(compare(Quat_Pow(Quat_Identity(), r), Quat_Identity()));
 
       // validate semantics
-      assert(Quat_Pow(q, r) == Quat_Multiply(Quat_Pow(q, r/2), Quat_Pow(q, r/2)));
+      assert(compare(Quat_Pow(q, r), Quat_Multiply(Quat_Pow(q, r/2), Quat_Pow(q, r/2))));
     }
 
     // check vector multiplication (cross)
@@ -902,8 +918,8 @@ check_quaternion(generator_t &gen, distribution_t &dist)
 
       glm::vec3 v = randomVector3(gen, dist);
 
-      assert(Quat_CrossFVec3(q, FVec3_New(v.x, v.y, v.z)) == glm::cross(g, v));
-      assert(FVec3_CrossQuat(FVec3_New(v.x, v.y, v.z), q) == glm::cross(v, g));
+      assert(compare(Quat_CrossFVec3(q, FVec3_New(v.x, v.y, v.z)), glm::cross(g, v)));
+      assert(compare(FVec3_CrossQuat(FVec3_New(v.x, v.y, v.z), q), glm::cross(v, g)));
     }
 
     // check rotation
@@ -914,8 +930,8 @@ check_quaternion(generator_t &gen, distribution_t &dist)
       glm::vec3 v = randomVector3(gen, dist);
       float     r = randomAngle(gen, dist);
 
-      assert(Quat_Rotate(q, FVec3_New(v.x, v.y, v.z), r, false) == glm::rotate(g, r, v));
-      assert(Quat_Rotate(q, FVec3_New(v.x, v.y, v.z), r, true) == glm::rotate(glm::quat(), r, v)*g);
+      assert(compare(Quat_Rotate(q, FVec3_New(v.x, v.y, v.z), r, false), glm::rotate(g, r, v)));
+      assert(compare(Quat_Rotate(q, FVec3_New(v.x, v.y, v.z), r, true), glm::rotate(glm::quat(), r, v)*g));
     }
 
     // check rotate X
@@ -925,8 +941,8 @@ check_quaternion(generator_t &gen, distribution_t &dist)
 
       float     r = randomAngle(gen, dist);
 
-      assert(Quat_RotateX(q, r, false) == glm::rotate(g, r, x_axis));
-      assert(Quat_RotateX(q, r, true) == glm::rotate(glm::quat(), r, x_axis)*g);
+      assert(compare(Quat_RotateX(q, r, false), glm::rotate(g, r, x_axis)));
+      assert(compare(Quat_RotateX(q, r, true), glm::rotate(glm::quat(), r, x_axis)*g));
     }
 
     // check rotate Y
@@ -936,8 +952,8 @@ check_quaternion(generator_t &gen, distribution_t &dist)
 
       float     r = randomAngle(gen, dist);
 
-      assert(Quat_RotateY(q, r, false) == glm::rotate(g, r, y_axis));
-      assert(Quat_RotateY(q, r, true) == glm::rotate(glm::quat(), r, y_axis)*g);
+      assert(compare(Quat_RotateY(q, r, false), glm::rotate(g, r, y_axis)));
+      assert(compare(Quat_RotateY(q, r, true), glm::rotate(glm::quat(), r, y_axis)*g));
     }
 
     // check rotate Z
@@ -947,8 +963,8 @@ check_quaternion(generator_t &gen, distribution_t &dist)
 
       float     r = randomAngle(gen, dist);
 
-      assert(Quat_RotateZ(q, r, false) == glm::rotate(g, r, z_axis));
-      assert(Quat_RotateZ(q, r, true) == glm::rotate(glm::quat(), r, z_axis)*g);
+      assert(compare(Quat_RotateZ(q, r, false), glm::rotate(g, r, z_axis)));
+      assert(compare(Quat_RotateZ(q, r, true), glm::rotate(glm::quat(), r, z_axis)*g));
     }
 
     // check conversion to matrix
@@ -958,12 +974,14 @@ check_quaternion(generator_t &gen, distribution_t &dist)
 
       C3D_Mtx m;
       Mtx_FromQuat(&m, q);
-      assert(m == glm::mat4_cast(g));
+      assert(compare(m, glm::mat4_cast(g)));
 
       C3D_FQuat q2 = Quat_FromMtx(&m);
-      assert(q2 == q || q2 == FVec4_Negate(q));
+      if(!(q2 == q || q2 == FVec4_Negate(q)))
+        assert(compare(q2, q));
     }
   }
+}
 }
 
 int main(int argc, char *argv[])

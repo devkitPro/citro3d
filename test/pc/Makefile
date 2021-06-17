@@ -7,7 +7,7 @@ OFILES   := $(addprefix build/,$(CXXFILES:.cpp=.o)) \
 DFILES   := $(wildcard build/*.d)
 
 CFLAGS   := -Wall -g -pipe -I../../include --coverage
-CXXFLAGS := $(CFLAGS) $(CPPFLAGS) -std=gnu++11 -DGLM_FORCE_RADIANS
+CXXFLAGS := $(CFLAGS) $(CPPFLAGS) -std=gnu++11 -DGLM_FORCE_RADIANS -DGLM_FORCE_CTOR_INIT
 LDFLAGS  := $(ARCH) -pipe -lm --coverage
 
 .PHONY: all clean lcov
