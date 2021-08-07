@@ -35,7 +35,7 @@ CFLAGS	:=	-g -Wall -Wno-sizeof-array-div -Werror -mword-relocations \
 			-ffunction-sections -fdata-sections \
 			$(ARCH) $(BUILD_CFLAGS)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DCITRO3D_BUILD
+CFLAGS	+=	$(INCLUDE) -D__3DS__ -DCITRO3D_BUILD
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
