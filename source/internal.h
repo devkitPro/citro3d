@@ -124,6 +124,18 @@ static inline bool C3Di_TexIs2D(C3D_Tex* tex)
 	return !typeIsCube(C3D_TexGetType(tex));
 }
 
+static inline bool addrIsVRAM(const void* addr)
+{
+	u32 vaddr = (u32)addr;
+	return vaddr >= OS_VRAM_VADDR && vaddr < OS_VRAM_VADDR + OS_VRAM_SIZE;
+}
+
+static inline vramAllocPos addrGetVRAMBank(const void* addr)
+{
+	u32 vaddr = (u32)addr;
+	return vaddr < OS_VRAM_VADDR + OS_VRAM_SIZE/2 ? VRAM_ALLOC_A : VRAM_ALLOC_B;
+}
+
 void C3Di_UpdateContext(void);
 void C3Di_AttrInfoBind(C3D_AttrInfo* info);
 void C3Di_BufInfoBind(C3D_BufInfo* info);

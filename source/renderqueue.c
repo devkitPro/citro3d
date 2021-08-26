@@ -284,7 +284,10 @@ C3D_RenderTarget* C3D_RenderTargetCreate(int width, int height, GPU_COLORBUF col
 	if (C3D_DEPTHTYPE_OK(depthFmt))
 	{
 		depthFmtReal = C3D_DEPTHTYPE_VAL(depthFmt);
-		depthBuf = vramAlloc(C3D_CalcDepthBufSize(width,height,depthFmtReal));
+		size_t depthSize = C3D_CalcDepthBufSize(width,height,depthFmtReal);
+		vramAllocPos vramBank = addrGetVRAMBank(colorBuf);
+		depthBuf = vramAllocAt(depthSize, vramBank ^ VRAM_ALLOC_ANY); // Attempt opposite bank first...
+		if (!depthBuf) depthBuf = vramAllocAt(depthSize, vramBank); // ... if that fails, attempt same bank
 		if (!depthBuf) goto _fail1;
 	}
 
@@ -313,6 +316,7 @@ _fail0:
 
 C3D_RenderTarget* C3D_RenderTargetCreateFromTex(C3D_Tex* tex, GPU_TEXFACE face, int level, C3D_DEPTHTYPE depthFmt)
 {
+	if (!addrIsVRAM(tex->data)) return NULL; // Render targets must be in VRAM
 	C3D_RenderTarget* target = C3Di_RenderTargetNew();
 	if (!target) return NULL;
 
@@ -322,7 +326,10 @@ C3D_RenderTarget* C3D_RenderTargetCreateFromTex(C3D_Tex* tex, GPU_TEXFACE face, 
 	if (C3D_DEPTHTYPE_OK(depthFmt))
 	{
 		GPU_DEPTHBUF depthFmtReal = C3D_DEPTHTYPE_VAL(depthFmt);
-		void* depthBuf = vramAlloc(C3D_CalcDepthBufSize(fb->width,fb->height,depthFmtReal));
+		size_t depthSize = C3D_CalcDepthBufSize(fb->width,fb->height,depthFmtReal);
+		vramAllocPos vramBank = addrGetVRAMBank(tex->data);
+		void* depthBuf = vramAllocAt(depthSize, vramBank ^ VRAM_ALLOC_ANY); // Attempt opposite bank first...
+		if (!depthBuf) depthBuf = vramAllocAt(depthSize, vramBank); // ... if that fails, attempt same bank
 		if (!depthBuf)
 		{
 			free(target);

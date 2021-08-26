@@ -30,12 +30,6 @@ static inline size_t fmtSize(GPU_TEXCOLOR fmt)
 	}
 }
 
-static inline bool addrIsVRAM(const void* addr)
-{
-	u32 vaddr = (u32)addr;
-	return vaddr >= 0x1F000000 && vaddr < 0x1F600000;
-}
-
 static inline bool checkTexSize(u32 size)
 {
 	if (size < 8 || size > 1024)
