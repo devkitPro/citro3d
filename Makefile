@@ -9,8 +9,8 @@ endif
 include $(DEVKITARM)/3ds_rules
 
 export CITRO3D_MAJOR	:= 1
-export CITRO3D_MINOR	:= 6
-export CITRO3D_PATCH	:= 2
+export CITRO3D_MINOR	:= 7
+export CITRO3D_PATCH	:= 0
 
 VERSION	:=	$(CITRO3D_MAJOR).$(CITRO3D_MINOR).$(CITRO3D_PATCH)
 
