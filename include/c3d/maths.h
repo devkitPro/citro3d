@@ -13,7 +13,12 @@
  * The one true circumference-to-radius ratio.
  * See http://tauday.com/tau-manifesto
  */
-#define M_TAU (2*M_PI)
+#define M_TAU (6.28318530717958647692528676655900576)
+
+// Define the legacy circle constant as well
+#ifndef M_PI
+#define M_PI (M_TAU/2)
+#endif
 
 /**
  * @brief Convert an angle from revolutions to radians
