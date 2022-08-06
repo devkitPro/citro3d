@@ -38,7 +38,7 @@ extern "C" {
 #endif
 
 /** @brief Subtexture
- *  @note If top > bottom, the subtexture is rotated 1/4 revolution counter-clockwise
+ *  @note If top < bottom, the subtexture is rotated 1/4 revolution counter-clockwise
  */
 typedef struct Tex3DS_SubTexture
 {
