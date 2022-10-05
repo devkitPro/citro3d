@@ -1,0 +1,27 @@
+var internal_8h =
+[
+    [ "C3D_Effect", "struct_c3_d___effect.html", "struct_c3_d___effect" ],
+    [ "C3D_Context", "struct_c3_d___context.html", "struct_c3_d___context" ],
+    [ "C3D_UNUSED", "internal_8h.html#a951496897ceef07fbde38ba6a247aaac", null ],
+    [ "C3DiF_ProcTexLut", "internal_8h.html#a6f06d00aa6c07b4e6aefd1d7abd71459", null ],
+    [ "C3DiF_Tex", "internal_8h.html#a387e2013baca693d8c923f75f2bc0fc9", null ],
+    [ "C3DiF_TexEnv", "internal_8h.html#a5c1cc19e34f2546befdd67706ed6e70a", null ],
+    [ "C3Di_AttrInfoBind", "internal_8h.html#ac600ec36cc12c6473e0574f38ce2a6ef", null ],
+    [ "C3Di_BufInfoBind", "internal_8h.html#a49e592c82e10a02ca46a91745ba53182", null ],
+    [ "C3Di_ClearShaderUniforms", "internal_8h.html#ae0d0cabc17e43f2ab2368a390e283759", null ],
+    [ "C3Di_DirtyUniforms", "internal_8h.html#a3122c009e7f6b5e2fb570003212fad73", null ],
+    [ "C3Di_EffectBind", "internal_8h.html#a4fd792654ea1facdfa6dbda29b7f4914", null ],
+    [ "C3Di_FrameBufBind", "internal_8h.html#abdac0a0f522dddd85db6e17f03e20121", null ],
+    [ "C3Di_GasUpdate", "internal_8h.html#a8caed26d6204363f215976aaa7e05e6c", null ],
+    [ "C3Di_LightMtlBlend", "internal_8h.html#a5e20dd6f18115396537df0713e22a0b4", null ],
+    [ "C3Di_LoadShaderUniforms", "internal_8h.html#a50e19b086244713ca897d5cb8a1a1e86", null ],
+    [ "C3Di_RenderQueueDisableVBlank", "internal_8h.html#a73b8cdfbcd16488c7a6a54dade6ae470", null ],
+    [ "C3Di_RenderQueueEnableVBlank", "internal_8h.html#a765ddd29aa58ce4598429750d3f692a5", null ],
+    [ "C3Di_RenderQueueExit", "internal_8h.html#aa8202fe4deb317840c5ca9516d7813f2", null ],
+    [ "C3Di_RenderQueueInit", "internal_8h.html#a15d6ad6f422fcb523ff7ddf6808f959c", null ],
+    [ "C3Di_RenderQueueWaitDone", "internal_8h.html#a7cde967201bd3128dc49b7cc7d065ff4", null ],
+    [ "C3Di_SetTex", "internal_8h.html#a9cd92f53a18da481d1ba74f4c9da7dee", null ],
+    [ "C3Di_SplitFrame", "internal_8h.html#a139aee1e5943be7dfb22a011f6057689", null ],
+    [ "C3Di_TexEnvBind", "internal_8h.html#acff27a4262a8a3fb39b20f2afd4cccd5", null ],
+    [ "C3Di_UpdateContext", "internal_8h.html#a4cfecbe235841f7d41495a8dc6b15c32", null ]
+];

@@ -1,0 +1,25 @@
+var renderqueue_8c =
+[
+    [ "C3D_FrameBegin", "renderqueue_8c.html#a7675742b59d3b6718f68179bbe31e78b", null ],
+    [ "C3D_FrameCounter", "renderqueue_8c.html#a5ef85bebbc2a8a98a409a4c24a05fee6", null ],
+    [ "C3D_FrameDrawOn", "renderqueue_8c.html#a1cf7de15e6026508e2502dd8a938a554", null ],
+    [ "C3D_FrameEnd", "renderqueue_8c.html#afff1197369155052b5ad89eca13fbb34", null ],
+    [ "C3D_FrameEndHook", "renderqueue_8c.html#a0fbf711434a86cf52247197bdd18d03d", null ],
+    [ "C3D_FrameRate", "renderqueue_8c.html#a9ce9a686ea3cd4f8703b8d3cb815af06", null ],
+    [ "C3D_FrameSplit", "renderqueue_8c.html#a30d22d0f997fa9d49f58a9e0cd51d433", null ],
+    [ "C3D_FrameSync", "renderqueue_8c.html#a41442453dd910a4c79dec8f6a5cc6acc", null ],
+    [ "C3D_GetDrawingTime", "renderqueue_8c.html#a4d5d9a58ee65c08aac17d819e072d8d1", null ],
+    [ "C3D_GetProcessingTime", "renderqueue_8c.html#a42255e0c2c469fc7ef4ce52115390fa4", null ],
+    [ "C3D_RenderTargetCreate", "renderqueue_8c.html#a716ffff33be46fe13a0b66b13de4e5f8", null ],
+    [ "C3D_RenderTargetCreateFromTex", "renderqueue_8c.html#a31e0a8da75cf659a9ff59f8e51a42f34", null ],
+    [ "C3D_RenderTargetDelete", "renderqueue_8c.html#afa76b60e45b1a19fa44136a880c311ef", null ],
+    [ "C3D_RenderTargetSetOutput", "renderqueue_8c.html#aa44d9c7acd33a35026292cb0481b4ebf", null ],
+    [ "C3D_SyncDisplayTransfer", "renderqueue_8c.html#ae463bfd7d3676c3bcc56869f2e17ecf1", null ],
+    [ "C3D_SyncMemoryFill", "renderqueue_8c.html#a87d66e53af7a8267f4be0e7283c4ce9c", null ],
+    [ "C3D_SyncTextureCopy", "renderqueue_8c.html#a40706d596256234e2655707ebdcacb32", null ],
+    [ "C3Di_RenderQueueDisableVBlank", "renderqueue_8c.html#a73b8cdfbcd16488c7a6a54dade6ae470", null ],
+    [ "C3Di_RenderQueueEnableVBlank", "renderqueue_8c.html#a765ddd29aa58ce4598429750d3f692a5", null ],
+    [ "C3Di_RenderQueueExit", "renderqueue_8c.html#aa8202fe4deb317840c5ca9516d7813f2", null ],
+    [ "C3Di_RenderQueueInit", "renderqueue_8c.html#a15d6ad6f422fcb523ff7ddf6808f959c", null ],
+    [ "C3Di_RenderQueueWaitDone", "renderqueue_8c.html#a7cde967201bd3128dc49b7cc7d065ff4", null ]
+];
