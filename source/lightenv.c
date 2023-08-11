@@ -250,6 +250,14 @@ void C3D_LightEnvBumpSel(C3D_LightEnv* env, int texUnit)
 	env->flags |= C3DF_LightEnv_Dirty;
 }
 
+void C3D_LightEnvBumpNormalZ(C3D_LightEnv *env, bool usez) {
+	if (usez)
+		env->conf.config[0] |= BIT(30);
+	else
+		env->conf.config[0] &= ~BIT(30);
+	env->flags |= C3DF_LightEnv_Dirty;
+}
+
 void C3D_LightEnvShadowMode(C3D_LightEnv* env, u32 mode)
 {
 	mode &= 0xF<<16;

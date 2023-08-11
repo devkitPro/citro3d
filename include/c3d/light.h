@@ -77,6 +77,14 @@ enum
 void C3D_LightEnvFresnel(C3D_LightEnv* env, GPU_FRESNELSEL selector);
 void C3D_LightEnvBumpMode(C3D_LightEnv* env, GPU_BUMPMODE mode);
 void C3D_LightEnvBumpSel(C3D_LightEnv* env, int texUnit);
+
+/**
+ * @brief Configures whether to use the z component of the normal map.
+ * @param[out] env    Pointer to light environment structure.
+ * @param[in]  enable false if the z component is reconstructed from the xy components
+ *                     of the normal map, true if the z component is taken from the normal map.
+ */
+void C3D_LightEnvBumpNormalZ(C3D_LightEnv *env, bool enable);
 void C3D_LightEnvShadowMode(C3D_LightEnv* env, u32 mode);
 void C3D_LightEnvShadowSel(C3D_LightEnv* env, int texUnit);
 void C3D_LightEnvClampHighlights(C3D_LightEnv* env, bool clamp);
