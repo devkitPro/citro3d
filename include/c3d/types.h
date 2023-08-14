@@ -1,3 +1,7 @@
+/**
+ * @file types.h
+ * @brief Various citro3d types.
+ */
 #pragma once
 #if defined(__3DS__) || defined(_3DS)
 #include <3ds.h>
@@ -14,8 +18,19 @@ typedef uint32_t u32;
 #define C3D_DEPRECATED
 #endif
 
+/**
+ * @brief Integer vector
+ */
 typedef u32 C3D_IVec;
 
+/**
+ * @brief Packs 4 u8 integers into a vector.
+ * @param[in] x X component of the vector.
+ * @param[in] y Y component of the vector.
+ * @param[in] z Z component of the vector.
+ * @param[in] w W component of the vector.
+ * @return Returns \ref C3D_IVec.
+ */
 static inline C3D_IVec IVec_Pack(u8 x, u8 y, u8 z, u8 w)
 {
 	return (u32)x | ((u32)y << 8) | ((u32)z << 16) | ((u32)w << 24);
@@ -64,7 +79,6 @@ typedef union
 } C3D_FVec;
 
 /**
- * @struct C3D_FQuat
  * @brief Float quaternion. See @ref C3D_FVec.
  */
 typedef C3D_FVec C3D_FQuat;

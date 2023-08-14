@@ -1,3 +1,7 @@
+/**
+ * @file citro3d.h
+ * @brief Central citro3d header. Includes all others.
+ */
 #pragma once
 
 #ifdef CITRO3D_BUILD

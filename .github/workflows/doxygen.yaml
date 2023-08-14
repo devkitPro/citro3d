@@ -1,0 +1,37 @@
+name: Deploy site
+
+on:
+  push:
+    branches: [ c3d-docs ]
+
+jobs:
+  doc-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Set up Doxygen
+        run: sudo apt install doxygen
+
+      - name: Display Doxygen version
+        run: echo "Doxygen version $(doxygen -v)"
+
+      - name: Generate libctru tags
+        run: |
+            git clone --branch=master --single-branch --depth 1 https://github.com/devkitPro/libctru
+            cd libctru/libctru
+            doxygen
+
+      - name: Build documentation
+        run: CTRU_DOCPATH="https://libctru.devkitpro.org/" doxygen
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: docs/html # The folder the action should deploy.
+          CLEAN: true # Automatically remove deleted files from the deploy branch
