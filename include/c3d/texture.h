@@ -41,7 +41,7 @@ typedef struct
 	};
 } C3D_Tex;
 
-typedef struct ALIGN(8)
+typedef struct CTR_ALIGN(8)
 {
 	u16 width;
 	u16 height;
